@@ -55,6 +55,45 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModel\ComponentViewModels\NewsItemViewModel.cs" />
+    <Compile Include="ViewModel\ComponentViewModels\NutritionItemViewModel.cs" />
+    <Compile Include="ViewModel\ComponentViewModels\WorkoutCardViewModel.cs" />
+    <Compile Include="Model\Repositories\NewsRepository.cs" />
+    <Compile Include="Model\Repositories\NutritionRepository.cs" />
+    <Compile Include="Model\Repositories\UserRepository.cs" />
+    <Compile Include="Model\Repositories\WorkoutRepository.cs" />
+    <Compile Include="ViewModel\PagesViewModels\FavoritesViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
+    <Compile Include="View\Pages\FavoritesPage.xaml.cs">
+      <DependentUpon>FavoritesPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\NewsPage.xaml.cs">
+      <DependentUpon>NewsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\NutritionPage.xaml.cs">
+      <DependentUpon>NutritionPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\ProfilePage.xaml.cs">
+      <DependentUpon>ProfilePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\WorkoutsPage.xaml.cs">
+      <DependentUpon>WorkoutsPage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="View\Components\NewsItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Components\NutritionItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Resources\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Components\WorkoutCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -67,8 +106,27 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\Pages\FavoritesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\NewsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\NutritionPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\ProfilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\WorkoutsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Entities\NewsModel.cs" />
+    <Compile Include="Model\Entities\NutritionModel.cs" />
+    <Compile Include="Model\Entities\UserModel.cs" />
+    <Compile Include="Model\Entities\WorkoutModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fitpad.ViewModel
+﻿namespace Fitpad.ViewModel.PagesViewModels
 {
-    internal class ProfileViewModel
+    public class ProfileViewModel
     {
+        // Здесь код для ViewModel
     }
 }

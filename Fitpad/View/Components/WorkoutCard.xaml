@@ -1,0 +1,9 @@
+<UserControl x:Class="Fitpad.View.Components.WorkoutItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="WorkoutItemControl">
+	<Grid>
+		<TextBlock Text="Заголовок тренування" FontSize="18" />
+		<TextBlock Text="Текст тренування" FontSize="14" />
+	</Grid>
+</UserControl>
