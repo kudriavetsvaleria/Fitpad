@@ -2,9 +2,9 @@
 
 namespace Fitpad.View.Pages
 {
-    public partial class NutrionPage : Page
+    public partial class NutritionPage : Page
     {
-        public NutrionPage()
+        public NutritionPage()
         {
             InitializeComponent();
         }

@@ -55,6 +55,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="MainViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NewsItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NutritionItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\WorkoutCardViewModel.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
+    <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\Pages\FavoritesPage.xaml.cs">
       <DependentUpon>FavoritesPage.xaml</DependentUpon>
     </Compile>

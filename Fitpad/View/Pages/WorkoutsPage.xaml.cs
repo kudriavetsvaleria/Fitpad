@@ -2,9 +2,9 @@
 
 namespace Fitpad.View.Pages
 {
-    public partial class WorkoutPage : Page
+    public partial class WorkoutsPage : Page
     {
-        public WorkoutPage()
+        public WorkoutsPage()
         {
             InitializeComponent();
         }

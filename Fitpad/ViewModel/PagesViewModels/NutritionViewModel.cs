@@ -1,6 +1,6 @@
 ﻿namespace Fitpad.ViewModel.PagesViewModels
 {
-    public class NutrionViewModel
+    public class NutritionViewModel
     {
         // Здесь код для ViewModel
     }
