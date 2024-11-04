@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 public class MainViewModel : INotifyPropertyChanged
@@ -38,6 +40,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         // Открываем страницу новостей по умолчанию
         CurrentPage = GetPageInstance<NewsPage>();
+        ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
     }
 
     private void NavigateTo<T>() where T : Page, new()
@@ -63,4 +66,16 @@ public class MainViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    private bool _isNavigationExpanded = true;
+    public bool IsNavigationExpanded
+    {
+        get => _isNavigationExpanded;
+        set
+        {
+            _isNavigationExpanded = value;
+            OnPropertyChanged();
+        }
+    }
+
 }
