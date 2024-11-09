@@ -77,6 +77,9 @@
     <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
+    <Compile Include="View\Components\NewsItem.xaml.cs">
+      <DependentUpon>NewsItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\FavoritesPage.xaml.cs">
       <DependentUpon>FavoritesPage.xaml</DependentUpon>
     </Compile>
