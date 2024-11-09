@@ -12,17 +12,12 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <!-- Применяем конвертер для изменения ширины панели -->
             <ColumnDefinition Width="{Binding IsNavigationExpanded, Converter={StaticResource WidthConverter}}"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Панель навигации -->
         <StackPanel Grid.Column="0" Background="#FFDDDDDD" >
-            <!-- Кнопка для скрытия/развёртывания панели -->
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Toggle'}"
-                    Command="{Binding ToggleNavigationCommand}"
-                    Width="50" Height="50" HorizontalAlignment="Right" Margin="0,5,5,0" />
 
             <!-- Основные кнопки навигации с изменением контента и ширины -->
             <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Новини'}"
@@ -55,6 +50,11 @@
                     Height="50"
                     Margin="5" />
         </StackPanel>
+
+        <!-- Кнопка для скрытия/развёртывания панели -->
+        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Toggle'}"
+                    Command="{Binding ToggleNavigationCommand}"
+                    Width="50" Height="50" HorizontalAlignment="Right" Margin="0,500,5,0" />
 
         <!-- Контентная область -->
         <Frame Grid.Column="1" Content="{Binding CurrentPage}" NavigationUIVisibility="Hidden"/>
