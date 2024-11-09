@@ -63,6 +63,7 @@
     <Compile Include="Converters\ButtonWidthConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="MainViewModel.cs" />
+    <Compile Include="Model\Repositories\ApiService.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NewsItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NutritionItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\WorkoutCardViewModel.cs" />
@@ -91,7 +92,7 @@
     <Compile Include="View\Pages\WorkoutsPage.xaml.cs">
       <DependentUpon>WorkoutsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Resources\JsonParser.cs" />
+    <Compile Include="Model\Repositories\JsonParser.cs" />
     <Page Include="View\Components\NewsItem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
