@@ -13,5 +13,6 @@ namespace Fitpad
     /// </summary>
     public partial class App : Application
     {
+
     }
 }

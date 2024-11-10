@@ -3,15 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
+
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
-
     private object _currentPage;
     public object CurrentPage
     {
@@ -41,6 +42,7 @@ public class MainViewModel : INotifyPropertyChanged
         // Открываем страницу новостей по умолчанию
         CurrentPage = GetPageInstance<NewsPage>();
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
+        //Console.WriteLine("========News open======");
     }
 
     private void NavigateTo<T>() where T : Page, new()
@@ -77,5 +79,7 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+
 
 }
