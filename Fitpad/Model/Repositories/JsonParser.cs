@@ -23,7 +23,8 @@ namespace Fitpad.View.Repositories
                 try
                 {
                     string apiKey = "74c6a3de96d649e89ed0f00bcd3d5174";
-                    string urlWithApiKey = $"{_address}&apiKey={apiKey}";
+                    string urlWithApiKey = Uri.EscapeUriString($"{_address}&apiKey={apiKey}");
+
 
 
                     // Отправляем GET-запрос и получаем ответ в виде строки
