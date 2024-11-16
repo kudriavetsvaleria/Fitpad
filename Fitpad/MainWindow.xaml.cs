@@ -17,7 +17,7 @@ namespace Fitpad
         {
             try
             {
-                var getRequest = new GetRequest("https://newsapi.org/v2/top-headlines?category=sports&apiKey=74c6a3de96d649e89ed0f00bcd3d5174");
+                var getRequest = new GetRequest("https://newsapi.org/v2/top-headlines?category=sports&apiKey=6be473200c65428498902906f4d6f1b4");
                 await getRequest.RunAsync();
             }
             catch(Exception ex)
