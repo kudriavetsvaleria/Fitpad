@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fitpad.Model
+﻿namespace Fitpad.Model.Entities
 {
-    internal class NewsModel
+    public class NewsModel
     {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string UrlToImage { get; set; }
     }
 }

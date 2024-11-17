@@ -63,6 +63,7 @@
     <Compile Include="Converters\ButtonWidthConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="MainViewModel.cs" />
+    <Compile Include="ViewModel\BaseViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NewsItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NutritionItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\WorkoutCardViewModel.cs" />
