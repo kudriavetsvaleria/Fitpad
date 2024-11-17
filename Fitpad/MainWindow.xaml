@@ -20,31 +20,33 @@
         <StackPanel Grid.Column="0" Background="#FFDDDDDD" >
 
             <!-- Основные кнопки навигации с изменением контента и ширины -->
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Новини'}"
+
+            <!-- Основные кнопки навигации с изменением контента и ширины -->
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Новини, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowNewsCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
-                    Margin="5" />
+                    Margin="5,20,5,5"/>
 
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Збережене'}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Збережене, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowFavoritesCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
 
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Харчування'}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Харчування, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowNutritionCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
 
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Тренування'}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Тренування, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowWorkoutsCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
 
-            <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Профіль'}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Профіль, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowProfileCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
