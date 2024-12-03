@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using Fitpad.ViewModel.PagesViewModels;
+using System.Windows.Controls;
 
 namespace Fitpad.View.Pages
 {
@@ -7,6 +8,7 @@ namespace Fitpad.View.Pages
         public NutritionPage()
         {
             InitializeComponent();
+            DataContext = new NutritionViewModel();
         }
     }
 }

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fitpad.Model
+﻿namespace Fitpad.Model.Entities
 {
-    internal class NutritionModel
+    public class NutritionModel
     {
+        public string Title { get; set; }
+        public string Image { get; set; }
+        public int Calories { get; set; }
+        public double Protein { get; set; }
+        public double Carbs { get; set; }
     }
 }

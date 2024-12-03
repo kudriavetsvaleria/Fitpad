@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Navigation;
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -43,10 +44,22 @@ public class MainViewModel : INotifyPropertyChanged
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
     }
 
-    private void NavigateTo<T>() where T : Page, new()
+    public void NavigateTo<T>() where T : Page, new()
     {
-        CurrentPage = GetPageInstance<T>();
+        var page = GetPageInstance<T>();
+
+        if (CurrentPage is Page currentPage && currentPage.NavigationService != null)
+        {
+            currentPage.NavigationService.Navigate(page);
+        }
+        else
+        {
+            // Логика для обработки случаев без NavigationService
+            CurrentPage = page;
+        }
     }
+
+
 
     private Page GetPageInstance<T>() where T : Page, new()
     {
