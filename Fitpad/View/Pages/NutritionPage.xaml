@@ -11,9 +11,10 @@
                         <StackPanel Orientation="Vertical">
                             <Image Source="{Binding Image}" Height="150" Stretch="UniformToFill" />
                             <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="5,0" />
-                            <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}"/>
-                            <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}"/>
-                            <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}"/>
+                            <TextBlock Text="{Binding ReadyInMinutes, StringFormat=Время приготовления: {0} мин}" />
+                            <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" />
+                            <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" />
+                            <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>

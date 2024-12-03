@@ -9,7 +9,7 @@ namespace Fitpad.Model.Repositories
     public class NutritionRepository
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "77fc6d4be49f4522900362727af5549f"; // Вставьте ваш API-ключ
+        private const string ApiKey = "77fc6d4be49f4522900362727af5549f"; // Ваш API-ключ
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
         public NutritionRepository()
@@ -17,17 +17,15 @@ namespace Fitpad.Model.Repositories
             _httpClient = new HttpClient();
         }
 
-
         public async Task<List<NutritionModel>> GetRecipesAsync()
         {
-            var url = $"{BaseUrl}/complexSearch?number=10&apiKey={ApiKey}&addRecipeInformation=true";
+            var url = $"{BaseUrl}/complexSearch?number=10&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
-
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
 
             var result = new List<NutritionModel>();
@@ -54,16 +52,13 @@ namespace Fitpad.Model.Repositories
                     Image = recipe.Image,
                     Calories = calories,
                     Protein = protein,
-                    Carbs = carbs
+                    Carbs = carbs,
+                    ReadyInMinutes = recipe.ReadyInMinutes // Время приготовления
                 });
             }
 
             return result;
         }
-
-
-
-
 
         // Модели для парсинга ответа API
         public class ApiResponse
@@ -76,6 +71,7 @@ namespace Fitpad.Model.Repositories
             public string Title { get; set; }
             public string Image { get; set; }
             public Nutrition Nutrition { get; set; }
+            public int ReadyInMinutes { get; set; } // Время приготовления
         }
 
         public class Nutrition
