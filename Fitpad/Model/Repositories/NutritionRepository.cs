@@ -3,31 +3,38 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Fitpad.Model.Entities;
-
+using System.Text.RegularExpressions;
 namespace Fitpad.Model.Repositories
 {
     public class NutritionRepository
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "77fc6d4be49f4522900362727af5549f"; // Ваш API-ключ
+        private const string ApiKey = "77fc6d4be49f4522900362727af5549f";
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
         public NutritionRepository()
         {
             _httpClient = new HttpClient();
         }
-
-        private string FormatReadyTime(int minutes)
+        public string StripHtmlTags(string input)
         {
-            if (minutes >= 60)
-            {
-                int hours = minutes / 60;
-                int remainingMinutes = minutes % 60;
-                return remainingMinutes > 0
-                    ? $"{hours} ч {remainingMinutes} мин"
-                    : $"{hours} ч";
-            }
-            return $"{minutes} мин";
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            return Regex.Replace(input, "<.*?>", string.Empty).Trim();
+        }
+
+        public async Task<string> GetRecipeDetailsAsync(int id)
+        {
+            var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var recipe = JsonConvert.DeserializeObject<RecipeDetails>(json);
+
+            return StripHtmlTags(recipe.Instructions ?? "Инструкции отсутствуют.");
         }
 
         public async Task<List<NutritionModel>> GetRecipesAsync()
@@ -44,37 +51,21 @@ namespace Fitpad.Model.Repositories
             var result = new List<NutritionModel>();
             foreach (var recipe in apiResponse.Results)
             {
-                var calories = 0;
-                var protein = 0.0;
-                var carbs = 0.0;
-
-                if (recipe.Nutrition?.Nutrients != null)
-                {
-                    calories = (int)(recipe.Nutrition.Nutrients.Find(n => n.Name == "Calories")?.Amount ?? 0);
-                    protein = recipe.Nutrition.Nutrients.Find(n => n.Name == "Protein")?.Amount ?? 0;
-                    carbs = recipe.Nutrition.Nutrients.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0;
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Рецепт {recipe.Title} не содержит Nutrition. Используются значения по умолчанию.");
-                }
-
                 result.Add(new NutritionModel
                 {
+                    Id = recipe.Id,
                     Title = recipe.Title,
                     Image = recipe.Image,
-                    Calories = calories,
-                    Protein = protein,
-                    Carbs = carbs,
-                    ReadyInMinutes = recipe.ReadyInMinutes,
-                    FormattedTime = FormatReadyTime(recipe.ReadyInMinutes)
+                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
+                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                    ReadyInMinutes = recipe.ReadyInMinutes
                 });
             }
 
             return result;
         }
 
-        // Модели для парсинга ответа API
         public class ApiResponse
         {
             public List<Recipe> Results { get; set; }
@@ -82,6 +73,7 @@ namespace Fitpad.Model.Repositories
 
         public class Recipe
         {
+            public int Id { get; set; }
             public string Title { get; set; }
             public string Image { get; set; }
             public Nutrition Nutrition { get; set; }
@@ -97,6 +89,11 @@ namespace Fitpad.Model.Repositories
         {
             public string Name { get; set; }
             public double Amount { get; set; }
+        }
+
+        public class RecipeDetails
+        {
+            public string Instructions { get; set; }
         }
     }
 }

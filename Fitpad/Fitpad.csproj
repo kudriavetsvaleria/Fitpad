@@ -92,6 +92,9 @@
     <Compile Include="View\Pages\ProfilePage.xaml.cs">
       <DependentUpon>ProfilePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Pages\RecipePage.xaml.cs">
+      <DependentUpon>RecipePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\WorkoutsPage.xaml.cs">
       <DependentUpon>WorkoutsPage.xaml</DependentUpon>
     </Compile>
@@ -99,6 +102,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Components\NutritionItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\RecipePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Resources\Styles.xaml">

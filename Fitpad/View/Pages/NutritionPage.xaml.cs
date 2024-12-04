@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
 using Fitpad.ViewModel.PagesViewModels;
+using System.Windows.Controls;
+using Fitpad.Model.Entities;
 
 namespace Fitpad.View.Pages
 {
@@ -16,13 +16,15 @@ namespace Fitpad.View.Pages
             _viewModel = new NutritionViewModel();
             DataContext = _viewModel;
 
-            // Асинхронная загрузка данных при входе на страницу
-            Loaded += NutritionPage_Loaded;
+            Loaded += async (s, e) => await _viewModel.LoadNutritionAsync();
         }
 
-        private async void NutritionPage_Loaded(object sender, RoutedEventArgs e)
+        private void Card_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            await _viewModel.LoadNutritionAsync();
+            if (sender is FrameworkElement element && element.DataContext is NutritionModel model)
+            {
+                NavigationService.Navigate(new RecipePage(model));
+            }
         }
     }
 }
