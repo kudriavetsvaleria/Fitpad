@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -26,13 +27,13 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             _repository = new NutritionRepository();
             NutritionCards = new ObservableCollection<NutritionModel>();
-
-            // Асинхронная загрузка данных при создании ViewModel
-            LoadNutritionAsync();
         }
 
-        private async Task LoadNutritionAsync()
+        public async Task LoadNutritionAsync()
         {
+            if (NutritionCards.Count > 0)
+                return; // Данные уже загружены
+
             try
             {
                 var recipes = await _repository.GetRecipesAsync();
@@ -42,7 +43,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                     NutritionCards.Add(recipe);
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Ошибка загрузки данных: {ex.Message}");
             }

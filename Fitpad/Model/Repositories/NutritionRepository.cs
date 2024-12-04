@@ -17,9 +17,22 @@ namespace Fitpad.Model.Repositories
             _httpClient = new HttpClient();
         }
 
+        private string FormatReadyTime(int minutes)
+        {
+            if (minutes >= 60)
+            {
+                int hours = minutes / 60;
+                int remainingMinutes = minutes % 60;
+                return remainingMinutes > 0
+                    ? $"{hours} ч {remainingMinutes} мин"
+                    : $"{hours} ч";
+            }
+            return $"{minutes} мин";
+        }
+
         public async Task<List<NutritionModel>> GetRecipesAsync()
         {
-            var url = $"{BaseUrl}/complexSearch?number=10&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+            var url = $"{BaseUrl}/complexSearch?number=48&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -53,7 +66,8 @@ namespace Fitpad.Model.Repositories
                     Calories = calories,
                     Protein = protein,
                     Carbs = carbs,
-                    ReadyInMinutes = recipe.ReadyInMinutes // Время приготовления
+                    ReadyInMinutes = recipe.ReadyInMinutes,
+                    FormattedTime = FormatReadyTime(recipe.ReadyInMinutes)
                 });
             }
 
@@ -71,7 +85,7 @@ namespace Fitpad.Model.Repositories
             public string Title { get; set; }
             public string Image { get; set; }
             public Nutrition Nutrition { get; set; }
-            public int ReadyInMinutes { get; set; } // Время приготовления
+            public int ReadyInMinutes { get; set; }
         }
 
         public class Nutrition

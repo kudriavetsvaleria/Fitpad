@@ -1,20 +1,35 @@
 <Page x:Class="Fitpad.View.Pages.NutritionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:vm="clr-namespace:Fitpad.ViewModel.PagesViewModels"
       Title="Nutrition Page">
 
+    <Page.DataContext>
+        <vm:NutritionViewModel />
+    </Page.DataContext>
+
     <Grid>
-        <ListView ItemsSource="{Binding NutritionCards}" Margin="10" VerticalAlignment="Stretch">
+        <ListView ItemsSource="{Binding NutritionCards}" Margin="10" HorizontalAlignment="Center">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="4" />
+                    <!-- 5 карточек в ряд -->
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Padding="10">
-                        <StackPanel Orientation="Vertical">
-                            <Image Source="{Binding Image}" Height="150" Stretch="UniformToFill" />
-                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="5,0" />
-                            <TextBlock Text="{Binding ReadyInMinutes, StringFormat=Время приготовления: {0} мин}" />
-                            <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" />
-                            <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" />
-                            <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" />
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="10">
+                        <StackPanel Orientation="Vertical" Width="150" Height="240">
+                            <!-- Изображение с обрезкой до квадрата -->
+                            <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
+                            <!-- Название блюда -->
+                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" TextWrapping="Wrap" />
+                            <!-- Время приготовления -->
+                            <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
+                            <!-- Калории, белки и углеводы -->
+                            <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" FontSize="12" TextAlignment="Center" />
+                            <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="12" TextAlignment="Center" />
+                            <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="12" TextAlignment="Center" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>
