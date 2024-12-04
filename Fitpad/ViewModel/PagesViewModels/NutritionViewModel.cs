@@ -31,7 +31,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public async Task LoadNutritionAsync(bool useRandom = false, int offset = 0)
         {
-            if (NutritionCards.Count > 0) return;
+            NutritionCards.Clear(); // Очистка текущего списка
 
             var recipes = await _repository.GetRecipesAsync(useRandom, offset);
             foreach (var recipe in recipes)
@@ -39,8 +39,6 @@ namespace Fitpad.ViewModel.PagesViewModels
                 NutritionCards.Add(recipe);
             }
         }
-
-
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
