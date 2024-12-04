@@ -16,9 +16,9 @@
                             <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
                             <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
                             <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
-                            <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" FontSize="12" TextAlignment="Center" />
-                            <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="12" TextAlignment="Center" />
-                            <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="12" TextAlignment="Center" />
+                            <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center" />
+                            <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="12" TextAlignment="Center" />
+                            <TextBlock Text="{Binding Carbs, StringFormat=Вуглеводи: {0} г}" FontSize="12" TextAlignment="Center" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>

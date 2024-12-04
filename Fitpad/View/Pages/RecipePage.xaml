@@ -5,8 +5,8 @@
 	<Grid>
 		<Button Content="←" HorizontalAlignment="Left" VerticalAlignment="Top" Click="BackButton_Click" Height="30" Width="30"/>
 		<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-			<Image Source="{Binding Image}" Height="300" Width="300" Stretch="UniformToFill" />
-			<TextBlock Text="{Binding Title}" FontSize="20" />
+			<Image Source="{Binding Image}" Height="300" Width="300" Stretch="UniformToFill" Margin="0,0,0,0" />
+			<TextBlock Text="{Binding Title}" FontSize="20" HorizontalAlignment="Right"/>
 			<TextBlock Text="{Binding RecipeDetails}" TextWrapping="Wrap" />
 		</StackPanel>
 	</Grid>

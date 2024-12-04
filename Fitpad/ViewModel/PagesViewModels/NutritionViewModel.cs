@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -28,16 +29,18 @@ namespace Fitpad.ViewModel.PagesViewModels
             NutritionCards = new ObservableCollection<NutritionModel>();
         }
 
-        public async Task LoadNutritionAsync()
+        public async Task LoadNutritionAsync(bool useRandom = false, int offset = 0)
         {
             if (NutritionCards.Count > 0) return;
 
-            var recipes = await _repository.GetRecipesAsync();
+            var recipes = await _repository.GetRecipesAsync(useRandom, offset);
             foreach (var recipe in recipes)
             {
                 NutritionCards.Add(recipe);
             }
         }
+
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

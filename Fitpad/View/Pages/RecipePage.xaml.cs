@@ -1,7 +1,7 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
-using System.Windows.Controls;
 
 namespace Fitpad.View.Pages
 {
@@ -19,7 +19,7 @@ namespace Fitpad.View.Pages
         private async void LoadRecipe()
         {
             var repository = new NutritionRepository();
-            var details = await repository.GetRecipeDetailsAsync(_model.Id);
+            var details = await repository.GetRecipeDetailsAsync(_model.Id); // Создайте метод GetRecipeDetailsAsync
             _model.RecipeDetails = details;
             DataContext = _model;
         }
