@@ -17,13 +17,16 @@ namespace Fitpad.View.Pages
             _viewModel = new NutritionViewModel();
             DataContext = _viewModel;
 
-            Loaded += async (s, e) =>
+            // Не обновляем данные автоматически, чтобы избежать повторной загрузки
+            if (_viewModel.NutritionCards.Count == 0)
             {
                 var random = new Random();
                 int offset = random.Next(0, 1000); // Диапазон для смещения
-                await _viewModel.LoadNutritionAsync(false, offset);
-            };
+                _viewModel.LoadNutritionAsync(false, offset);
+            }
+
         }
+
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
@@ -31,6 +34,7 @@ namespace Fitpad.View.Pages
             int offset = random.Next(0, 1000); // Новый диапазон для обновления
             await _viewModel.LoadNutritionAsync(false, offset);
         }
+
 
         private void Card_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
