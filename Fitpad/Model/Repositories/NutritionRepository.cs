@@ -11,7 +11,7 @@ namespace Fitpad.Model.Repositories
     public class NutritionRepository
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "77fc6d4be49f4522900362727af5549f";
+        private const string ApiKey = "86241b5ba83247a39ebe1362a765a007";
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
         public NutritionRepository()
@@ -54,7 +54,7 @@ namespace Fitpad.Model.Repositories
             // Используем random=true, если указан флаг.
             var url = useRandom
                 ? $"{BaseUrl}/random?number=48&apiKey={ApiKey}"
-                : $"{BaseUrl}/complexSearch?number=48&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+                : $"{BaseUrl}/complexSearch?number=1&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true"; //number = 48
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
