@@ -30,6 +30,7 @@ namespace Fitpad.Model.Repositories
             return Regex.Replace(input, "<.*?>", string.Empty).Trim();
         }
 
+
         /// <summary>
         /// Получает инструкции по рецепту по его ID.
         /// </summary>
@@ -37,21 +38,16 @@ namespace Fitpad.Model.Repositories
         {
             var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
             var response = await _httpClient.GetAsync(url);
-
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
             var recipeDetails = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
 
-            if (string.IsNullOrWhiteSpace(recipeDetails.Instructions))
-            {
-                System.Diagnostics.Debug.WriteLine($"Инструкции отсутствуют для рецепта ID {id}");
-                return "Инструкции не найдены.";
-            }
-
-            return recipeDetails.Instructions;
+            // Удаление HTML тегов
+            return StripHtmlTags(recipeDetails.Instructions ?? "Инструкции не найдены.");
         }
+
 
 
         public class RecipeDetailsResponse

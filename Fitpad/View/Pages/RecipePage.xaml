@@ -44,7 +44,7 @@
             <!-- Рецепт -->
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10,20,10,0" Height="200">
                 <Border BorderBrush="Gray" BorderThickness="1" Padding="10" CornerRadius="5">
-                    <TextBlock Text="{Binding RecipeDetails}" TextWrapping="Wrap" FontSize="16" FontFamily="Segoe UI" TextAlignment="Justify"
+                    <TextBlock Text="{Binding RecipeDetails}" TextWrapping="Wrap" FontSize="16" FontFamily="Segoe UI" TextAlignment="Justify" LineHeight="20"
                                d:Text="Это пример инструкции, которая отображается в дизайнере. Здесь можно написать фиктивный текст для удобства редактирования." />
                 </Border>
             </ScrollViewer>
