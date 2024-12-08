@@ -11,6 +11,7 @@
         public int ReadyInMinutes { get; set; } // Время приготовления
         public string FormattedTime { get; set; }
         public string RecipeDetails { get; set; } // Инструкции рецепта
+        public double Fats { get; set; }
     }
 
 }

@@ -37,42 +37,72 @@ namespace Fitpad.Model.Repositories
         {
             var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
             var response = await _httpClient.GetAsync(url);
+
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
-            var recipe = JsonConvert.DeserializeObject<RecipeDetails>(json);
+            var recipeDetails = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
 
-            return StripHtmlTags(recipe.Instructions ?? "Инструкции отсутствуют.");
+            if (string.IsNullOrWhiteSpace(recipeDetails.Instructions))
+            {
+                System.Diagnostics.Debug.WriteLine($"Инструкции отсутствуют для рецепта ID {id}");
+                return "Инструкции не найдены.";
+            }
+
+            return recipeDetails.Instructions;
         }
+
+
+        public class RecipeDetailsResponse
+        {
+            public string Instructions { get; set; }
+        }
+
 
         /// <summary>
         /// Получает список рецептов, либо случайных, либо с заданным смещением.
         /// </summary>
         public async Task<List<NutritionModel>> GetRecipesAsync(bool useRandom = false, int offset = 0)
         {
-            // Используем random=true, если указан флаг.
-            var url = useRandom
-                ? $"{BaseUrl}/random?number=48&apiKey={ApiKey}"
-                : $"{BaseUrl}/complexSearch?number=1&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true"; //number = 48
+            string url;
+
+            if (useRandom)
+            {
+                url = $"{BaseUrl}/random?number=48&apiKey={ApiKey}";
+            }
+            else
+            {
+                url = $"{BaseUrl}/complexSearch?number=4&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+            }
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
 
-            if (useRandom)
+            var result = new List<NutritionModel>();
+            foreach (var recipe in apiResponse.Results)
             {
-                var randomResponse = JsonConvert.DeserializeObject<RandomApiResponse>(json);
-                return MapRandomRecipes(randomResponse.Recipes);
+                result.Add(new NutritionModel
+                {
+                    Id = recipe.Id,
+                    Title = recipe.Title,
+                    Image = recipe.Image,
+                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
+                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                    Fats = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                    ReadyInMinutes = recipe.ReadyInMinutes
+                });
             }
-            else
-            {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
-                return MapComplexSearchRecipes(apiResponse.Results);
-            }
+
+            return result;
         }
+
+
 
         /// <summary>
         /// Преобразует результаты complexSearch в модели.
