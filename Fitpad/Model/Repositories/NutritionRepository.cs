@@ -11,7 +11,7 @@ namespace Fitpad.Model.Repositories
     public class NutritionRepository
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "86241b5ba83247a39ebe1362a765a007";
+        private const string ApiKey = "77fc6d4be49f4522900362727af5549f";
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
         public NutritionRepository()
@@ -34,7 +34,7 @@ namespace Fitpad.Model.Repositories
         /// <summary>
         /// Получает инструкции по рецепту по его ID.
         /// </summary>
-        public async Task<string> GetRecipeDetailsAsync(int id)
+        public async Task<(string Instructions, List<string> Ingredients)> GetRecipeDetailsWithIngredientsAsync(int id)
         {
             var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
             var response = await _httpClient.GetAsync(url);
@@ -44,16 +44,29 @@ namespace Fitpad.Model.Repositories
             var json = await response.Content.ReadAsStringAsync();
             var recipeDetails = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
 
-            // Удаление HTML тегов
-            return StripHtmlTags(recipeDetails.Instructions ?? "Инструкции не найдены.");
+            var ingredients = new List<string>();
+            if (recipeDetails.ExtendedIngredients != null)
+            {
+                foreach (var ingredient in recipeDetails.ExtendedIngredients)
+                {
+                    ingredients.Add(ingredient.Original);
+                }
+            }
+
+            return (StripHtmlTags(recipeDetails.Instructions ?? "Инструкции не найдены."), ingredients);
         }
-
-
 
         public class RecipeDetailsResponse
         {
             public string Instructions { get; set; }
+            public List<Ingredient> ExtendedIngredients { get; set; }
         }
+
+        public class Ingredient
+        {
+            public string Original { get; set; }
+        }
+
 
 
         /// <summary>

@@ -1,4 +1,6 @@
-﻿namespace Fitpad.Model.Entities
+﻿using System.Collections.Generic;
+
+namespace Fitpad.Model.Entities
 {
     public class NutritionModel
     {
@@ -12,6 +14,7 @@
         public string FormattedTime { get; set; }
         public string RecipeDetails { get; set; } // Инструкции рецепта
         public double Fats { get; set; }
+        public List<string> Ingredients { get; set; }
     }
 
 }

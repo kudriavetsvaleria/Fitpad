@@ -13,40 +13,48 @@
         <StackPanel Margin="0,70,0,10" VerticalAlignment="Top" HorizontalAlignment="Stretch">
             <!-- Название -->
             <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"
-                       d:Text="Название рецепта" />
+                       d:Text="Назва рецепта" />
 
-            <!-- Картинка и информация о блюде -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <!-- Для изображения -->
-                    <ColumnDefinition Width="1.5*" />
-                    <!-- Для информации -->
-                </Grid.ColumnDefinitions>
+            <!-- Контейнер для ингредиентов и инструкции -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10,20,10,0" Height="460">
+                <StackPanel>
+                    <!-- Картинка и информация о блюде -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1.5*" />
+                        </Grid.ColumnDefinitions>
 
-                <!-- Картинка -->
-                <Image Source="{Binding Image}" Height="300" Width="300" Stretch="UniformToFill" Margin="0,0,20,0" Grid.Column="0"
-                       d:Source="https://via.placeholder.com/300" />
+                        <Image Source="{Binding Image}" Height="300" Width="300" Stretch="UniformToFill" Margin="0,0,20,0" Grid.Column="0"
+                               d:Source="https://via.placeholder.com/300" />
 
-                <!-- Информация -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left">
-                    <TextBlock Text="{Binding Calories, StringFormat=Калории: {0} ккал}" FontSize="16" Margin="0,5"
-                               d:Text="Калории: 250 ккал" />
-                    <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="16" Margin="0,5"
-                               d:Text="Белки: 20 г" />
-                    <TextBlock Text="{Binding Fats, StringFormat=Жиры: {0} г}" FontSize="16" Margin="0,5"
-                               d:Text="Жиры: 10 г" />
-                    <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="16" Margin="0,5"
-                               d:Text="Углеводы: 30 г" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0} ккал}" FontSize="16" Margin="0,5" />
+                            <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="16" Margin="0,5" />
+                            <TextBlock Text="{Binding Fats, StringFormat=Жири: {0} г}" FontSize="16" Margin="0,5" />
+                            <TextBlock Text="{Binding Carbs, StringFormat=Вуглеводи: {0} г}" FontSize="16" Margin="0,5" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Ингредиенты и инструкция -->
+                    <Border BorderBrush="Gray" BorderThickness="1" Padding="10" CornerRadius="5">
+                        <StackPanel>
+                            <!-- Ингредиенты -->
+                            <TextBlock Text="Інгредієнти:" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" />
+                            <ItemsControl ItemsSource="{Binding Ingredients}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="16" Margin="10,0" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Инструкция -->
+                            <TextBlock Text="Інструкція:" FontSize="20" FontWeight="Bold" Margin="0,20,0,10" />
+                            <TextBlock Text="{Binding RecipeDetails}" TextWrapping="Wrap" FontSize="16" FontFamily="Segoe UI" TextAlignment="Justify" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Grid>
-
-            <!-- Рецепт -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10,20,10,0" Height="200">
-                <Border BorderBrush="Gray" BorderThickness="1" Padding="10" CornerRadius="5">
-                    <TextBlock Text="{Binding RecipeDetails}" TextWrapping="Wrap" FontSize="16" FontFamily="Segoe UI" TextAlignment="Justify" LineHeight="20"
-                               d:Text="Это пример инструкции, которая отображается в дизайнере. Здесь можно написать фиктивный текст для удобства редактирования." />
-                </Border>
             </ScrollViewer>
         </StackPanel>
     </Grid>

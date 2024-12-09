@@ -20,8 +20,11 @@ namespace Fitpad.View.Pages
         private async void LoadRecipe()
         {
             var repository = new NutritionRepository();
-            var details = await repository.GetRecipeDetailsAsync(_model.Id); // Загружаем детали
-            _model.RecipeDetails = details; // Инструкции без HTML тегов
+            var (instructions, ingredients) = await repository.GetRecipeDetailsWithIngredientsAsync(_model.Id);
+
+            _model.RecipeDetails = instructions;
+            _model.Ingredients = ingredients;
+
             DataContext = null; // Обновляем привязку
             DataContext = _model;
         }
