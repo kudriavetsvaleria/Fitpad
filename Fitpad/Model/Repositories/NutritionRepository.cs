@@ -82,7 +82,7 @@ namespace Fitpad.Model.Repositories
             }
             else
             {
-                url = $"{BaseUrl}/complexSearch?number=4&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+                url = $"{BaseUrl}/complexSearch?number=24&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
             }
 
             var response = await _httpClient.GetAsync(url);

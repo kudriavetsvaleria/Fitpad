@@ -10,6 +10,15 @@ namespace Fitpad.View.Pages
     {
         private readonly NutritionViewModel _viewModel;
 
+        private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight)
+            {
+                int offset = _viewModel.NutritionCards.Count;
+                await _viewModel.LoadMoreNutritionAsync(offset);
+            }
+        }
+
         public NutritionPage()
         {
             InitializeComponent();
@@ -22,10 +31,10 @@ namespace Fitpad.View.Pages
             {
                 var random = new Random();
                 int offset = random.Next(0, 1000); // Диапазон для смещения
-                _viewModel.LoadNutritionAsync(false, offset);
+                _ = _viewModel.LoadNutritionAsync(false, offset); // Асинхронная загрузка
             }
-
         }
+
 
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)

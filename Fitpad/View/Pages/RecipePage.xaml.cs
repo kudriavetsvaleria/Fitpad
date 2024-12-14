@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
@@ -13,11 +14,11 @@ namespace Fitpad.View.Pages
         {
             InitializeComponent();
             _model = model;
-            DataContext = _model; // Устанавливаем контекст данных
-            LoadRecipe();
+            DataContext = _model; // Базовая информация доступна сразу
+            _ = LoadRecipeDetailsAsync(); // Асинхронная загрузка деталей
         }
 
-        private async void LoadRecipe()
+        private async Task LoadRecipeDetailsAsync()
         {
             var repository = new NutritionRepository();
             var (instructions, ingredients) = await repository.GetRecipeDetailsWithIngredientsAsync(_model.Id);
@@ -25,9 +26,14 @@ namespace Fitpad.View.Pages
             _model.RecipeDetails = instructions;
             _model.Ingredients = ingredients;
 
-            DataContext = null; // Обновляем привязку
-            DataContext = _model;
+            // Обновляем привязку для отображения данных
+            Dispatcher.Invoke(() =>
+            {
+                DataContext = null;
+                DataContext = _model;
+            });
         }
+
 
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

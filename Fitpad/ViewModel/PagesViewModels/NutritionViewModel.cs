@@ -29,11 +29,19 @@ namespace Fitpad.ViewModel.PagesViewModels
             NutritionCards = new ObservableCollection<NutritionModel>();
         }
 
-        public async Task LoadNutritionAsync(bool useRandom = false, int offset = 0)
+        public async Task LoadNutritionAsync(bool useRandom, int offset)
         {
-            NutritionCards.Clear(); // Очистка текущего списка
-
+            NutritionCards.Clear(); // Полная загрузка очищает текущий список
             var recipes = await _repository.GetRecipesAsync(useRandom, offset);
+            foreach (var recipe in recipes)
+            {
+                NutritionCards.Add(recipe);
+            }
+        }
+
+        public async Task LoadMoreNutritionAsync(int offset)
+        {
+            var recipes = await _repository.GetRecipesAsync(false, offset);
             foreach (var recipe in recipes)
             {
                 NutritionCards.Add(recipe);
@@ -46,4 +54,5 @@ namespace Fitpad.ViewModel.PagesViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
 }
