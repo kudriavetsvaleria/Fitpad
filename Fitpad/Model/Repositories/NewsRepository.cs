@@ -18,21 +18,12 @@ namespace Fitpad.Model.Repositories
             {
                 try
                 {
-                    // Формируем URL запроса
                     var url = $"{_baseUrl}?country={Uri.EscapeDataString("us")}&category={Uri.EscapeDataString("sports")}&apiKey={Uri.EscapeDataString(_apiKey)}";
-
-                    // Настраиваем заголовки
                     httpClient.DefaultRequestHeaders.ConnectionClose = true;
                     httpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
-
-                    // Добавляем заголовок User-Agent
                     httpClient.DefaultRequestHeaders.Add("User-Agent", "FitpadApp/1.0");
 
-                    // Создаем HttpRequestMessage с использованием построенного URL
-                    var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-                    // Выполняем запрос и проверяем ответ
-                    var response = await httpClient.SendAsync(request);
+                    var response = await httpClient.GetAsync(url);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -41,10 +32,13 @@ namespace Fitpad.Model.Repositories
                         return new List<NewsModel>();
                     }
 
-                    // Чтение и десериализация JSON-ответа
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<NewsApiResponse>(jsonResponse);
-                    return result.Articles;
+
+                    // Фильтруем новости без изображения
+                    var filteredNews = result.Articles.FindAll(news => !string.IsNullOrEmpty(news.UrlToImage));
+
+                    return filteredNews;
                 }
                 catch (Exception ex)
                 {
@@ -55,7 +49,7 @@ namespace Fitpad.Model.Repositories
         }
     }
 
-    public class NewsApiResponse
+        public class NewsApiResponse
     {
         public List<NewsModel> Articles { get; set; }
     }

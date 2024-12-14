@@ -8,20 +8,19 @@
         <vm:NewsViewModel />
     </Page.DataContext>
 
-    <Grid>
-        <ListView ItemsSource="{Binding News}" Margin="0" SelectionChanged="ListView_SelectionChanged" HorizontalAlignment="Center">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ListView ItemsSource="{Binding News}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="White" BorderThickness="1" CornerRadius="10" Margin="5" Padding="50">
-                        <StackPanel Orientation="Vertical" Width="555" Margin="0,-35,0,0">
-                            <Image Source="{Binding UrlToImage}" Height="370" Width="550" Stretch="UniformToFill" Margin="0,0,0,0" />
-                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Margin="5,20,5,0"
-                                       TextWrapping="Wrap" />
+                        <StackPanel Orientation="Vertical" Width="610">
+                            <Image Source="{Binding UrlToImage}" Height="370" Width="550" Stretch="UniformToFill" />
+                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Margin="5,20,5,0" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding Description}" FontSize="14" TextWrapping="Wrap" Margin="5,20,5,10" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-    </Grid>
+    </ScrollViewer>
 </Page>
