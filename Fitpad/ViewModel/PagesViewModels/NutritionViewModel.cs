@@ -10,8 +10,6 @@ namespace Fitpad.ViewModel.PagesViewModels
 {
     public class NutritionViewModel : INotifyPropertyChanged
     {
-        private readonly NutritionRepository _repository;
-
         private ObservableCollection<NutritionModel> _nutritionCards;
         public ObservableCollection<NutritionModel> NutritionCards
         {
@@ -20,14 +18,19 @@ namespace Fitpad.ViewModel.PagesViewModels
             {
                 _nutritionCards = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsNutritionEmpty)); // Обновляем состояние пустоты
             }
         }
+        public bool IsNutritionEmpty => NutritionCards == null || NutritionCards.Count == 0; // Если список пуст
+        private readonly NutritionRepository _repository;
 
         public NutritionViewModel()
         {
             _repository = new NutritionRepository();
             NutritionCards = new ObservableCollection<NutritionModel>();
         }
+
+
 
         public async Task LoadNutritionAsync(bool useRandom, int offset)
         {
@@ -47,6 +50,36 @@ namespace Fitpad.ViewModel.PagesViewModels
                 NutritionCards.Add(recipe);
             }
         }
+
+        private bool _isSearchEmpty;
+        public bool IsSearchEmpty
+        {
+            get => _isSearchEmpty;
+            set
+            {
+                _isSearchEmpty = value;
+                OnPropertyChanged(); // Уведомляем привязку об изменении
+            }
+        }
+
+        public async Task SearchNutritionAsync(string query)
+        {
+            NutritionCards.Clear(); // Очистка текущего списка
+
+            var recipes = await _repository.SearchRecipesAsync(query);
+            foreach (var recipe in recipes)
+            {
+                NutritionCards.Add(recipe);
+            }
+
+            // Устанавливаем IsSearchEmpty только после завершения поиска
+            IsSearchEmpty = NutritionCards.Count == 0;
+
+            // Принудительное обновление свойства IsNutritionEmpty
+            OnPropertyChanged(nameof(IsNutritionEmpty));
+        }
+
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

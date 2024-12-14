@@ -30,6 +30,37 @@ namespace Fitpad.Model.Repositories
             return Regex.Replace(input, "<.*?>", string.Empty).Trim();
         }
 
+        public async Task<List<NutritionModel>> SearchRecipesAsync(string query)
+        {
+            string url = $"{BaseUrl}/complexSearch?query={Uri.EscapeDataString(query)}&number=10&addRecipeNutrition=true&apiKey={ApiKey}";
+
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
+
+            var result = new List<NutritionModel>();
+            foreach (var recipe in apiResponse.Results)
+            {
+                result.Add(new NutritionModel
+                {
+                    Id = recipe.Id,
+                    Title = recipe.Title,
+                    Image = recipe.Image,
+                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
+                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                    Fats = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                    ReadyInMinutes = recipe.ReadyInMinutes
+                });
+            }
+
+            return result;
+        }
+
+
 
         /// <summary>
         /// Получает инструкции по рецепту по его ID.
@@ -67,8 +98,6 @@ namespace Fitpad.Model.Repositories
             public string Original { get; set; }
         }
 
-
-
         /// <summary>
         /// Получает список рецептов, либо случайных, либо с заданным смещением.
         /// </summary>
@@ -82,7 +111,7 @@ namespace Fitpad.Model.Repositories
             }
             else
             {
-                url = $"{BaseUrl}/complexSearch?number=24&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+                url = $"{BaseUrl}/complexSearch?number=4&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
             }
 
             var response = await _httpClient.GetAsync(url);
@@ -110,8 +139,6 @@ namespace Fitpad.Model.Repositories
 
             return result;
         }
-
-
 
         /// <summary>
         /// Преобразует результаты complexSearch в модели.

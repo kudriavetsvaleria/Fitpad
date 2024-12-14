@@ -7,43 +7,56 @@
       Title="Nutrition Page">
 
     <Grid>
-        <!-- Верхняя панель с кнопкой -->
         <Grid Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
+            <!-- Поиск -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBox x:Name="SearchTextBox" Width="200" Margin="0,0,10,0" Text="Введите запрос" 
+                         GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" />
+                <Button Content="Поиск" Width="75" Click="OnSearchButtonClick" />
+            </StackPanel>
+
             <Button Content="⟳" Width="50" Height="50" 
                     HorizontalAlignment="Left" VerticalAlignment="Center" 
                     Background="LightGray" BorderBrush="Gray" 
                     Click="RefreshButton_Click" Margin="692,0,0,0" />
 
-            <!-- Список рецептов -->
-            <ListView Grid.Row="1" ItemsSource="{Binding NutritionCards}" Margin="10" d:ItemsSource="{d:SampleData}">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Columns="4" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
+            <!-- Основной контейнер для списка и надписи -->
+            <Grid Grid.Row="1">
+                <!-- Список рецептов -->
+                <ListView x:Name="MyListView" ItemsSource="{Binding NutritionCards}" Margin="10">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="10" MouseDown="Card_MouseDown">
+                                <StackPanel Orientation="Vertical" Width="150" Height="220">
+                                    <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
+                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" />
+                                    <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
+                                    <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Fats, StringFormat=Жиры: {0} г}" FontSize="12" TextAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="10" MouseDown="Card_MouseDown">
-                            <StackPanel Orientation="Vertical" Width="150" Height="220">
-                                <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
-                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                                <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
-                                <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" FontSize="12" TextAlignment="Center" />
-                                <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="12" TextAlignment="Center" />
-                                <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="12" TextAlignment="Center" />
-                                <TextBlock Text="{Binding Fats, StringFormat=Жиры: {0} г}" FontSize="12" TextAlignment="Center" />
-                            </StackPanel>
-
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                <!-- Надпись "Рецептів не знайдено" -->
+                <TextBlock Text="Рецептів не знайдено" 
+                           Visibility="{Binding IsSearchEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                           HorizontalAlignment="Center" VerticalAlignment="Center" 
+                           FontSize="20" FontWeight="Bold" Foreground="Black" />
+            </Grid>
         </Grid>
     </Grid>
 </Page>
