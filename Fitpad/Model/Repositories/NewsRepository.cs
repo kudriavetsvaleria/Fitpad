@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Fitpad.Model.Entities;
+using System.Linq;
 
 namespace Fitpad.Model.Repositories
 {
     public class NewsRepository
     {
-        private readonly string _apiKey = "6be473200c65428498902906f4d6f1b4"; // Проверь, что API ключ корректен
+        private readonly string _apiKey = "6be473200c65428498902906f4d6f1b4"; // Проверьте, что API ключ корректен
         private readonly string _baseUrl = "https://newsapi.org/v2/top-headlines";
 
         public async Task<List<NewsModel>> GetNewsAsync()
@@ -36,7 +37,14 @@ namespace Fitpad.Model.Repositories
                     var result = JsonConvert.DeserializeObject<NewsApiResponse>(jsonResponse);
 
                     // Фильтруем новости без изображения
-                    var filteredNews = result.Articles.FindAll(news => !string.IsNullOrEmpty(news.UrlToImage));
+                    var filteredNews = new List<NewsModel>();
+                    foreach (var news in result.Articles)
+                    {
+                        if (!string.IsNullOrEmpty(news.UrlToImage) && await IsImageAccessible(news.UrlToImage, httpClient))
+                        {
+                            filteredNews.Add(news);
+                        }
+                    }
 
                     return filteredNews;
                 }
@@ -47,10 +55,25 @@ namespace Fitpad.Model.Repositories
                 }
             }
         }
-    }
+
+        // Проверка доступности изображения
+        private async Task<bool> IsImageAccessible(string url, HttpClient httpClient)
+        {
+            try
+            {
+                var response = await httpClient.GetAsync(url);
+                return response.IsSuccessStatusCode &&
+                       response.Content.Headers.ContentType.MediaType.StartsWith("image/");
+            }
+            catch
+            {
+                return false; // Если запрос завершился ошибкой, изображение недоступно
+            }
+        }
 
         public class NewsApiResponse
-    {
-        public List<NewsModel> Articles { get; set; }
+        {
+            public List<NewsModel> Articles { get; set; }
+        }
     }
 }
