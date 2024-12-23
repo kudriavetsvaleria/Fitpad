@@ -14,10 +14,10 @@
             </Grid.RowDefinitions>
 
             <!-- Поиск -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <TextBox x:Name="SearchTextBox" Width="200" Margin="0,0,10,0" Text="Введите запрос" 
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,10">
+                <TextBox x:Name="SearchTextBox" Width="200" Margin="0,0,10,0" Text="Введіть запит" 
                          GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" />
-                <Button Content="Поиск" Width="75" Click="OnSearchButtonClick" />
+                <Button Content="Пошук" Width="75" Click="OnSearchButtonClick" />
             </StackPanel>
 
             <Button Content="⟳" Width="50" Height="50" 
@@ -41,10 +41,10 @@
                                     <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
                                     <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" />
                                     <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
-                                    <TextBlock Text="{Binding Calories, StringFormat=Калории: {0}}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Protein, StringFormat=Белки: {0} г}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Carbs, StringFormat=Углеводы: {0} г}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Fats, StringFormat=Жиры: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Carbs, StringFormat=Вуглеводи: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Fats, StringFormat=Жири: {0} г}" FontSize="12" TextAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

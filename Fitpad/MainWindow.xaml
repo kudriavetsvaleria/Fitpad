@@ -40,6 +40,13 @@
                     Height="50"
                     Margin="5" />
 
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Калории, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowCaloriesCommand}"
+                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                    Height="50"
+                    Margin="5" />
+
+
             <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Тренування, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowWorkoutsCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
