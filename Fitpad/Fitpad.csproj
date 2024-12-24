@@ -62,7 +62,8 @@
     <Compile Include="Converters\ButtonContentConverter.cs" />
     <Compile Include="Converters\ButtonWidthConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
-    <Compile Include="MainViewModel.cs" />
+    <Compile Include="Model\Entities\AccountLogin.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="Model\Entities\CaloriesModel.cs" />
     <Compile Include="Model\Repositories\CaloriesRepository.cs" />
     <Compile Include="ViewModel\BaseViewModel.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Model\Repositories\NutritionRepository.cs" />
     <Compile Include="Model\Repositories\UserRepository.cs" />
     <Compile Include="Model\Repositories\WorkoutRepository.cs" />
+    <Compile Include="ViewModel\PagesViewModels\AccountLogin.cs" />
     <Compile Include="ViewModel\PagesViewModels\CaloriesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\FavoritesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
@@ -82,6 +84,9 @@
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\Components\NewsItem.xaml.cs">
       <DependentUpon>NewsItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\AccountLogin.xaml.cs">
+      <DependentUpon>AccountLogin.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\CaloriesPage.xaml.cs">
       <DependentUpon>CaloriesPage.xaml</DependentUpon>
@@ -108,6 +113,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Components\NutritionItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\AccountLogin.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\CaloriesPage.xaml">
