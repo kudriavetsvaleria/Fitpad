@@ -1,0 +1,45 @@
+<Page x:Class="Fitpad.View.Pages.AccountLoginPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Авторизация">
+    <Grid>
+        <!-- Центрирование контента -->
+        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Логин -->
+                <RowDefinition Height="Auto"/>
+                <!-- Поле логина -->
+                <RowDefinition Height="20"/>
+                <!-- Отступ -->
+                <RowDefinition Height="Auto"/>
+                <!-- Пароль -->
+                <RowDefinition Height="Auto"/>
+                <!-- Поле пароля -->
+                <RowDefinition Height="20"/>
+                <!-- Отступ -->
+                <RowDefinition Height="Auto"/>
+                <!-- Кнопка -->
+                <RowDefinition Height="Auto"/>
+                <!-- Текст ошибки -->
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Поле ввода логина -->
+            <Label Content="Логин:" VerticalAlignment="Top" Grid.Row="0" Margin="0,1,0,0" FontSize="14" Foreground="Black"/>
+            <TextBox x:Name="UsernameTextBox" Margin="25,29,25,38" Width="250" Height="30" FontSize="14" Grid.RowSpan="4"/>
+
+            <!-- Поле ввода пароля -->
+            <Label Content="Пароль:" VerticalAlignment="Top" Grid.Row="3" Margin="0,13,0,0" FontSize="14" Foreground="Black"/>
+            <PasswordBox x:Name="PasswordBox" Grid.Row="3" Margin="25,44,25,9" Width="250" Height="30" FontSize="14" Grid.RowSpan="2"/>
+
+            <!-- Кнопка -->
+            <Button Content="Войти" Grid.Row="5" Width="250" Height="35" HorizontalAlignment="Center" Click="LoginButton_Click" Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,12,0,-27" Grid.RowSpan="3"/>
+
+            <!-- Текст ошибки -->
+            <TextBlock x:Name="ErrorTextBlock" Grid.Row="7" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0" FontSize="12"/>
+        </Grid>
+    </Grid>
+</Page>

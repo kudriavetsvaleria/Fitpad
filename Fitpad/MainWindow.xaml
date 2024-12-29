@@ -65,6 +65,12 @@
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
+
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=AccountRegistration, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowAccountRegistrationCommand}"
+                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                    Height="50"
+                    Margin="5" />
         </StackPanel>
 
         <!-- Кнопка для скрытия/развёртывания панели -->

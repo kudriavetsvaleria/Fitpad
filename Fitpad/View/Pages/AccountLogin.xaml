@@ -1,9 +1,0 @@
-<Page x:Class="Fitpad.View.Pages.AccountLoginPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="AccountLogin">
-    <Grid>
-        <!-- Здесь можно добавить элементы управления, например, заголовок и список избранных элементов -->
-        <TextBlock Text="AccountLogin" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-    </Grid>
-</Page>

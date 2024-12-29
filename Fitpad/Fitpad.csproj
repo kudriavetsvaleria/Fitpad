@@ -85,8 +85,11 @@
     <Compile Include="View\Components\NewsItem.xaml.cs">
       <DependentUpon>NewsItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Pages\AccountLogin.xaml.cs">
-      <DependentUpon>AccountLogin.xaml</DependentUpon>
+    <Compile Include="View\Pages\AccountLoginPage.xaml.cs">
+      <DependentUpon>AccountLoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Pages\AccountRegistrationPage.xaml.cs">
+      <DependentUpon>AccountRegistrationPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\CaloriesPage.xaml.cs">
       <DependentUpon>CaloriesPage.xaml</DependentUpon>
@@ -115,7 +118,11 @@
     <Page Include="View\Components\NutritionItem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Pages\AccountLogin.xaml">
+    <Page Include="View\Pages\AccountLoginPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Pages\AccountRegistrationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\CaloriesPage.xaml">

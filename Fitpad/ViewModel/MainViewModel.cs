@@ -30,6 +30,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowWorkoutsCommand { get; }
     public ICommand ShowProfileCommand { get; }
     public ICommand ShowAccountLoginCommand { get; }
+    public ICommand ShowAccountRegistrationCommand { get; }
     public ICommand ToggleNavigationCommand { get; }
     public ICommand ShowCaloriesCommand { get; }
 
@@ -41,6 +42,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowWorkoutsCommand = new RelayCommand(o => NavigateTo<WorkoutsPage>());
         ShowProfileCommand = new RelayCommand(o => NavigateTo<ProfilePage>());
         ShowAccountLoginCommand = new RelayCommand(o => NavigateTo<AccountLoginPage>());
+        ShowAccountRegistrationCommand = new RelayCommand(o => NavigateTo<AccountRegistrationPage>());
         ShowCaloriesCommand = new RelayCommand(o => NavigateTo<CaloriesPage>());
 
         // Открываем страницу новостей по умолчанию
