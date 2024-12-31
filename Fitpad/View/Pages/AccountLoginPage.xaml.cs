@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using Fitpad.Model;
+using System.Linq;
+using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Fitpad.View.Pages
@@ -15,15 +18,41 @@ namespace Fitpad.View.Pages
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            // Пример простой проверки
-            if (username == "admin" && password == "12345")
+            // Проверка на пустые поля
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Успешный вход!", "Авторизация", MessageBoxButton.OK, MessageBoxImage.Information);
+                ShowError("Логин и пароль не могут быть пустыми.");
+                return;
             }
-            else
+
+            // Проверка в базе данных
+            using (var context = new ApplicationDbContext())
             {
-                ErrorTextBlock.Text = "Неверный логин или пароль!";
-                ErrorTextBlock.Visibility = Visibility.Visible;
+                var user = context.Users.FirstOrDefault(u => u.Username == username);
+                if (user == null || !VerifyPassword(password, user.Password))
+                {
+                    ShowError("Неверный логин или пароль.");
+                    return;
+                }
+            }
+
+            MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorTextBlock.Text = message;
+            ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] enteredBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(enteredPassword));
+                string enteredHash = BitConverter.ToString(enteredBytes).Replace("-", "").ToLower();
+
+                return enteredHash == storedPasswordHash;
             }
         }
     }
