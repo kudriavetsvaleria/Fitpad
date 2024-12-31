@@ -1,5 +1,7 @@
 ﻿using Fitpad.Model;
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -22,9 +24,19 @@ namespace Fitpad.View.Pages
             string weightText = WeightTextBox.Text;
             DateTime? birthDate = BirthDatePicker.SelectedDate;
 
+            // Проверка на совпадение паролей
+            if (password != confirmPassword)
+            {
+                ShowError("Пароли не совпадают.");
+                return;
+            }
+
             // Преобразование данных без проверки
             int.TryParse(heightText, out int height); // Если некорректно, height будет 0
             double.TryParse(weightText, out double weight); // Если некорректно, weight будет 0
+
+            // Хеширование пароля
+            string hashedPassword = HashPassword(password);
 
             using (var context = new ApplicationDbContext())
             {
@@ -32,7 +44,7 @@ namespace Fitpad.View.Pages
                 {
                     Username = username,
                     Email = email,
-                    Password = password,
+                    Password = hashedPassword, // Сохраняем хеш вместо пароля
                     Height = height,
                     Weight = weight,
                     BirthDate = birthDate ?? DateTime.Now // Если дата не указана, используется текущая
@@ -42,7 +54,6 @@ namespace Fitpad.View.Pages
                 context.SaveChanges();
             }
 
-
             MessageBox.Show("Регистрация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -50,6 +61,20 @@ namespace Fitpad.View.Pages
         {
             ErrorTextBlock.Text = message;
             ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                foreach (var b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
     }
 }

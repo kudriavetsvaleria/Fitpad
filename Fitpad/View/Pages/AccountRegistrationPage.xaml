@@ -60,7 +60,7 @@
             <DatePicker x:Name="BirthDatePicker" Grid.Row="19" Margin="0,0,0,5" Width="250" FontSize="14"/>
 
             <!-- Кнопка -->
-            <Button Content="Зарегистрироваться" Grid.Row="20" Width="250" Height="35" HorizontalAlignment="Center" Click="RegisterButton_Click" Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="Зарегистрироваться" Grid.Row="19" Width="250" Height="35" HorizontalAlignment="Center" Click="RegisterButton_Click" Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,60,0,-60"/>
 
             <!-- Текст ошибки -->
             <TextBlock x:Name="ErrorTextBlock" Grid.Row="21" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0" FontSize="12"/>
