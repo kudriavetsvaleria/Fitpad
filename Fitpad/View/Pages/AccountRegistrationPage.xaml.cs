@@ -88,16 +88,16 @@ namespace Fitpad.View.Pages
                     }
                     break;
                 case 4:
-                    if (!int.TryParse(HeightTextBox.Text, out int height) || height <= 0)
+                    if (!int.TryParse(HeightTextBox.Text, out int height) || height < 50 || height > 300)
                     {
-                        ShowError("Введите корректный рост в сантиметрах.");
+                        ShowError("Введите корректный рост (от 50 до 300 см).");
                         return false;
                     }
                     break;
                 case 5:
-                    if (!double.TryParse(WeightTextBox.Text, out double weight) || weight <= 0)
+                    if (!double.TryParse(WeightTextBox.Text, out double weight) || weight < 10 || weight > 200)
                     {
-                        ShowError("Введите корректный вес в килограммах.");
+                        ShowError("Введите корректный вес (от 10 до 200 кг).");
                         return false;
                     }
                     break;
