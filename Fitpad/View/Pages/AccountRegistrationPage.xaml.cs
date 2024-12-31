@@ -14,6 +14,25 @@ namespace Fitpad.View.Pages
             InitializeComponent();
         }
 
+        private void NextStep_Click(object sender, RoutedEventArgs e)
+        {
+            // Скрыть текущий этап и показать следующий
+            var button = sender as Button;
+            int nextStep = int.Parse(button.Tag.ToString());
+
+            ShowStep(nextStep);
+        }
+
+        private void ShowStep(int step)
+        {
+            Step1.Visibility = step == 1 ? Visibility.Visible : Visibility.Collapsed;
+            Step2.Visibility = step == 2 ? Visibility.Visible : Visibility.Collapsed;
+            Step3.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
+            Step4.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
+            Step5.Visibility = step == 5 ? Visibility.Visible : Visibility.Collapsed;
+            Step6.Visibility = step == 6 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
