@@ -8,5 +8,6 @@ namespace Fitpad.Model
 {
     internal class WorkoutModel
     {
+
     }
 }

@@ -4,82 +4,96 @@
       Title="Регистрация">
 	<Grid>
 		<!-- Центрирование контента -->
-		<Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+		<Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="400">
 			<Grid.RowDefinitions>
+				<!-- Определение строк для каждого поля -->
 				<RowDefinition Height="Auto"/>
 				<!-- Логин -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле логина -->
 				<RowDefinition Height="10"/>
 				<!-- Отступ -->
+
+				<RowDefinition Height="Auto"/>
+				<!-- Почта -->
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="10"/>
+				<!-- Отступ -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Пароль -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле пароля -->
 				<RowDefinition Height="10"/>
 				<!-- Отступ -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Подтверждение пароля -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле подтверждения пароля -->
 				<RowDefinition Height="10"/>
 				<!-- Отступ -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Рост -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле роста -->
 				<RowDefinition Height="10"/>
 				<!-- Отступ -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Вес -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле веса -->
 				<RowDefinition Height="10"/>
 				<!-- Отступ -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Дата рождения -->
 				<RowDefinition Height="Auto"/>
-				<!-- Поле даты рождения -->
 				<RowDefinition Height="20"/>
 				<!-- Отступ перед кнопкой -->
+
 				<RowDefinition Height="Auto"/>
 				<!-- Кнопка -->
 				<RowDefinition Height="Auto"/>
 				<!-- Текст ошибки -->
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="150"/>
+				<!-- Ширина для меток -->
 				<ColumnDefinition Width="*"/>
+				<!-- Ширина для полей ввода -->
 			</Grid.ColumnDefinitions>
 
 			<!-- Поле ввода логина -->
-			<Label Content="Логин:" Grid.Row="0" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<TextBox x:Name="UsernameTextBox" Grid.Row="1" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+			<Label Content="Логин:" Grid.Row="0" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<TextBox x:Name="UsernameTextBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+
+			<!-- Поле ввода почты -->
+			<Label Content="Почта:" Grid.Row="3" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<TextBox x:Name="EmailTextBox" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
 
 			<!-- Поле ввода пароля -->
-			<Label Content="Пароль:" Grid.Row="3" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<PasswordBox x:Name="PasswordBox" Grid.Row="4" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+			<Label Content="Пароль:" Grid.Row="6" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<PasswordBox x:Name="PasswordBox" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
 
 			<!-- Поле подтверждения пароля -->
-			<Label Content="Подтвердите пароль:" Grid.Row="6" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<PasswordBox x:Name="ConfirmPasswordBox" Grid.Row="7" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+			<Label Content="Подтвердите пароль:" Grid.Row="9" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<PasswordBox x:Name="ConfirmPasswordBox" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
 
 			<!-- Поле ввода роста -->
-			<Label Content="Рост (см):" Grid.Row="9" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<TextBox x:Name="HeightTextBox" Grid.Row="10" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+			<Label Content="Рост (см):" Grid.Row="12" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<TextBox x:Name="HeightTextBox" Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
 
 			<!-- Поле ввода веса -->
-			<Label Content="Вес (кг):" Grid.Row="12" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<TextBox x:Name="WeightTextBox" Grid.Row="13" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
+			<Label Content="Вес (кг):" Grid.Row="15" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<TextBox x:Name="WeightTextBox" Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" Height="30" FontSize="14"/>
 
 			<!-- Поле ввода даты рождения -->
-			<Label Content="Дата рождения:" Grid.Row="15" Margin="0,0,0,3" FontSize="14" Foreground="Black"/>
-			<DatePicker x:Name="BirthDatePicker" Grid.Row="16" Margin="0,0,0,5" Width="250" FontSize="14"/>
+			<Label Content="Дата рождения:" Grid.Row="18" Grid.Column="0" Margin="0,0,10,5" FontSize="14" Foreground="Black" VerticalAlignment="Center"/>
+			<DatePicker x:Name="BirthDatePicker" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Width="250" FontSize="14"/>
 
 			<!-- Кнопка -->
-			<Button Content="Зарегистрироваться" Grid.Row="18" Width="250" Height="35" HorizontalAlignment="Center" Click="RegisterButton_Click" Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
+			<Button Content="Зарегистрироваться" Grid.Row="21" Grid.Column="0" Grid.ColumnSpan="2" Width="250" Height="35" HorizontalAlignment="Center" Click="RegisterButton_Click" Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
 
 			<!-- Текст ошибки -->
-			<TextBlock x:Name="ErrorTextBlock" Grid.Row="19" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0" FontSize="12"/>
+			<TextBlock x:Name="ErrorTextBlock" Grid.Row="22" Grid.Column="0" Grid.ColumnSpan="2" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0" FontSize="12"/>
 		</Grid>
 	</Grid>
 </Page>

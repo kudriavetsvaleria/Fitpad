@@ -8,5 +8,6 @@ namespace Fitpad.Model.Entities
 {
     internal class AccountLogin
     {
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Fitpad.Model.Entities;
+using System.Windows;
 
 namespace Fitpad
 {
@@ -12,7 +13,7 @@ namespace Fitpad
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Fitpad.View.Pages
     {
         public AccountLoginPage()
         {
-            InitializeComponent();
+            InitializeComponent();      
         }
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
