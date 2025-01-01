@@ -18,7 +18,7 @@ namespace Fitpad.Model
 
         public static void Save(UserModel user)
         {
-            var json = JsonConvert.SerializeObject(user);
+            var json = JsonConvert.SerializeObject(user, Formatting.Indented);
             File.WriteAllText(FilePath, json);
         }
     }

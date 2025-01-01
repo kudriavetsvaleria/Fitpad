@@ -18,9 +18,24 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
         }
 
+        public ProfileViewModel()
+        {
+            LoadUserData();
+        }
+
         public void SaveUserData(UserModel user)
         {
-            CurrentUser = user; // Обновление данных пользователя
+            CurrentUser = user;
+            UserStorage.Save(user); // Сохраняем данные в файл
+        }
+
+        private void LoadUserData()
+        {
+            var user = UserStorage.Load();
+            if (user != null)
+            {
+                CurrentUser = user;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -23,14 +23,12 @@ namespace Fitpad.View.Pages
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            // Проверка на пустые поля
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 ShowError("Логин и пароль не могут быть пустыми.");
                 return;
             }
 
-            // Проверка в базе данных
             UserModel user;
             using (var context = new ApplicationDbContext())
             {
@@ -42,11 +40,11 @@ namespace Fitpad.View.Pages
                 }
             }
 
-            // Сохранение данных пользователя в ProfileViewModel
-            _profileViewModel.SaveUserData(user);
+            _profileViewModel.SaveUserData(user); // Сохраняем данные в файл
 
             MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
 
         private void ShowError(string message)
         {
