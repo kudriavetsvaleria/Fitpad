@@ -1,17 +1,16 @@
 ﻿using Fitpad.View.Pages;
+using Fitpad.ViewModel.PagesViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Navigation;
 
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
+    private readonly ProfileViewModel _profileViewModel = new ProfileViewModel();
 
     private object _currentPage;
     public object CurrentPage
@@ -40,7 +39,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowFavoritesCommand = new RelayCommand(o => NavigateTo<FavoritesPage>());
         ShowNutritionCommand = new RelayCommand(o => NavigateTo<NutritionPage>());
         ShowWorkoutsCommand = new RelayCommand(o => NavigateTo<WorkoutsPage>());
-        ShowProfileCommand = new RelayCommand(o => NavigateTo<ProfilePage>());
+        ShowProfileCommand = new RelayCommand(o => NavigateToProfilePage());
         ShowAccountLoginCommand = new RelayCommand(o => NavigateTo<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(o => NavigateTo<AccountRegistrationPage>());
         ShowCaloriesCommand = new RelayCommand(o => NavigateTo<CaloriesPage>());
@@ -50,7 +49,7 @@ public class MainViewModel : INotifyPropertyChanged
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
     }
 
-    public void NavigateTo<T>() where T : Page, new()
+    public void NavigateTo<T>() where T : Page
     {
         var page = GetPageInstance<T>();
 
@@ -60,20 +59,34 @@ public class MainViewModel : INotifyPropertyChanged
         }
         else
         {
-            // Логика для обработки случаев без NavigationService
             CurrentPage = page;
         }
     }
 
+    public void NavigateToProfilePage()
+    {
+        CurrentPage = new ProfilePage(_profileViewModel);
+    }
 
-
-    private Page GetPageInstance<T>() where T : Page, new()
+    private Page GetPageInstance<T>() where T : Page
     {
         var type = typeof(T);
 
         if (!_pageCache.TryGetValue(type, out var page))
         {
-            page = new T();
+            if (type == typeof(ProfilePage))
+            {
+                page = new ProfilePage(_profileViewModel);
+            }
+            else if (type == typeof(AccountLoginPage))
+            {
+                page = new AccountLoginPage(_profileViewModel);
+            }
+            else
+            {
+                page = (Page)Activator.CreateInstance(type);
+            }
+
             _pageCache[type] = page;
         }
 
@@ -96,5 +109,4 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 }

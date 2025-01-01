@@ -1,16 +1,21 @@
-﻿using Fitpad.Model;
-using System.Linq;
+﻿using System.Linq;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Fitpad.Model;
+using Fitpad.View.Pages;
+using Fitpad.ViewModel.PagesViewModels;
 
 namespace Fitpad.View.Pages
 {
     public partial class AccountLoginPage : Page
     {
-        public AccountLoginPage()
+        private readonly ProfileViewModel _profileViewModel;
+
+        public AccountLoginPage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
+            _profileViewModel = profileViewModel;
         }
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -26,15 +31,19 @@ namespace Fitpad.View.Pages
             }
 
             // Проверка в базе данных
+            UserModel user;
             using (var context = new ApplicationDbContext())
             {
-                var user = context.Users.FirstOrDefault(u => u.Username == username);
+                user = context.Users.FirstOrDefault(u => u.Username == username);
                 if (user == null || !VerifyPassword(password, user.Password))
                 {
                     ShowError("Неверный логин или пароль.");
                     return;
                 }
             }
+
+            // Сохранение данных пользователя в ProfileViewModel
+            _profileViewModel.SaveUserData(user);
 
             MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
         }
