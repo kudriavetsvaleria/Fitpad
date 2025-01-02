@@ -8,7 +8,7 @@ namespace Fitpad.View.Pages
         public ProfilePage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
-            DataContext = profileViewModel; // Привязываем модель представления
+            DataContext = profileViewModel; // Устанавливаем DataContext
         }
     }
 }

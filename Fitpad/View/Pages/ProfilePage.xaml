@@ -1,20 +1,48 @@
 <Page x:Class="Fitpad.View.Pages.ProfilePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="Профиль">
-    <Grid>
-        <StackPanel>
-            <TextBlock Text="Личный кабинет" FontWeight="Bold" FontSize="20" />
-            <TextBlock Text="Имя пользователя:" />
-            <TextBlock Text="{Binding CurrentUser.Username}" />
-            <TextBlock Text="Email:" />
-            <TextBlock Text="{Binding CurrentUser.Email}" />
-            <TextBlock Text="Рост:" />
-            <TextBlock Text="{Binding CurrentUser.Height}" />
-            <TextBlock Text="Вес:" />
-            <TextBlock Text="{Binding CurrentUser.Weight}" />
-            <TextBlock Text="Дата рождения:" />
-            <TextBlock Text="{Binding CurrentUser.BirthDate, StringFormat='{}{0:dd.MM.yyyy}'}" />
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="ProfilePage">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Text="Личный кабинет"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20" />
+
+        <!-- Информация о пользователе -->
+        <StackPanel Grid.Row="1" Margin="0,10,0,0">
+            <TextBlock Text="Имя пользователя:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.Username}" Margin="0,0,0,10" />
+
+            <TextBlock Text="Email:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.Email}" Margin="0,0,0,10" />
+
+            <TextBlock Text="Рост:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.Height}" Margin="0,0,0,10" />
+
+            <TextBlock Text="Вес:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.Weight}" Margin="0,0,0,10" />
+
+            <TextBlock Text="Дата рождения:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.BirthDate, StringFormat='{}{0:dd.MM.yyyy}'}" Margin="0,0,0,10" />
         </StackPanel>
+
+        <!-- Кнопка выхода -->
+        <Button Content="Выйти"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Width="100"
+                Margin="0,225,0,0"
+                Command="{Binding LogoutCommand}" Grid.Row="1" />
     </Grid>
 </Page>

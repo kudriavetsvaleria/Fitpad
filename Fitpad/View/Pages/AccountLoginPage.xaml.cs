@@ -16,7 +16,9 @@ namespace Fitpad.View.Pages
         {
             InitializeComponent();
             _profileViewModel = profileViewModel;
+            DataContext = _profileViewModel;
         }
+
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {

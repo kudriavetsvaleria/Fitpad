@@ -17,8 +17,10 @@ namespace Fitpad
 
             if (mainWindow.Content is Frame frame)
             {
-                if (profileViewModel.CurrentUser != null)
+                var storedUser = UserStorage.Load();
+                if (storedUser != null)
                 {
+                    profileViewModel.SaveUserData(storedUser);
                     frame.Navigate(new ProfilePage(profileViewModel));
                 }
                 else
@@ -28,4 +30,4 @@ namespace Fitpad
             }
         }
     }
-}
+    }

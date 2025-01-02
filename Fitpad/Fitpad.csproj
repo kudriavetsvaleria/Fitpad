@@ -68,7 +68,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ApplicationDbContext.cs" />
+    <Compile Include="Model\Repositories\ApplicationDbContext.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ButtonContentConverter.cs" />
     <Compile Include="Converters\ButtonWidthConverter.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\Entities\AccountLogin.cs" />
     <Compile Include="Model\Repositories\AuthRepository.cs" />
-    <Compile Include="UserStorage.cs" />
+    <Compile Include="Model\Repositories\UserStorage.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="Model\Entities\CaloriesModel.cs" />
     <Compile Include="Model\Repositories\CaloriesRepository.cs" />
