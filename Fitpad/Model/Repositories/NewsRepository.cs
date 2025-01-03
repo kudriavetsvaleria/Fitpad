@@ -10,7 +10,7 @@ namespace Fitpad.Model.Repositories
 {
     public class NewsRepository
     {
-        private readonly string _apiKey = "6be473200c65428498902906f4d6f1b4"; // Проверьте, что API ключ корректен
+        private readonly string _apiKey = "6be473200c65428498902906f4d6f1b4";
         private readonly string _baseUrl = "https://newsapi.org/v2/top-headlines";
 
         public async Task<List<NewsModel>> GetNewsAsync()
@@ -36,15 +36,16 @@ namespace Fitpad.Model.Repositories
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<NewsApiResponse>(jsonResponse);
 
-                    // Фильтруем новости без изображения
-                    var filteredNews = new List<NewsModel>();
-                    foreach (var news in result.Articles)
-                    {
-                        if (!string.IsNullOrEmpty(news.UrlToImage) && await IsImageAccessible(news.UrlToImage, httpClient))
+                    var filteredNews = result.Articles
+                        .Where(news => !string.IsNullOrEmpty(news.UrlToImage))
+                        .Select(news => new NewsModel
                         {
-                            filteredNews.Add(news);
-                        }
-                    }
+                            Title = news.Title,
+                            Description = news.Description,
+                            UrlToImage = news.UrlToImage
+                        })
+                        .ToList();
+
 
                     return filteredNews;
                 }
@@ -55,6 +56,7 @@ namespace Fitpad.Model.Repositories
                 }
             }
         }
+
 
         // Проверка доступности изображения
         private async Task<bool> IsImageAccessible(string url, HttpClient httpClient)
