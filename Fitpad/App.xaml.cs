@@ -1,6 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
-using Fitpad.Model;
 using Fitpad.View.Pages;
 using Fitpad.ViewModel.PagesViewModels;
 
@@ -12,22 +10,13 @@ namespace Fitpad
         {
             base.OnStartup(e);
 
-            var profileViewModel = new ProfileViewModel();
-            var mainWindow = new MainWindow();
-
-            if (mainWindow.Content is Frame frame)
+            // Создаем главное окно вручную
+            var mainWindow = new MainWindow
             {
-                var storedUser = UserStorage.Load();
-                if (storedUser != null)
-                {
-                    profileViewModel.SaveUserData(storedUser);
-                    frame.Navigate(new ProfilePage(profileViewModel));
-                }
-                else
-                {
-                    frame.Navigate(new AccountLoginPage(profileViewModel));
-                }
-            }
+                DataContext = new MainViewModel() // Устанавливаем DataContext
+            };
+
+     
         }
     }
-    }
+}

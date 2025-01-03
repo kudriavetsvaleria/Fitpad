@@ -1,4 +1,5 @@
-﻿using Fitpad.View.Pages;
+﻿// MainViewModel.cs
+using Fitpad.View.Pages;
 using Fitpad.ViewModel.PagesViewModels;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Fitpad.Model;
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -33,6 +35,17 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ToggleNavigationCommand { get; }
     public ICommand ShowCaloriesCommand { get; }
 
+    private bool _isNavigationExpanded = true;
+    public bool IsNavigationExpanded
+    {
+        get => _isNavigationExpanded;
+        set
+        {
+            _isNavigationExpanded = value;
+            OnPropertyChanged();
+        }
+    }
+
     public MainViewModel()
     {
         ShowNewsCommand = new RelayCommand(o => NavigateTo<NewsPage>());
@@ -44,9 +57,18 @@ public class MainViewModel : INotifyPropertyChanged
         ShowAccountRegistrationCommand = new RelayCommand(o => NavigateTo<AccountRegistrationPage>());
         ShowCaloriesCommand = new RelayCommand(o => NavigateTo<CaloriesPage>());
 
-        // Открываем страницу новостей по умолчанию
-        CurrentPage = GetPageInstance<NewsPage>();
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
+
+        // Проверяем, выполнен ли вход пользователя
+        var storedUser = UserStorage.Load();
+        if (storedUser != null)
+        {
+            CurrentPage = GetPageInstance<NewsPage>();
+        }
+        else
+        {
+            CurrentPage = GetPageInstance<AccountLoginPage>();
+        }
     }
 
     public void NavigateTo<T>() where T : Page
@@ -97,16 +119,5 @@ public class MainViewModel : INotifyPropertyChanged
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private bool _isNavigationExpanded = true;
-    public bool IsNavigationExpanded
-    {
-        get => _isNavigationExpanded;
-        set
-        {
-            _isNavigationExpanded = value;
-            OnPropertyChanged();
-        }
     }
 }
