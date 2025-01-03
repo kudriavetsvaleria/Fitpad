@@ -15,6 +15,11 @@
 
             <TextBlock x:Name="ErrorTextBlock" Foreground="Red" TextAlignment="Center" Visibility="Collapsed"
                        Margin="0,10,0,0" FontSize="12"/>
+
+            <TextBlock Text="Нет аккаунта?" HorizontalAlignment="Center" Margin="0,10,0,0" />
+            <Button Content="Регистрация" Width="250" Height="35" Click="NavigateToRegistrationPage_Click"
+        Background="#5bc0de" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" />
+
         </StackPanel>
     </Grid>
 </Page>

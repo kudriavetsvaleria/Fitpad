@@ -7,16 +7,27 @@ using System.Net.Mail;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Fitpad.ViewModel.PagesViewModels;
 
 namespace Fitpad.View.Pages
 {
     public partial class AccountRegistrationPage : Page
     {
+        private static AccountRegistrationPage _instance;
         public AccountRegistrationPage()
         {
             InitializeComponent();
             BirthDateTextBox.PreviewTextInput += BirthDateTextBox_PreviewTextInput;
             BirthDateTextBox.TextChanged += BirthDateTextBox_TextChanged;
+        }
+
+        public static AccountRegistrationPage GetInstance()
+        {
+            if (_instance == null)
+            {
+                _instance = new AccountRegistrationPage();
+            }
+            return _instance;
         }
 
         private void NextStep_Click(object sender, RoutedEventArgs e)
@@ -214,6 +225,10 @@ namespace Fitpad.View.Pages
         {
             ErrorTextBlock.Text = message;
             ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+        private void NavigateToLoginPage_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
         }
 
         private string HashPassword(string password)

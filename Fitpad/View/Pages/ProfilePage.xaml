@@ -39,10 +39,15 @@
 
         <!-- Кнопка выхода -->
         <Button Content="Выйти"
+                Foreground="White"
+                Background="#D9534F"
+                FontSize="14"
+                BorderThickness="0"
                 HorizontalAlignment="Center"
+                Cursor="Hand"
                 VerticalAlignment="Top"
                 Width="100"
                 Margin="0,225,0,0"
-                Command="{Binding LogoutCommand}" Grid.Row="1" />
+                Click="LogoutButton_Click" />
     </Grid>
 </Page>

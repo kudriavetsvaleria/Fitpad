@@ -10,6 +10,7 @@ namespace Fitpad.View.Pages
 {
     public partial class AccountLoginPage : Page
     {
+        private static AccountLoginPage _instance;
         private readonly ProfileViewModel _profileViewModel;
 
         public AccountLoginPage(ProfileViewModel profileViewModel)
@@ -18,6 +19,16 @@ namespace Fitpad.View.Pages
             _profileViewModel = profileViewModel;
             DataContext = _profileViewModel;
         }
+
+        public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
+        {
+            if (_instance == null)
+            {
+                _instance = new AccountLoginPage(profileViewModel);
+            }
+            return _instance;
+        }
+
 
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -45,6 +56,8 @@ namespace Fitpad.View.Pages
             _profileViewModel.SaveUserData(user); // Сохраняем данные в файл
 
             MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            NavigationService.Navigate(NewsPage.GetInstance());
         }
 
 
@@ -52,6 +65,11 @@ namespace Fitpad.View.Pages
         {
             ErrorTextBlock.Text = message;
             ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(AccountRegistrationPage.GetInstance());
         }
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)

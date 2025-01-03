@@ -7,6 +7,7 @@ namespace Fitpad.View.Pages
 {
     public partial class NewsPage : Page
     {
+        private static NewsPage _instance;
         public NewsPage()
         {
             InitializeComponent();
@@ -27,6 +28,15 @@ namespace Fitpad.View.Pages
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
                 e.Handled = true;
             }
+        }
+
+        public static NewsPage GetInstance()
+        {
+            if (_instance == null)
+            {
+                _instance = new NewsPage();
+            }
+            return _instance;
         }
 
         // Поиск ScrollViewer в дереве элементов

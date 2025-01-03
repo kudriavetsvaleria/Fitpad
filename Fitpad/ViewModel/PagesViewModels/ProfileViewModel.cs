@@ -28,8 +28,13 @@ namespace Fitpad.ViewModel.PagesViewModels
             LogoutCommand = new RelayCommand(Logout);
             LoadUserData(); // Загружаем данные пользователя при инициализации
         }
+        public void ClearUserData()
+        {
+            CurrentUser = null;
+            UserStorage.Save(null); // Очищаем сохраненные данные пользователя
+        }
 
-        private void Logout(object obj)
+        public void Logout(object obj)
         {
             // Очистка данных пользователя
             CurrentUser = null;
@@ -38,12 +43,20 @@ namespace Fitpad.ViewModel.PagesViewModels
             // Показ сообщения об успешном выходе
             MessageBox.Show("Вы вышли из аккаунта.", "Выход", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // Создаем новую страницу входа
-            var loginPage = new AccountLoginPage(new ProfileViewModel());
-
-            // Устанавливаем новую страницу в главном окне
-            App.Current.MainWindow.Content = loginPage;
+            // Проверка главного окна
+            var mainWindow = Application.Current.MainWindow;
+            if (mainWindow != null)
+            {
+                MessageBox.Show("Переход на страницу авторизации...");
+                mainWindow.Content = AccountLoginPage.GetInstance(new ProfileViewModel());
+            }
+            else
+            {
+                MessageBox.Show("Ошибка: главное окно не найдено.");
+            }
         }
+
+
 
         public void SaveUserData(UserModel user)
         {
