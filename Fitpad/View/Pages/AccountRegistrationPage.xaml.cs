@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Fitpad.ViewModel.PagesViewModels;
+using System.Linq;
 
 namespace Fitpad.View.Pages
 {
@@ -70,61 +71,86 @@ namespace Fitpad.View.Pages
 
         private bool ValidateCurrentStep(int step)
         {
-            switch (step)
+            using (var context = new ApplicationDbContext())
             {
-                case 1:
-                    if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
-                    {
-                        ShowError("Логин не может быть пустым.");
-                        return false;
-                    }
-                    break;
-                case 2:
-                    if (!IsValidEmail(EmailTextBox.Text))
-                    {
-                        ShowError("Введите корректный адрес электронной почты.");
-                        return false;
-                    }
-                    break;
-                case 3:
-                    if (PasswordBox.Password.Length < 8)
-                    {
-                        ShowError("Пароль должен содержать не менее 8 символов.");
-                        return false;
-                    }
-                    if (PasswordBox.Password != ConfirmPasswordBox.Password)
-                    {
-                        ShowError("Пароли не совпадают.");
-                        return false;
-                    }
-                    break;
-                case 4:
-                    if (!int.TryParse(HeightTextBox.Text, out int height) || height < 50 || height > 300)
-                    {
-                        ShowError("Введите корректный рост (от 50 до 300 см).");
-                        return false;
-                    }
-                    break;
-                case 5:
-                    if (!double.TryParse(WeightTextBox.Text, out double weight) || weight < 10 || weight > 200)
-                    {
-                        ShowError("Введите корректный вес (от 10 до 200 кг).");
-                        return false;
-                    }
-                    break;
-                case 6:
-                    if (!IsValidBirthDate(BirthDateTextBox.Text))
-                    {
-                        ShowError($"Введите корректную дату рождения в формате ДД.ММ.ГГГГ (1940 - {DateTime.Now.Year - 8}).");
-                        return false;
-                    }
-                    break;
-                default:
-                    return true;
+                switch (step)
+                {
+                    case 1:
+                        if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
+                        {
+                            ShowError("Логин не может быть пустым.");
+                            return false;
+                        }
+
+                        // Проверка уникальности логина
+                        if (context.Users.Any(u => u.Username == UsernameTextBox.Text))
+                        {
+                            ShowError("Логин уже занят. Пожалуйста, выберите другой.");
+                            return false;
+                        }
+                        break;
+
+                    case 2:
+                        if (!IsValidEmail(EmailTextBox.Text))
+                        {
+                            ShowError("Введите корректный адрес электронной почты.");
+                            return false;
+                        }
+
+                        // Проверка уникальности почты
+                        if (context.Users.Any(u => u.Email == EmailTextBox.Text))
+                        {
+                            ShowError("Почта уже используется. Пожалуйста, используйте другую.");
+                            return false;
+                        }
+                        break;
+
+                    case 3:
+                        if (PasswordBox.Password.Length < 8)
+                        {
+                            ShowError("Пароль должен содержать не менее 8 символов.");
+                            return false;
+                        }
+                        if (PasswordBox.Password != ConfirmPasswordBox.Password)
+                        {
+                            ShowError("Пароли не совпадают.");
+                            return false;
+                        }
+                        break;
+
+                    case 4:
+                        if (!int.TryParse(HeightTextBox.Text, out int height) || height < 50 || height > 300)
+                        {
+                            ShowError("Введите корректный рост (от 50 до 300 см).");
+                            return false;
+                        }
+                        break;
+
+                    case 5:
+                        if (!double.TryParse(WeightTextBox.Text, out double weight) || weight < 10 || weight > 200)
+                        {
+                            ShowError("Введите корректный вес (от 10 до 200 кг).");
+                            return false;
+                        }
+                        break;
+
+                    case 6:
+                        if (!IsValidBirthDate(BirthDateTextBox.Text))
+                        {
+                            ShowError($"Введите корректную дату рождения в формате ДД.ММ.ГГГГ (1940 - {DateTime.Now.Year - 8}).");
+                            return false;
+                        }
+                        break;
+
+                    default:
+                        return true;
+                }
             }
+
             ErrorTextBlock.Visibility = Visibility.Collapsed;
             return true;
         }
+
 
         private bool IsValidEmail(string email)
         {
