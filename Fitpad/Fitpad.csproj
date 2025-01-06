@@ -68,6 +68,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Migrations\202501062058216_SyncWithDatabase.cs" />
+    <Compile Include="Migrations\202501062058216_SyncWithDatabase.Designer.cs">
+      <DependentUpon>202501062058216_SyncWithDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\Repositories\ApplicationDbContext.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ButtonContentConverter.cs" />
@@ -203,6 +207,9 @@
     </Compile>
     <EmbeddedResource Include="Migrations\202412311555282_InitialCreate.resx">
       <DependentUpon>202412311555282_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501062058216_SyncWithDatabase.resx">
+      <DependentUpon>202501062058216_SyncWithDatabase.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -18,8 +18,6 @@ namespace Fitpad.View.Pages
         public AccountRegistrationPage()
         {
             InitializeComponent();
-            BirthDateTextBox.PreviewTextInput += BirthDateTextBox_PreviewTextInput;
-            BirthDateTextBox.TextChanged += BirthDateTextBox_TextChanged;
         }
 
         public static AccountRegistrationPage GetInstance()
@@ -44,13 +42,6 @@ namespace Fitpad.View.Pages
             ShowStep(nextStep);
         }
 
-        private void TestStep_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            int nextStep = int.Parse(button.Tag.ToString());
-            ShowStep(nextStep);
-        }
-
         private void PreviousStep_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -58,93 +49,92 @@ namespace Fitpad.View.Pages
 
             ShowStep(previousStep);
         }
+        private void TestStep_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            int nextStep = int.Parse(button.Tag.ToString());
+
+            // Показываем следующий шаг без валидации
+            ShowStep(nextStep);
+
+            // Дополнительно можно показать уведомление для теста
+            ShowNotification("Тестовый переход выполнен успешно.");
+        }
 
         private void ShowStep(int step)
         {
             Step1.Visibility = step == 1 ? Visibility.Visible : Visibility.Collapsed;
             Step2.Visibility = step == 2 ? Visibility.Visible : Visibility.Collapsed;
             Step3.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
-            Step4.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
-            Step5.Visibility = step == 5 ? Visibility.Visible : Visibility.Collapsed;
-            Step6.Visibility = step == 6 ? Visibility.Visible : Visibility.Collapsed;
+
+            // Скрываем кнопку авторизации и надпись "Есть аккаунт?" на шагах 2 и 3
+            bool isFirstStep = (step == 1);
+            LoginButton.Visibility = isFirstStep ? Visibility.Visible : Visibility.Collapsed;
+            AccountTextBlock.Visibility = isFirstStep ? Visibility.Visible : Visibility.Collapsed;
         }
+
 
         private bool ValidateCurrentStep(int step)
         {
-            using (var context = new ApplicationDbContext())
+            switch (step)
             {
-                switch (step)
-                {
-                    case 1:
-                        if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
-                        {
-                            ShowError("Логин не может быть пустым.");
-                            return false;
-                        }
-
-                        // Проверка уникальности логина
+                case 1:
+                    if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
+                    {
+                        ShowError("Логин не может быть пустым.");
+                        return false;
+                    }
+                    using (var context = new ApplicationDbContext())
+                    {
                         if (context.Users.Any(u => u.Username == UsernameTextBox.Text))
                         {
                             ShowError("Логин уже занят. Пожалуйста, выберите другой.");
                             return false;
                         }
-                        break;
+                    }
+                    break;
 
-                    case 2:
-                        if (!IsValidEmail(EmailTextBox.Text))
-                        {
-                            ShowError("Введите корректный адрес электронной почты.");
-                            return false;
-                        }
-
-                        // Проверка уникальности почты
+                case 2:
+                    if (string.IsNullOrWhiteSpace(EmailTextBox.Text))
+                    {
+                        ShowError("Почта не может быть пустой.");
+                        return false;
+                    }
+                    if (!IsValidEmail(EmailTextBox.Text))
+                    {
+                        ShowError("Введите корректный адрес электронной почты.");
+                        return false;
+                    }
+                    using (var context = new ApplicationDbContext())
+                    {
                         if (context.Users.Any(u => u.Email == EmailTextBox.Text))
                         {
                             ShowError("Почта уже используется. Пожалуйста, используйте другую.");
                             return false;
                         }
-                        break;
+                    }
+                    break;
 
-                    case 3:
-                        if (PasswordBox.Password.Length < 8)
-                        {
-                            ShowError("Пароль должен содержать не менее 8 символов.");
-                            return false;
-                        }
-                        if (PasswordBox.Password != ConfirmPasswordBox.Password)
-                        {
-                            ShowError("Пароли не совпадают.");
-                            return false;
-                        }
-                        break;
+                case 3:
+                    if (string.IsNullOrWhiteSpace(PasswordBox.Password))
+                    {
+                        ShowError("Пароль не может быть пустым.");
+                        return false;
+                    }
+                    if (PasswordBox.Password.Length < 8)
+                    {
+                        ShowError("Пароль должен содержать не менее 8 символов.");
+                        return false;
+                    }
+                    if (PasswordBox.Password != ConfirmPasswordBox.Password)
+                    {
+                        ShowError("Пароли не совпадают.");
+                        return false;
+                    }
+                    break;
 
-                    case 4:
-                        if (!int.TryParse(HeightTextBox.Text, out int height) || height < 50 || height > 300)
-                        {
-                            ShowError("Введите корректный рост (от 50 до 300 см).");
-                            return false;
-                        }
-                        break;
-
-                    case 5:
-                        if (!double.TryParse(WeightTextBox.Text, out double weight) || weight < 10 || weight > 200)
-                        {
-                            ShowError("Введите корректный вес (от 10 до 200 кг).");
-                            return false;
-                        }
-                        break;
-
-                    case 6:
-                        if (!IsValidBirthDate(BirthDateTextBox.Text))
-                        {
-                            ShowError($"Введите корректную дату рождения в формате ДД.ММ.ГГГГ (1940 - {DateTime.Now.Year - 8}).");
-                            return false;
-                        }
-                        break;
-
-                    default:
-                        return true;
-                }
+                default:
+                    return true;
             }
 
             ErrorTextBlock.Visibility = Visibility.Collapsed;
@@ -165,51 +155,9 @@ namespace Fitpad.View.Pages
             }
         }
 
-        private bool IsValidBirthDate(string date)
-        {
-            if (!DateTime.TryParseExact(date, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
-            {
-                return false;
-            }
-
-            int year = parsedDate.Year;
-            int currentYearMinus8 = DateTime.Now.Year - 8;
-
-            return year >= 1940 && year <= currentYearMinus8;
-        }
-
-        private void BirthDateTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            // Разрешаем только ввод цифр и точек
-            e.Handled = !Regex.IsMatch(e.Text, "[0-9.]");
-        }
-
-        private void BirthDateTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var textBox = sender as TextBox;
-            if (textBox == null) return;
-
-            string text = textBox.Text;
-
-            if (text.Length == 2 || text.Length == 5)
-            {
-                if (!text.EndsWith("."))
-                {
-                    textBox.Text = text + ".";
-                    textBox.CaretIndex = textBox.Text.Length; // Установить курсор в конец
-                }
-            }
-
-            if (text.Length > 10)
-            {
-                textBox.Text = text.Substring(0, 10); // Ограничиваем длину
-                textBox.CaretIndex = textBox.Text.Length;
-            }
-        }
-
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidateCurrentStep(6))
+            if (!ValidateCurrentStep(3))
             {
                 return;
             }
@@ -217,14 +165,6 @@ namespace Fitpad.View.Pages
             string username = UsernameTextBox.Text;
             string email = EmailTextBox.Text;
             string password = PasswordBox.Password;
-            string heightText = HeightTextBox.Text;
-            string weightText = WeightTextBox.Text;
-
-            if (!DateTime.TryParseExact(BirthDateTextBox.Text, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime birthDate))
-            {
-                ShowError("Введите корректную дату рождения.");
-                return;
-            }
 
             string hashedPassword = HashPassword(password);
 
@@ -234,24 +174,52 @@ namespace Fitpad.View.Pages
                 {
                     Username = username,
                     Email = email,
-                    Password = hashedPassword,
-                    Height = int.Parse(heightText),
-                    Weight = double.Parse(weightText),
-                    BirthDate = birthDate
+                    Password = hashedPassword
                 };
 
                 context.Users.Add(user);
                 context.SaveChanges();
             }
 
-            MessageBox.Show("Регистрация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            ShowSuccessMessage();
         }
+
+        private void ShowSuccessMessage()
+        {
+            SuccessMessageOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void SuccessOkButton_Click(object sender, RoutedEventArgs e)
+        {
+            SuccessMessageOverlay.Visibility = Visibility.Collapsed;
+            NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
+        }
+
+
 
         private void ShowError(string message)
         {
             ErrorTextBlock.Text = message;
             ErrorTextBlock.Visibility = Visibility.Visible;
         }
+
+        private void ShowNotification(string message)
+        {
+            NotificationTextBlock.Text = message;
+            NotificationTextBlock.Visibility = Visibility.Visible;
+
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            timer.Tick += (s, args) =>
+            {
+                NotificationTextBlock.Visibility = Visibility.Collapsed;
+                timer.Stop();
+            };
+            timer.Start();
+        }
+
         private void NavigateToLoginPage_Click(object sender, RoutedEventArgs e)
         {
             NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
