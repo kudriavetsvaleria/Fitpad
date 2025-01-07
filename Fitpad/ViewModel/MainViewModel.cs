@@ -87,8 +87,15 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void NavigateToProfilePage()
     {
-        CurrentPage = new ProfilePage(_profileViewModel);
+        var storedUser = UserStorage.Load(); // Загружаем данные пользователя из хранилища
+        if (storedUser != null)
+        {
+            var profileViewModel = new ProfileViewModel(storedUser); // Создаём новый экземпляр ViewModel с данными
+            CurrentPage = ProfilePage.GetInstance(profileViewModel); // Передаём ViewModel в GetInstance
+        }
     }
+
+
 
     private Page GetPageInstance<T>() where T : Page
     {
@@ -98,7 +105,8 @@ public class MainViewModel : INotifyPropertyChanged
         {
             if (type == typeof(ProfilePage))
             {
-                page = new ProfilePage(_profileViewModel);
+                // Передаём существующий экземпляр _profileViewModel
+                page = ProfilePage.GetInstance(_profileViewModel);
             }
             else if (type == typeof(AccountLoginPage))
             {
@@ -114,6 +122,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         return page;
     }
+
+
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

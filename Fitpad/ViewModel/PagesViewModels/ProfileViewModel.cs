@@ -23,6 +23,10 @@ namespace Fitpad.ViewModel.PagesViewModels
                 OnPropertyChanged();
             }
         }
+        public ProfileViewModel()
+        {
+            LoadUserData();
+        }
 
         public UserInfoModel CurrentUserInfo
         {
@@ -36,18 +40,17 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public ICommand LogoutCommand { get; }
 
-        public ProfileViewModel()
+        // Новый конструктор с параметром UserModel
+        public ProfileViewModel(UserModel user)
         {
-            LogoutCommand = new RelayCommand(Logout);
-            LoadUserData(); // Загружаем данные пользователя при инициализации
+            CurrentUser = user;
+            LoadUserInfoData(user.Id); // Загружаем данные анкеты для авторизованного пользователя
         }
 
         public void ClearUserData()
         {
             CurrentUser = null;
             CurrentUserInfo = null;
-
-            // Удаляем данные из хранилища
             UserStorage.Clear();
             UserInfoStorage.Clear();
         }
@@ -97,6 +100,15 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
         }
 
+        public void UpdateUserData(UserModel user)
+        {
+            if (user == null) return;
+
+            CurrentUser = user;
+            LoadUserInfoData(user.Id); // Загружаем актуальные данные анкеты
+        }
+
+
         private void LoadUserInfoData(int userId)
         {
             using (var context = new ApplicationDbContext())
@@ -108,7 +120,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 }
                 else
                 {
-                    // Если данных анкеты нет, создаем пустую модель, чтобы избежать ошибок
+                    // Если данных анкеты нет, создаем пустую модель с дефолтными значениями
                     CurrentUserInfo = new UserInfoModel
                     {
                         UserId = userId,

@@ -54,13 +54,15 @@ namespace Fitpad.View.Pages
             // Сохраняем данные пользователя
             UserStorage.Save(user);
 
-            // Переход на новую страницу профиля с новым экземпляром ProfileViewModel
-            NavigationService.Navigate(new ProfilePage(new ProfileViewModel()));
-
+            // Отображаем сообщение о успешной авторизации
             MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-        
-        }
 
+            // Создаём новый экземпляр ProfileViewModel с загруженным пользователем
+            var profileViewModel = new ProfileViewModel(user);
+
+            // Переход на страницу профиля с использованием метода GetInstance
+            NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
+        }
 
 
         private void ShowError(string message)
