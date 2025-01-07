@@ -7,39 +7,65 @@
       Title="ProfilePage">
 
     <Grid Margin="20">
+        <!-- Определение строк и столбцов -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <!-- Для заголовка -->
             <RowDefinition Height="*" />
+            <!-- Для информации о пользователе -->
+            <RowDefinition Height="Auto" />
+            <!-- Для кнопки выхода -->
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <!-- Для информации -->
+            <ColumnDefinition Width="*" />
+            <!-- Для отступа -->
+        </Grid.ColumnDefinitions>
 
         <!-- Заголовок -->
         <TextBlock Text="Личный кабинет"
-                   FontSize="24"
+                   FontSize="30"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
-                   Margin="0,168,0,44" />
+                   Margin="0,0,0,20"
+                   Grid.Row="0"
+                   Grid.ColumnSpan="2"/>
 
         <!-- Информация о пользователе -->
-        <StackPanel Grid.Row="1" Margin="0,10,0,0">
-            <TextBlock Text="Имя пользователя:" FontWeight="Bold" />
-            <TextBlock Text="{Binding CurrentUser.Username}" Margin="0,0,0,10" />
+        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
+            <TextBlock Text="Имя пользователя:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUser.Username}" FontSize="16" Margin="0,0,0,10" />
 
-            <TextBlock Text="Email:" FontWeight="Bold" />
-            <TextBlock Text="{Binding CurrentUser.Email}" Margin="0,0,0,10" />
+            <TextBlock Text="Email:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUser.Email}" FontSize="16" Margin="0,0,0,10" />
 
+            <TextBlock Text="Пол:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUserInfo.Gender}" FontSize="16" Margin="0,0,0,10" />
+
+            <TextBlock Text="Возраст:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUserInfo.Age}" FontSize="16" Margin="0,0,0,10" />
+
+            <TextBlock Text="Рост:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUserInfo.Height}" FontSize="16" Margin="0,0,0,10" />
+
+            <TextBlock Text="Вес:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUserInfo.Weight}" FontSize="16" Margin="0,0,0,10" />
+
+            <TextBlock Text="Уровень активности:" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" FontSize="16" Margin="0,0,0,10" />
         </StackPanel>
 
         <!-- Кнопка выхода -->
-        <Button Content="Выйти"
-                Foreground="White"
-                Background="#D9534F"
-                FontSize="14"
-                BorderThickness="0"
-                HorizontalAlignment="Center"
-                Cursor="Hand"
-                VerticalAlignment="Top"
-                Width="100"
-                Margin="0,136,0,0"
-                Click="LogoutButton_Click" RenderTransformOrigin="0.338,0.071" Grid.Row="1" />
+        <StackPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="Выйти"
+                    Foreground="White"
+                    Background="#D9534F"
+                    FontSize="16"
+                    BorderThickness="0"
+                    Width="120"
+                    Margin="50,0,0,0"
+                    Click="LogoutButton_Click" />
+        </StackPanel>
     </Grid>
 </Page>
