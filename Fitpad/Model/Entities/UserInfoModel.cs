@@ -6,18 +6,19 @@ namespace Fitpad.Model.Entities
     public class UserInfoModel
     {
         [Key]
-        public int Id { get; set; } // Первичный ключ
+        public int Id { get; set; }
 
         [Required]
-        public int UserId { get; set; } // Внешний ключ
-
-        [ForeignKey("UserId")]
-        public virtual UserModel User { get; set; } // Навигационное свойство
+        public int UserId { get; set; }
 
         public string Gender { get; set; }
         public int Age { get; set; }
-        public double Height { get; set; }
+
+        // Меняем тип на int
+        public int Height { get; set; }
+
         public double Weight { get; set; }
         public string ActivityLevel { get; set; }
     }
+
 }

@@ -1,4 +1,5 @@
-﻿using Fitpad.Model.Entities;
+﻿using Fitpad.Model;
+using Fitpad.Model.Entities;
 using System;
 using System.Linq;
 using System.Windows;
@@ -73,9 +74,9 @@ namespace Fitpad.View.Pages
                     _userInfo.Age = age;
                     break;
                 case 3:
-                    if (!double.TryParse(HeightInput.Text, out double height) || height <= 0)
+                    if (!int.TryParse(HeightInput.Text, out int height) || height <= 50 || height >= 300)
                     {
-                        ShowError("Введите корректный рост.");
+                        ShowError("Введите корректный рост в сантиметрах (от 50 до 300).");
                         return false;
                     }
                     _userInfo.Height = height;
@@ -102,6 +103,7 @@ namespace Fitpad.View.Pages
             return true;
         }
 
+
         private void ShowError(string message)
         {
             ErrorTextBlock.Text = message;
@@ -110,20 +112,30 @@ namespace Fitpad.View.Pages
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Явно вызываем ValidateCurrentStep для последнего шага (step = 5)
-            if (!ValidateCurrentStep(5))
+            var currentUser = UserStorage.GetCurrentUser();
+            if (currentUser == null)
             {
-                ShowError("Заполните все данные перед сохранением.");
+                MessageBox.Show("Пожалуйста, выполните авторизацию перед заполнением данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Явно извлекаем значение из ComboBox
+            _userInfo.ActivityLevel = (ActivityLevelInput.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+            if (string.IsNullOrWhiteSpace(_userInfo.ActivityLevel))
+            {
+                ShowError("Пожалуйста, выберите уровень активности.");
                 return;
             }
 
             using (var context = new ApplicationDbContext())
             {
+                _currentUserId = currentUser.Id;
+
                 var existingUserInfo = context.UserInfos.FirstOrDefault(u => u.UserId == _currentUserId);
 
                 if (existingUserInfo != null)
                 {
-                    // Обновляем существующую запись
                     existingUserInfo.Gender = _userInfo.Gender;
                     existingUserInfo.Age = _userInfo.Age;
                     existingUserInfo.Height = _userInfo.Height;
@@ -132,10 +144,11 @@ namespace Fitpad.View.Pages
                 }
                 else
                 {
-                    // Добавляем новую запись
                     _userInfo.UserId = _currentUserId;
                     context.UserInfos.Add(_userInfo);
                 }
+
+                MessageBox.Show($"ActivityLevel перед сохранением: {_userInfo.ActivityLevel}"); // Для отладки
 
                 context.SaveChanges();
             }
@@ -143,7 +156,6 @@ namespace Fitpad.View.Pages
             MessageBox.Show("Данные успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             NavigationService.GoBack();
         }
-
 
     }
 }
