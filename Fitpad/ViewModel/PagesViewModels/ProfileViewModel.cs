@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -45,9 +46,13 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             CurrentUser = null;
             CurrentUserInfo = null;
-            UserStorage.Save(null); // Очищаем сохраненные данные пользователя
-            UserInfoStorage.Save(null); // Очищаем сохраненные данные анкеты
+
+            // Удаляем данные из хранилища
+            UserStorage.Clear();
+            UserInfoStorage.Clear();
         }
+
+
 
         public void Logout(object obj)
         {
@@ -82,16 +87,38 @@ namespace Fitpad.ViewModel.PagesViewModels
             if (user != null)
             {
                 CurrentUser = user;
-                LoadUserInfoData(user.Id); // Загружаем данные анкеты пользователя
+                LoadUserInfoData(user.Id); // Загружаем данные анкеты для текущего пользователя
+            }
+            else
+            {
+                // Убираем сообщение об ошибке, так как отсутствие данных – это нормальная ситуация при первом запуске
+                CurrentUser = null;
+                CurrentUserInfo = null;
             }
         }
 
         private void LoadUserInfoData(int userId)
         {
-            var userInfo = UserInfoStorage.Load(userId);
-            if (userInfo != null)
+            using (var context = new ApplicationDbContext())
             {
-                CurrentUserInfo = userInfo;
+                var userInfo = context.UserInfos.FirstOrDefault(info => info.UserId == userId);
+                if (userInfo != null)
+                {
+                    CurrentUserInfo = userInfo;
+                }
+                else
+                {
+                    // Если данных анкеты нет, создаем пустую модель, чтобы избежать ошибок
+                    CurrentUserInfo = new UserInfoModel
+                    {
+                        UserId = userId,
+                        Gender = "Не указано",
+                        Age = 0,
+                        Height = 0,
+                        Weight = 0,
+                        ActivityLevel = "Не указано"
+                    };
+                }
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Fitpad.Model;
 using Fitpad.Model.Entities;
 
@@ -24,12 +25,12 @@ namespace Fitpad.ViewModel.PagesViewModels
             using (var context = new ApplicationDbContext())
             {
                 // Проверяем, есть ли уже данные для текущего пользователя
-                var existingUserInfo = context.UserInfos.Find(CurrentUser.Id);
+                var existingUserInfo = context.UserInfos.FirstOrDefault(info => info.UserId == CurrentUser.Id);
 
                 if (existingUserInfo == null)
                 {
                     // Если данных нет, создаем новую запись
-                    var userInfo = new UserInfoModel
+                    var newUserInfo = new UserInfoModel
                     {
                         UserId = CurrentUser.Id,
                         Gender = gender,
@@ -39,11 +40,11 @@ namespace Fitpad.ViewModel.PagesViewModels
                         ActivityLevel = activityLevel
                     };
 
-                    context.UserInfos.Add(userInfo);
+                    context.UserInfos.Add(newUserInfo);
                 }
                 else
                 {
-                    // Если данные уже есть, обновляем существующую запись
+                    // Если данные уже существуют, обновляем их
                     existingUserInfo.Gender = gender;
                     existingUserInfo.Age = age;
                     existingUserInfo.Height = height;
@@ -56,6 +57,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             return true;
         }
+
 
     }
 }

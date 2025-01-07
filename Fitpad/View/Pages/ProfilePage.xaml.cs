@@ -15,12 +15,13 @@ namespace Fitpad.View.Pages
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            // Очищаем данные пользователя (если требуется)
+            // Очищаем данные пользователя
             var profileViewModel = DataContext as ProfileViewModel;
             profileViewModel?.ClearUserData();
 
-            // Переход на страницу авторизации
-            NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
+            // Переход на новую страницу авторизации (создаём новый экземпляр)
+            NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
         }
+
     }
 }

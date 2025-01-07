@@ -20,8 +20,9 @@ namespace Fitpad.Model
                 return null;
 
             var json = File.ReadAllText(FilePath);
-            return JsonConvert.DeserializeObject<UserModel>(json);
+            return string.IsNullOrWhiteSpace(json) ? null : JsonConvert.DeserializeObject<UserModel>(json);
         }
+
 
         // Метод для сохранения данных авторизованного пользователя
         public static void Save(UserModel user)
@@ -29,6 +30,15 @@ namespace Fitpad.Model
             var json = JsonConvert.SerializeObject(user, Formatting.Indented);
             File.WriteAllText(FilePath, json);
         }
+
+        public static void Clear()
+        {
+            if (File.Exists(FilePath))
+            {
+                File.Delete(FilePath); // Удаляем файл с данными пользователя
+            }
+        }
+
 
         // Метод для выхода из аккаунта (удаление файла с данными пользователя)
         public static void Logout()

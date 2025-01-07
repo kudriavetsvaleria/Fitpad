@@ -29,8 +29,6 @@ namespace Fitpad.View.Pages
             return _instance;
         }
 
-
-
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
@@ -53,12 +51,16 @@ namespace Fitpad.View.Pages
                 }
             }
 
-            _profileViewModel.SaveUserData(user); // Сохраняем данные в файл
+            // Сохраняем данные пользователя
+            UserStorage.Save(user);
+
+            // Переход на новую страницу профиля с новым экземпляром ProfileViewModel
+            NavigationService.Navigate(new ProfilePage(new ProfileViewModel()));
 
             MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            NavigationService.Navigate(NewsPage.GetInstance());
+        
         }
+
 
 
         private void ShowError(string message)

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Fitpad.Model.Entities;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Fitpad.Model
 {
@@ -16,11 +17,28 @@ namespace Fitpad.Model
 
             var json = File.ReadAllText(FilePath);
             var allUserInfo = JsonConvert.DeserializeObject<List<UserInfoModel>>(json);
-            return allUserInfo?.Find(info => info.UserId == userId);
+            return allUserInfo?.FirstOrDefault(info => info.UserId == userId);
         }
+
+        public static void Clear()
+        {
+            if (File.Exists(FilePath))
+            {
+                File.Delete(FilePath); // Удаляем файл с данными анкеты
+            }
+        }
+
 
         public static void Save(UserInfoModel userInfo)
         {
+            if (userInfo == null)
+            {
+                // Если передан null, удаляем файл с данными
+                if (File.Exists(FilePath))
+                    File.Delete(FilePath);
+                return;
+            }
+
             List<UserInfoModel> allUserInfo = new List<UserInfoModel>();
             if (File.Exists(FilePath))
             {
@@ -34,5 +52,6 @@ namespace Fitpad.Model
             var newJson = JsonConvert.SerializeObject(allUserInfo, Formatting.Indented);
             File.WriteAllText(FilePath, newJson);
         }
+
     }
 }
