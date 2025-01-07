@@ -7,13 +7,13 @@ namespace Fitpad.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class SyncWithDatabase : IMigrationMetadata
+    public sealed partial class AddIdToUserInfos : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(SyncWithDatabase));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddIdToUserInfos));
         
         string IMigrationMetadata.Id
         {
-            get { return "202501062058216_SyncWithDatabase"; }
+            get { return "202501070016155_AddIdToUserInfos"; }
         }
         
         string IMigrationMetadata.Source

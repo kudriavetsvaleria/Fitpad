@@ -1,5 +1,6 @@
-﻿using Fitpad.ViewModel.PagesViewModels;
+﻿using Fitpad.Model.Entities;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,44 +8,142 @@ namespace Fitpad.View.Pages
 {
     public partial class CaloriesPage : Page
     {
-        private readonly CaloriesViewModel _viewModel;
-
         public CaloriesPage()
         {
-            InitializeComponent(); // Инициализация компонентов из XAML
-            _viewModel = new CaloriesViewModel();
-            DataContext = _viewModel; // Установка контекста данных для привязки
+            InitializeComponent();
+        }
+        public CaloriesPage(int userId)
+        {
+            InitializeComponent();
+            _currentUserId = userId; // Установка ID текущего пользователя
+            ShowStep(1); // Показ первого шага
+        }
+        private int _currentStep = 1; // Текущий шаг
+        private int _currentUserId; // ID текущего пользователя
+        private UserInfoModel _userInfo = new UserInfoModel(); // Модель для хранения данных пользователя
+
+        private void NextStep_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            int nextStep = int.Parse(button.Tag.ToString());
+
+            if (!ValidateCurrentStep(nextStep - 1))
+            {
+                return;
+            }
+
+            ShowStep(nextStep);
         }
 
-        private void CalculateButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousStep_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Проверка и конвертация введенных данных
-                if (double.TryParse(WeightInput.Text, out var weight) &&
-                    double.TryParse(HeightInput.Text, out var height) &&
-                    int.TryParse(AgeInput.Text, out var age) &&
-                    double.TryParse(ActivityLevelInput.Text, out var activityLevel))
-                {
-                    string gender = (GenderInput.SelectedItem as ComboBoxItem)?.Content.ToString();
-                    if (string.IsNullOrWhiteSpace(gender))
-                    {
-                        MessageBox.Show("Выберите пол.");
-                        return;
-                    }
+            var button = sender as Button;
+            int previousStep = int.Parse(button.Tag.ToString());
 
-                    // Вызов метода расчета
-                    _viewModel.Calculate(weight, height, age, gender, activityLevel);
+            ShowStep(previousStep);
+        }
+
+        private void ShowStep(int step)
+        {
+            Step1.Visibility = step == 1 ? Visibility.Visible : Visibility.Collapsed;
+            Step2.Visibility = step == 2 ? Visibility.Visible : Visibility.Collapsed;
+            Step3.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
+            Step4.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
+            Step5.Visibility = step == 5 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private bool ValidateCurrentStep(int step)
+        {
+            switch (step)
+            {
+                case 1:
+                    if (GenderInput.SelectedItem == null)
+                    {
+                        ShowError("Выберите ваш пол.");
+                        return false;
+                    }
+                    _userInfo.Gender = (GenderInput.SelectedItem as ComboBoxItem)?.Content.ToString();
+                    break;
+                case 2:
+                    if (!int.TryParse(AgeInput.Text, out int age) || age <= 0)
+                    {
+                        ShowError("Введите корректный возраст.");
+                        return false;
+                    }
+                    _userInfo.Age = age;
+                    break;
+                case 3:
+                    if (!double.TryParse(HeightInput.Text, out double height) || height <= 0)
+                    {
+                        ShowError("Введите корректный рост.");
+                        return false;
+                    }
+                    _userInfo.Height = height;
+                    break;
+                case 4:
+                    if (!double.TryParse(WeightInput.Text, out double weight) || weight <= 0)
+                    {
+                        ShowError("Введите корректный вес.");
+                        return false;
+                    }
+                    _userInfo.Weight = weight;
+                    break;
+                case 5:
+                    if (ActivityLevelInput.SelectedItem == null)
+                    {
+                        ShowError("Выберите уровень активности.");
+                        return false;
+                    }
+                    _userInfo.ActivityLevel = (ActivityLevelInput.SelectedItem as ComboBoxItem)?.Content.ToString();
+                    break;
+            }
+
+            ErrorTextBlock.Visibility = Visibility.Collapsed;
+            return true;
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorTextBlock.Text = message;
+            ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Явно вызываем ValidateCurrentStep для последнего шага (step = 5)
+            if (!ValidateCurrentStep(5))
+            {
+                ShowError("Заполните все данные перед сохранением.");
+                return;
+            }
+
+            using (var context = new ApplicationDbContext())
+            {
+                var existingUserInfo = context.UserInfos.FirstOrDefault(u => u.UserId == _currentUserId);
+
+                if (existingUserInfo != null)
+                {
+                    // Обновляем существующую запись
+                    existingUserInfo.Gender = _userInfo.Gender;
+                    existingUserInfo.Age = _userInfo.Age;
+                    existingUserInfo.Height = _userInfo.Height;
+                    existingUserInfo.Weight = _userInfo.Weight;
+                    existingUserInfo.ActivityLevel = _userInfo.ActivityLevel;
                 }
                 else
                 {
-                    MessageBox.Show("Введите корректные значения во все поля.");
+                    // Добавляем новую запись
+                    _userInfo.UserId = _currentUserId;
+                    context.UserInfos.Add(_userInfo);
                 }
+
+                context.SaveChanges();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Произошла ошибка: {ex.Message}");
-            }
+
+            MessageBox.Show("Данные успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            NavigationService.GoBack();
         }
+
+
     }
 }

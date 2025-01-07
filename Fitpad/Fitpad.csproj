@@ -68,20 +68,21 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Migrations\202501062058216_SyncWithDatabase.cs" />
-    <Compile Include="Migrations\202501062058216_SyncWithDatabase.Designer.cs">
-      <DependentUpon>202501062058216_SyncWithDatabase.cs</DependentUpon>
+    <Compile Include="Migrations\202501062349424_InitialMigration.cs" />
+    <Compile Include="Migrations\202501062349424_InitialMigration.Designer.cs">
+      <DependentUpon>202501062349424_InitialMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501070016155_AddIdToUserInfos.cs" />
+    <Compile Include="Migrations\202501070016155_AddIdToUserInfos.Designer.cs">
+      <DependentUpon>202501070016155_AddIdToUserInfos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Model\Entities\UserInfoModel.cs" />
     <Compile Include="Model\Repositories\ApplicationDbContext.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ButtonContentConverter.cs" />
     <Compile Include="Converters\ButtonWidthConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
-    <Compile Include="Migrations\202412311555282_InitialCreate.cs" />
-    <Compile Include="Migrations\202412311555282_InitialCreate.Designer.cs">
-      <DependentUpon>202412311555282_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\Entities\AccountLogin.cs" />
     <Compile Include="Model\Repositories\AuthRepository.cs" />
     <Compile Include="Model\Repositories\UserStorage.cs" />
@@ -205,11 +206,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\202412311555282_InitialCreate.resx">
-      <DependentUpon>202412311555282_InitialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202501062349424_InitialMigration.resx">
+      <DependentUpon>202501062349424_InitialMigration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501062058216_SyncWithDatabase.resx">
-      <DependentUpon>202501062058216_SyncWithDatabase.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202501070016155_AddIdToUserInfos.resx">
+      <DependentUpon>202501070016155_AddIdToUserInfos.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
