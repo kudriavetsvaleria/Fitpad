@@ -1,6 +1,7 @@
 ﻿using Fitpad.Model;
 using Fitpad.Model.Entities;
 using System.Linq;
+using System.Windows;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
@@ -17,42 +18,34 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             // Проверка корректности введенных данных
             if (!int.TryParse(ageText, out int age) || !int.TryParse(heightText, out int height) || !double.TryParse(weightText, out double weight))
+            {
+                MessageBox.Show("Проверьте правильность введенных данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
+            }
 
             using (var context = new ApplicationDbContext())
             {
-                // Проверяем, есть ли уже данные для текущего пользователя
+                // Проверяем наличие записи для текущего пользователя
                 var existingUserInfo = context.UserInfos.FirstOrDefault(info => info.UserId == _currentUser.Id);
 
                 if (existingUserInfo == null)
                 {
-                    // Если данных нет, создаем новую запись
-                    var newUserInfo = new UserInfoModel
-                    {
-                        UserId = _currentUser.Id,
-                        Gender = gender,
-                        Age = age,
-                        Height = height,
-                        Weight = weight,
-                        ActivityLevel = activityLevel
-                    };
-
-                    context.UserInfos.Add(newUserInfo);
-                }
-                else
-                {
-                    // Если данные уже существуют, обновляем их
-                    existingUserInfo.Gender = gender;
-                    existingUserInfo.Age = age;
-                    existingUserInfo.Height = height;
-                    existingUserInfo.Weight = weight;
-                    existingUserInfo.ActivityLevel = activityLevel;
+                    MessageBox.Show("Ошибка: запись пользователя не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
                 }
 
-                context.SaveChanges(); // Сохраняем изменения в базе данных
+                // Обновляем данные анкеты
+                existingUserInfo.Gender = gender;
+                existingUserInfo.Age = age;
+                existingUserInfo.Height = height;
+                existingUserInfo.Weight = weight;
+                existingUserInfo.ActivityLevel = activityLevel;
+
+                context.SaveChanges(); // Сохраняем изменения
             }
 
             return true;
         }
+
     }
 }

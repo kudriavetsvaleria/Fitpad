@@ -16,6 +16,35 @@ namespace Fitpad.ViewModel.PagesViewModels
             LoadUserInfo(); // Загружаем данные пользователя при создании экземпляра
         }
 
+        public void CreateEmptyUserInfo(int userId)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var newUserInfo = new UserInfoModel
+                {
+                    UserId = userId,
+                    Gender = "Не указано",
+                    Age = 0,
+                    Height = 0,
+                    Weight = 0,
+                    ActivityLevel = "Не указано"
+                };
+
+                context.UserInfos.Add(newUserInfo);
+                context.SaveChanges();
+            }
+        }
+
+
+
+        public bool IsUserInfoComplete()
+        {
+            return CurrentUserInfo != null
+                   && CurrentUserInfo.Age > 0
+                   && CurrentUserInfo.Height > 0
+                   && CurrentUserInfo.Weight > 0;
+        }
+
         private void LoadUserInfo()
         {
             using (var context = new ApplicationDbContext())

@@ -1,23 +1,23 @@
-﻿using System.Linq;
+﻿using Fitpad.Model.Entities;
+using Fitpad.Model.Repositories;
+using Fitpad.View.Pages;
+using Fitpad.ViewModel.PagesViewModels;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Fitpad.Model;
-using Fitpad.View.Pages;
-using Fitpad.ViewModel.PagesViewModels;
 
 namespace Fitpad.View.Pages
 {
     public partial class AccountLoginPage : Page
     {
         private static AccountLoginPage _instance;
-        private readonly ProfileViewModel _profileViewModel;
+        private readonly UserRepository _userRepository;
 
-        public AccountLoginPage(ProfileViewModel profileViewModel)
+        private AccountLoginPage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
-            _profileViewModel = profileViewModel;
-            DataContext = _profileViewModel;
+            _userRepository = new UserRepository();
+            DataContext = profileViewModel;
         }
 
         public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
@@ -29,7 +29,7 @@ namespace Fitpad.View.Pages
             return _instance;
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
@@ -40,41 +40,51 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            UserModel user;
-            using (var context = new ApplicationDbContext())
+            UserModel user = await _userRepository.GetUserAsync(username);
+            if (user == null || !VerifyPassword(password, user.Password))
             {
-                user = context.Users.FirstOrDefault(u => u.Username == username);
-                if (user == null || !VerifyPassword(password, user.Password))
-                {
-                    ShowError("Неверный логин или пароль.");
-                    return;
-                }
+                ShowError("Неверный логин или пароль.");
+                return;
             }
 
-            // Сохраняем данные пользователя
-            UserStorage.Save(user);
+            // Сохраняем ID текущего пользователя
+            UserRepository.CurrentUserId = user.Id.ToString();
 
-            // Отображаем сообщение о успешной авторизации
-            MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Создаём новый экземпляр ProfileViewModel с загруженным пользователем
             var profileViewModel = new ProfileViewModel(user);
-
-            // Переход на страницу профиля с использованием метода GetInstance
+            MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
-        }
-
-
-        private void ShowError(string message)
-        {
-            ErrorTextBlock.Text = message;
-            ErrorTextBlock.Visibility = Visibility.Visible;
         }
 
         private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(AccountRegistrationPage.GetInstance());
+            // Логика перехода на страницу регистрации
         }
+
+        private void NextStep_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика для перехода к следующему шагу регистрации
+        }
+
+        private void PreviousStep_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика для возврата к предыдущему шагу регистрации
+        }
+
+        private void TestStep_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика для тестового перехода
+        }
+
+        private void SuccessOkButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика для обработки успешной регистрации
+        }
+
+        private void NavigateToLoginPage_Click(object sender, RoutedEventArgs e)
+        {
+            // Логика для перехода на страницу авторизации
+        }
+
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
         {
@@ -85,6 +95,12 @@ namespace Fitpad.View.Pages
 
                 return enteredHash == storedPasswordHash;
             }
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorTextBlock.Text = message;
+            ErrorTextBlock.Visibility = Visibility.Visible;
         }
     }
 }

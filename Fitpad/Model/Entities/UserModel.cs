@@ -1,19 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Google.Cloud.Firestore;
 
-namespace Fitpad.Model
+namespace Fitpad.Model.Entities
 {
+    [FirestoreData]
     public class UserModel
     {
-        [Key]
-        public int Id { get; set; } // Первичный ключ
+        [FirestoreProperty]
+        public int Id { get; set; }
 
-        [Required]
+        [FirestoreProperty]
         public string Username { get; set; }
 
-        [Required]
+        [FirestoreProperty]
         public string Email { get; set; }
 
-        [Required]
+        [FirestoreProperty]
         public string Password { get; set; }
     }
 }

@@ -1,24 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Google.Cloud.Firestore;
 
 namespace Fitpad.Model.Entities
 {
+    [FirestoreData]
     public class UserInfoModel
     {
-        [Key]
-        public int Id { get; set; }
+        [FirestoreProperty]
+        public int UserId { get; set; } // Внешний ключ, связанный с Id из Users
 
-        [Required]
-        public int UserId { get; set; }
-
+        [FirestoreProperty]
         public string Gender { get; set; }
+
+        [FirestoreProperty]
         public int Age { get; set; }
 
-        // Меняем тип на int
+        [FirestoreProperty]
         public int Height { get; set; }
 
+        [FirestoreProperty]
         public double Weight { get; set; }
-        public string ActivityLevel { get; set; }
-    }
 
+        [FirestoreProperty]
+        public string ActivityLevel { get; set; }
+
+        [FirestoreProperty]
+        public string Purpose { get; set; }
+    }
 }

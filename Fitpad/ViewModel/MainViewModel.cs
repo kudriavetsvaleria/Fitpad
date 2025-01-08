@@ -1,19 +1,21 @@
-﻿// MainViewModel.cs
-using Fitpad.View.Pages;
+﻿using Fitpad.View.Pages;
 using Fitpad.ViewModel.PagesViewModels;
+using Fitpad.Model.Entities;
+using Fitpad.Model.Repositories;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Fitpad.Model;
-using System.Windows;
 
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
-    private readonly ProfileViewModel _profileViewModel = new ProfileViewModel();
+    private readonly ProfileViewModel _profileViewModel;
+    private readonly UserRepository _userRepository;
     public static MainViewModel Instance { get; private set; }
 
     private object _currentPage;
@@ -51,6 +53,8 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel()
     {
         Instance = this;
+        _userRepository = new UserRepository();
+        _profileViewModel = new ProfileViewModel();
 
         ShowNewsCommand = new RelayCommand(o => NavigateTo<NewsPage>());
         ShowFavoritesCommand = new RelayCommand(o => NavigateTo<FavoritesPage>());
@@ -64,7 +68,12 @@ public class MainViewModel : INotifyPropertyChanged
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 
         // Проверяем, выполнен ли вход пользователя
-        var storedUser = UserStorage.Load();
+        InitializeCurrentPageAsync();
+    }
+
+    private async void InitializeCurrentPageAsync()
+    {
+        var storedUser = await _userRepository.GetCurrentUserAsync();
         if (storedUser != null)
         {
             CurrentPage = GetPageInstance<NewsPage>();
@@ -75,9 +84,9 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public void NavigateTo<T>() where T : Page
+    public async void NavigateTo<T>() where T : Page
     {
-        var currentUser = UserStorage.GetCurrentUser();
+        var currentUser = await _userRepository.GetCurrentUserAsync();
 
         // Проверяем, авторизован ли пользователь
         if (typeof(T) == typeof(CaloriesPage) && currentUser == null)
@@ -98,27 +107,24 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-
-    public void NavigateToProfilePage()
+    public async void NavigateToProfilePage()
     {
-        var storedUser = UserStorage.Load(); // Загружаем данные пользователя из хранилища
+        var storedUser = await _userRepository.GetCurrentUserAsync();
         if (storedUser != null)
         {
-            var profileViewModel = new ProfileViewModel(storedUser); // Создаём новый экземпляр ViewModel с данными
-            CurrentPage = ProfilePage.GetInstance(profileViewModel); // Передаём ViewModel в GetInstance
+            var profileViewModel = new ProfileViewModel(storedUser);
+            CurrentPage = ProfilePage.GetInstance(profileViewModel);
         }
     }
-
 
     private Page GetPageInstance<T>() where T : Page
     {
         var type = typeof(T);
 
-        // Проверяем, если это CaloriesPage, создаем новый экземпляр при смене пользователя
         if (type == typeof(CaloriesPage))
         {
-            var currentUser = UserStorage.GetCurrentUser(); // Получаем текущего пользователя
-            return CaloriesPage.GetInstance(currentUser);   // Всегда создаем актуальный экземпляр страницы
+            var currentUser = _userRepository.GetCurrentUserAsync().Result;
+            return CaloriesPage.GetInstance(currentUser);
         }
 
         if (!_pageCache.TryGetValue(type, out var page))
@@ -129,7 +135,7 @@ public class MainViewModel : INotifyPropertyChanged
             }
             else if (type == typeof(AccountLoginPage))
             {
-                page = new AccountLoginPage(_profileViewModel);
+                page = AccountLoginPage.GetInstance(_profileViewModel);
             }
             else
             {

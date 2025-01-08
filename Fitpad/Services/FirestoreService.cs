@@ -1,0 +1,94 @@
+﻿using Fitpad.Model.Entities;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
+using Grpc.Auth;
+using Grpc.Core;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace Fitpad.Services
+{
+    public class FirestoreService
+    {
+        private readonly FirestoreDb _firestoreDb;
+
+        // Конструктор, инициализирующий соединение с Firestore
+        public FirestoreService()
+        {
+            // Абсолютный путь к файлу с учетными данными
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-021c0d7d71.json");
+            Console.WriteLine($"Path to key file: {pathToKeyFile}");
+            if (!File.Exists(pathToKeyFile))
+            {
+                throw new FileNotFoundException($"Файл учетных данных не найден по пути: {pathToKeyFile}");
+            }
+
+            if (!File.Exists(pathToKeyFile))
+            {
+                throw new FileNotFoundException($"Файл ключа не найден: {pathToKeyFile}");
+            }
+
+            // Устанавливаем переменную среды для Google Cloud SDK
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKeyFile);
+            Console.WriteLine($"GOOGLE_APPLICATION_CREDENTIALS set to: {Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")}");
+            // Создаем учетные данные Google и инициализируем Firestore
+            GoogleCredential credential = GoogleCredential.FromFile(pathToKeyFile);
+            ChannelCredentials channelCredentials = credential.ToChannelCredentials();
+
+            _firestoreDb = new FirestoreDbBuilder
+            {
+                ProjectId = "fitpad-2025",
+                ChannelCredentials = channelCredentials
+            }.Build();
+
+            Console.WriteLine("Соединение с Firestore установлено.");
+        }
+
+        // Метод для получения экземпляра FirestoreDb
+        public FirestoreDb GetFirestoreDb()
+        {
+            return _firestoreDb;
+        }
+
+        // Пример метода для сохранения данных пользователя
+        public async Task SaveUserInfoAsync(UserInfoModel userInfo)
+        {
+            try
+            {
+                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userInfo.UserId.ToString());
+                await docRef.SetAsync(userInfo);
+                Console.WriteLine("Информация о пользователе успешно сохранена.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении информации о пользователе: {ex.Message}");
+                throw;
+            }
+        }
+
+        // Пример метода для загрузки данных пользователя
+        public async Task<UserInfoModel> GetUserInfoAsync(int userId)
+        {
+            try
+            {
+                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userId.ToString());
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
+                {
+                    Console.WriteLine("Информация о пользователе успешно загружена.");
+                    return snapshot.ConvertTo<UserInfoModel>();
+                }
+
+                Console.WriteLine("Информация о пользователе не найдена.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при загрузке информации о пользователе: {ex.Message}");
+                throw;
+            }
+        }
+    }
+}
