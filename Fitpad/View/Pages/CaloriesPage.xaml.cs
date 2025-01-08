@@ -1,117 +1,143 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Fitpad.Model;
+using Fitpad.View.Components;
 using Fitpad.ViewModel.PagesViewModels;
 
 namespace Fitpad.View.Pages
 {
     public partial class CaloriesPage : Page
     {
+        private static CaloriesPage _instance; // Статическое поле для хранения экземпляра
+        private static UserModel _currentUserCache; // Кэш текущего пользователя
+
         private readonly UserInfoViewModel _viewModel;
 
-        public CaloriesPage()
+        // Публичный конструктор без параметров
+        public CaloriesPage() : this(UserStorage.GetCurrentUser())
         {
-            InitializeComponent();
+        }
 
-            var currentUser = UserStorage.GetCurrentUser();
+        public CaloriesPage(UserModel currentUser)
+        {
             if (currentUser == null)
             {
-                MessageBox.Show("Пожалуйста, войдите в систему.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
-                return;
+                MessageBox.Show("Войдите в аккаунт", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                if (NavigationService != null)
+                {
+                    // Если NavigationService доступен, используем его для навигации
+                    NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
+                }
+                else
+                {
+                    // Если NavigationService недоступен, используем NavigateTo из MainViewModel
+                    MainViewModel.Instance.NavigateTo<AccountLoginPage>();
+                }
+
+                return; // Прерываем выполнение конструктора
             }
 
+            InitializeComponent();
             _viewModel = new UserInfoViewModel(currentUser);
             DataContext = _viewModel;
 
-            // Проверяем, заполнял ли пользователь анкету ранее
-            if (_viewModel.HasUserInfo)
+            // Проверяем наличие данных анкеты
+            if (HasExistingUserInfo(currentUser.Id))
             {
-                // Если анкета заполнена, показываем дату и день недели
+                // Данные анкеты существуют, показываем норму калорий и дату
                 ShowDateAndDay();
+                ShowCalorieIntake();
             }
             else
             {
-                // Если анкета не заполнена, показываем поля для заполнения
-                ShowStep(1);
+                // Данных анкеты нет, показываем форму для заполнения
+                ShowUserInfoForm();
+            }
+        }
+
+
+
+        public static CaloriesPage GetInstance(UserModel currentUser)
+        {
+            // Проверяем, если пользователь изменился, создаем новый экземпляр страницы
+            if (_instance == null || _currentUserCache == null || _currentUserCache.Id != currentUser.Id)
+            {
+                _instance = new CaloriesPage(currentUser);
+                _currentUserCache = currentUser;
+            }
+
+            return _instance;
+        }
+
+        private bool HasExistingUserInfo(int userId)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                // Проверяем наличие записи в таблице UserInfos для текущего пользователя
+                return context.UserInfos.Any(info => info.UserId == userId);
             }
         }
 
         private void ShowDateAndDay()
         {
-            // Скрываем все шаги анкеты
-            Step1.Visibility = Visibility.Collapsed;
-            Step2.Visibility = Visibility.Collapsed;
-            Step3.Visibility = Visibility.Collapsed;
-            Step4.Visibility = Visibility.Collapsed;
-            Step5.Visibility = Visibility.Collapsed;
-
             // Отображаем текст с текущей датой и днём недели
             DateTextBlock.Text = $"Сегодня: {DateTime.Now:dd.MM.yyyy}, {DateTime.Now:dddd}";
             DateTextBlock.Visibility = Visibility.Visible;
         }
 
-        private void NextStep_Click(object sender, RoutedEventArgs e)
+        private void ShowCalorieIntake()
         {
-            if (sender is Button button && button.Tag is string tag)
-            {
-                int nextStep = int.Parse(tag);
-                ShowStep(nextStep);
-            }
+            double dailyCalories = CalculateDailyCalorieIntake();
+            CalorieTextBlock.Text = $"0 / {dailyCalories:0} калорий";
+            CalorieTextBlock.Visibility = Visibility.Visible;
         }
 
-        private void PreviousStep_Click(object sender, RoutedEventArgs e)
+        private double CalculateDailyCalorieIntake()
         {
-            if (sender is Button button && button.Tag is string tag)
-            {
-                int previousStep = int.Parse(tag);
-                ShowStep(previousStep);
-            }
-        }
+            double bmr;
+            double weight = _viewModel.CurrentUserInfo.Weight;
+            double height = _viewModel.CurrentUserInfo.Height;
+            int age = _viewModel.CurrentUserInfo.Age;
+            string gender = _viewModel.CurrentUserInfo.Gender;
+            string activityLevel = _viewModel.CurrentUserInfo.ActivityLevel;
 
-        private void ShowStep(int stepNumber)
-        {
-            // Скрываем все шаги
-            Step1.Visibility = Visibility.Collapsed;
-            Step2.Visibility = Visibility.Collapsed;
-            Step3.Visibility = Visibility.Collapsed;
-            Step4.Visibility = Visibility.Collapsed;
-            Step5.Visibility = Visibility.Collapsed;
-
-            // Отображаем текущий шаг
-            switch (stepNumber)
+            // Формула Харриса-Бенедикта для мужчин и женщин
+            if (gender == "Мужской")
             {
-                case 1:
-                    Step1.Visibility = Visibility.Visible;
-                    break;
-                case 2:
-                    Step2.Visibility = Visibility.Visible;
-                    break;
-                case 3:
-                    Step3.Visibility = Visibility.Visible;
-                    break;
-                case 4:
-                    Step4.Visibility = Visibility.Visible;
-                    break;
-                case 5:
-                    Step5.Visibility = Visibility.Visible;
-                    break;
-            }
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_viewModel.SaveUserInfo(GenderInput.Text, AgeInput.Text, HeightInput.Text, WeightInput.Text, ActivityLevelInput.Text))
-            {
-                MessageBox.Show("Данные успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                NavigationService.Navigate(new ProfilePage(new ProfileViewModel()));
+                bmr = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age);
             }
             else
             {
-                ErrorTextBlock.Text = "Ошибка при сохранении данных. Проверьте введенные значения.";
-                ErrorTextBlock.Visibility = Visibility.Visible;
+                bmr = 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age);
             }
+
+            // Коэффициент активности
+            double activityMultiplier = activityLevel switch
+            {
+                "Низкая" => 1.2,
+                "Средняя" => 1.55,
+                "Высокая" => 1.9,
+                _ => 1.2 // По умолчанию низкая активность
+            };
+
+            return bmr * activityMultiplier;
+        }
+
+        private void ShowUserInfoForm()
+        {
+            // Отображаем компонент формы анкеты
+            UserInfoForm.Visibility = Visibility.Visible;
+            DateTextBlock.Visibility = Visibility.Collapsed; // Скрываем дату
+            CalorieTextBlock.Visibility = Visibility.Collapsed; // Скрываем норму калорий
+        }
+
+        public static void ResetInstance()
+        {
+            _instance = null; // Сбрасываем экземпляр страницы
+            _currentUserCache = null; // Сбрасываем кэш пользователя
         }
     }
 }

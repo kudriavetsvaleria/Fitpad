@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -117,10 +118,10 @@ namespace Fitpad.ViewModel.PagesViewModels
                 if (userInfo != null)
                 {
                     CurrentUserInfo = userInfo;
+                    Console.WriteLine("Данные анкеты загружены.");
                 }
                 else
                 {
-                    // Если данных анкеты нет, создаем пустую модель с дефолтными значениями
                     CurrentUserInfo = new UserInfoModel
                     {
                         UserId = userId,
@@ -130,9 +131,11 @@ namespace Fitpad.ViewModel.PagesViewModels
                         Weight = 0,
                         ActivityLevel = "Не указано"
                     };
+                    Console.WriteLine("Данные анкеты отсутствуют.");
                 }
             }
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

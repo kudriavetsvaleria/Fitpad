@@ -15,6 +15,7 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <LangVersion>8.0</LangVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -104,11 +105,15 @@
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\UserInfoFormViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\Components\NewsItem.xaml.cs">
       <DependentUpon>NewsItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Components\UserInfoForm.xaml.cs">
+      <DependentUpon>UserInfoForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\AccountLoginPage.xaml.cs">
       <DependentUpon>AccountLoginPage.xaml</DependentUpon>
@@ -141,6 +146,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Components\NutritionItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Components\UserInfoForm.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\AccountLoginPage.xaml">

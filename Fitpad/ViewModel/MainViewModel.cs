@@ -8,11 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Fitpad.Model;
+using System.Windows;
 
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
     private readonly ProfileViewModel _profileViewModel = new ProfileViewModel();
+    public static MainViewModel Instance { get; private set; }
 
     private object _currentPage;
     public object CurrentPage
@@ -48,6 +50,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel()
     {
+        Instance = this;
+
         ShowNewsCommand = new RelayCommand(o => NavigateTo<NewsPage>());
         ShowFavoritesCommand = new RelayCommand(o => NavigateTo<FavoritesPage>());
         ShowNutritionCommand = new RelayCommand(o => NavigateTo<NutritionPage>());
@@ -73,6 +77,15 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void NavigateTo<T>() where T : Page
     {
+        var currentUser = UserStorage.GetCurrentUser();
+
+        // Проверяем, авторизован ли пользователь
+        if (typeof(T) == typeof(CaloriesPage) && currentUser == null)
+        {
+            MessageBox.Show("Войдите в аккаунт", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return; // Прерываем выполнение метода, остаёмся на текущей странице
+        }
+
         var page = GetPageInstance<T>();
 
         if (CurrentPage is Page currentPage && currentPage.NavigationService != null)
@@ -85,6 +98,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+
     public void NavigateToProfilePage()
     {
         var storedUser = UserStorage.Load(); // Загружаем данные пользователя из хранилища
@@ -96,16 +110,21 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
-
     private Page GetPageInstance<T>() where T : Page
     {
         var type = typeof(T);
+
+        // Проверяем, если это CaloriesPage, создаем новый экземпляр при смене пользователя
+        if (type == typeof(CaloriesPage))
+        {
+            var currentUser = UserStorage.GetCurrentUser(); // Получаем текущего пользователя
+            return CaloriesPage.GetInstance(currentUser);   // Всегда создаем актуальный экземпляр страницы
+        }
 
         if (!_pageCache.TryGetValue(type, out var page))
         {
             if (type == typeof(ProfilePage))
             {
-                // Передаём существующий экземпляр _profileViewModel
                 page = ProfilePage.GetInstance(_profileViewModel);
             }
             else if (type == typeof(AccountLoginPage))
@@ -122,8 +141,6 @@ public class MainViewModel : INotifyPropertyChanged
 
         return page;
     }
-
-
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

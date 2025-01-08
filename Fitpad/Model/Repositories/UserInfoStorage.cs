@@ -20,6 +20,7 @@ namespace Fitpad.Model
             return allUserInfo?.FirstOrDefault(info => info.UserId == userId);
         }
 
+
         public static void Clear()
         {
             if (File.Exists(FilePath))
