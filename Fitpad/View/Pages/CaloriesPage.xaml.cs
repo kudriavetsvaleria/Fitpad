@@ -15,7 +15,6 @@ namespace Fitpad.View.Pages
         private static UserModel _currentUserCache;
         private readonly FirestoreDb _firestoreDb;
 
-
         public CaloriesPage(UserModel currentUser)
         {
             InitializeComponent();
@@ -25,7 +24,6 @@ namespace Fitpad.View.Pages
 
             InitializePageContentAsync();
         }
-
 
         public static CaloriesPage GetInstance(UserModel currentUser)
         {
@@ -50,11 +48,11 @@ namespace Fitpad.View.Pages
             }
         }
 
-        private async Task<UserInfoModel> GetUserInfoAsync(int userId)
+        private async Task<UserInfoModel> GetUserInfoAsync(string userId) // Изменен тип userId на string
         {
             try
             {
-                var userInfoDoc = await _firestoreDb.Collection("UserInfos").Document(userId.ToString()).GetSnapshotAsync();
+                var userInfoDoc = await _firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
 
                 if (userInfoDoc.Exists)
                 {

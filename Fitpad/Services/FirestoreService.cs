@@ -17,7 +17,7 @@ namespace Fitpad.Services
         public FirestoreService()
         {
             // Абсолютный путь к файлу с учетными данными
-            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-021c0d7d71.json");
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-58072a89a6.json");
             Console.WriteLine($"Path to key file: {pathToKeyFile}");
             if (!File.Exists(pathToKeyFile))
             {
@@ -51,12 +51,28 @@ namespace Fitpad.Services
             return _firestoreDb;
         }
 
+        public async Task SaveUserAsync(UserModel user)
+        {
+            try
+            {
+                DocumentReference docRef = _firestoreDb.Collection("Users").Document(user.Id);
+                await docRef.SetAsync(user); // Убедитесь, что у объекта user есть данные
+                Console.WriteLine("Пользователь успешно сохранен.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении пользователя: {ex.Message}");
+                throw;
+            }
+        }
+
+
         // Пример метода для сохранения данных пользователя
         public async Task SaveUserInfoAsync(UserInfoModel userInfo)
         {
             try
             {
-                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userInfo.UserId.ToString());
+                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userInfo.UserId);
                 await docRef.SetAsync(userInfo);
                 Console.WriteLine("Информация о пользователе успешно сохранена.");
             }
@@ -68,11 +84,11 @@ namespace Fitpad.Services
         }
 
         // Пример метода для загрузки данных пользователя
-        public async Task<UserInfoModel> GetUserInfoAsync(int userId)
+        public async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
             try
             {
-                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userId.ToString());
+                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userId);
                 DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
                 if (snapshot.Exists)
@@ -90,5 +106,7 @@ namespace Fitpad.Services
                 throw;
             }
         }
+
+
     }
 }

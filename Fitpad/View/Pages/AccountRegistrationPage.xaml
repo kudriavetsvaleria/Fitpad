@@ -3,15 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Регистрация">
 
-    <!-- Ресурсы страницы -->
     <Page.Resources>
-        <!-- Эффект тени для оверлейного окна -->
         <DropShadowEffect x:Key="DropShadowEffect" ShadowDepth="5" Opacity="0.5" BlurRadius="10"/>
     </Page.Resources>
 
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
         <StackPanel Width="300" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Поле ввода логина -->
+
+            <!-- Шаг 1: Ввод логина -->
             <StackPanel x:Name="Step1" Visibility="Visible">
                 <Label Content="Логин:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
                 <TextBox x:Name="UsernameTextBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
@@ -19,11 +18,9 @@
                     <Button Content="Далее" Width="120" Height="35" Click="NextStep_Click" Tag="2"
                             Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"/>
                 </StackPanel>
-                <Button Content="Тест" Width="250" Height="35" Click="TestStep_Click" Tag="2"
-                        Background="#5bc0de" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,10,0,0"/>
             </StackPanel>
 
-            <!-- Поле ввода почты -->
+            <!-- Шаг 2: Ввод почты -->
             <StackPanel x:Name="Step2" Visibility="Collapsed">
                 <Label Content="Почта:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
                 <TextBox x:Name="EmailTextBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
@@ -33,11 +30,9 @@
                     <Button Content="Далее" Width="120" Height="35" Click="NextStep_Click" Tag="3"
                             Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
                 </StackPanel>
-                <Button Content="Тест" Width="250" Height="35" Click="TestStep_Click" Tag="3"
-                        Background="#5bc0de" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,10,0,0"/>
             </StackPanel>
 
-            <!-- Поле ввода пароля -->
+            <!-- Шаг 3: Ввод пароля -->
             <StackPanel x:Name="Step3" Visibility="Collapsed">
                 <Label Content="Пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
                 <PasswordBox x:Name="PasswordBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
@@ -55,33 +50,21 @@
             <Button x:Name="LoginButton" Content="Авторизация" Width="250" Height="35" Click="NavigateToLoginPage_Click"
                     Background="#5bc0de" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" />
 
-            <TextBlock x:Name="NotificationTextBlock"
-                       Visibility="Collapsed"
-                       Foreground="Green"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Top"
-                       Margin="0,10,0,0" />
-
-            <!-- Оверлейное сообщение о успешной регистрации -->
+            <!-- Оверлей сообщения об успешной регистрации -->
             <Grid x:Name="SuccessMessageOverlay" Visibility="Collapsed" Background="#80000000">
                 <Border Background="White" CornerRadius="15" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" 
                         Effect="{DynamicResource DropShadowEffect}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Width="300">
-                        <Image Source="/Assets/success_icon.png" Width="60" Height="60" Margin="0,0,0,10" HorizontalAlignment="Center"/>
                         <TextBlock Text="Регистрация успешна!" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" 
                                    Foreground="#007ACC" TextAlignment="Center"/>
                         <TextBlock Text="Вы успешно зарегистрировались в приложении. Нажмите 'ОК', чтобы перейти на страницу авторизации." 
                        FontSize="14" Foreground="Gray" TextAlignment="Center" Margin="0,0,0,20" TextWrapping="Wrap"/>
-                        <Border Background="#007ACC" CornerRadius="10" Width="150" Height="40" Margin="0" Cursor="Hand">
-                            <Button Content="ОК" Width="150" Height="40" Click="SuccessOkButton_Click"
-                                    Background="Transparent" Foreground="White" FontSize="16" BorderThickness="0" />
-                        </Border>
+                        <Button Content="ОК" Width="150" Height="40" Click="SuccessOkButton_Click"
+                                Background="#007ACC" Foreground="White" FontSize="16" BorderThickness="0" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!-- Текст ошибки -->
             <TextBlock x:Name="ErrorTextBlock" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" 
                        Margin="0,10,0,0" FontSize="12"/>
         </StackPanel>

@@ -1,23 +1,21 @@
 ﻿using Fitpad.Model.Entities;
-using Fitpad.Model.Repositories;
+using Fitpad.Services;
 using System.Threading.Tasks;
 
 namespace Fitpad.Services
 {
     public class RegistrationService
     {
-        private readonly UserRepository _userRepository;
-        private readonly UserInfoRepository _userInfoRepository;
+        private readonly FirestoreService _firestoreService;
 
         public RegistrationService()
         {
-            _userRepository = new UserRepository();
-            _userInfoRepository = new UserInfoRepository();
+            _firestoreService = new FirestoreService();
         }
 
         public async Task RegisterUserAsync(UserModel user)
         {
-            await _userRepository.SaveUserAsync(user); // Сохранение пользователя
+            await _firestoreService.SaveUserAsync(user).ConfigureAwait(false); // Сохранение пользователя
 
             var userInfo = new UserInfoModel
             {
@@ -30,7 +28,8 @@ namespace Fitpad.Services
                 Purpose = "Не указано"
             };
 
-            await _userInfoRepository.SaveUserInfoAsync(userInfo); // Создание пустой анкеты
+            await _firestoreService.SaveUserInfoAsync(userInfo).ConfigureAwait(false); // Создание пустой анкеты
         }
+
     }
 }

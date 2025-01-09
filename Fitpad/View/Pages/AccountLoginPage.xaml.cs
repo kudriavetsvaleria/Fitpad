@@ -55,36 +55,6 @@ namespace Fitpad.View.Pages
             NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
         }
 
-        private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика перехода на страницу регистрации
-        }
-
-        private void NextStep_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика для перехода к следующему шагу регистрации
-        }
-
-        private void PreviousStep_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика для возврата к предыдущему шагу регистрации
-        }
-
-        private void TestStep_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика для тестового перехода
-        }
-
-        private void SuccessOkButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика для обработки успешной регистрации
-        }
-
-        private void NavigateToLoginPage_Click(object sender, RoutedEventArgs e)
-        {
-            // Логика для перехода на страницу авторизации
-        }
-
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
         {
@@ -96,6 +66,22 @@ namespace Fitpad.View.Pages
                 return enteredHash == storedPasswordHash;
             }
         }
+        // Метод для хэширования пароля
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] passwordBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return BitConverter.ToString(passwordBytes).Replace("-", "").ToLower();
+            }
+        }
+
+        private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
+        {
+            // Переход на страницу регистрации
+            NavigationService.Navigate(AccountRegistrationPage.GetInstance());
+        }
+
 
         private void ShowError(string message)
         {

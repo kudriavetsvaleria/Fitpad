@@ -4,7 +4,7 @@ namespace Fitpad.Model.Entities
 {
     public class NutritionModel
     {
-        public int Id { get; set; } // Идентификатор рецепта
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Image { get; set; }
         public int Calories { get; set; }

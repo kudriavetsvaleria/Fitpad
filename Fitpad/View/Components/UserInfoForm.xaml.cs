@@ -40,7 +40,7 @@ namespace Fitpad.View.Components
 
             var userInfo = new UserInfoModel
             {
-                UserId = _userId,
+                UserId = _userId.ToString(), // Преобразуем int в string
                 Gender = gender,
                 Age = age,
                 Height = height,
@@ -55,4 +55,3 @@ namespace Fitpad.View.Components
         }
     }
 }
-

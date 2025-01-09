@@ -1,41 +1,22 @@
-﻿using Fitpad.Model;
-using Fitpad.Model.Entities;
-using System.Linq;
+﻿using Fitpad.Model.Entities;
+using Fitpad.Services;
+using System.Threading.Tasks;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
     public class UserInfoViewModel
     {
         private readonly UserModel _currentUser;
+        private readonly FirestoreService _firestoreService;
 
         public UserInfoModel CurrentUserInfo { get; private set; }
 
         public UserInfoViewModel(UserModel user)
         {
             _currentUser = user;
-            LoadUserInfo(); // Загружаем данные пользователя при создании экземпляра
+            _firestoreService = new FirestoreService();
+            _ = LoadUserInfoAsync().ConfigureAwait(false);
         }
-
-        public void CreateEmptyUserInfo(int userId)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                var newUserInfo = new UserInfoModel
-                {
-                    UserId = userId,
-                    Gender = "Не указано",
-                    Age = 0,
-                    Height = 0,
-                    Weight = 0,
-                    ActivityLevel = "Не указано"
-                };
-
-                context.UserInfos.Add(newUserInfo);
-                context.SaveChanges();
-            }
-        }
-
-
 
         public bool IsUserInfoComplete()
         {
@@ -45,17 +26,38 @@ namespace Fitpad.ViewModel.PagesViewModels
                    && CurrentUserInfo.Weight > 0;
         }
 
-        private void LoadUserInfo()
+        private async Task LoadUserInfoAsync()
         {
-            using (var context = new ApplicationDbContext())
+            CurrentUserInfo = await _firestoreService.GetUserInfoAsync(_currentUser.Id).ConfigureAwait(false);
+
+            if (CurrentUserInfo == null)
             {
-                CurrentUserInfo = context.UserInfos.FirstOrDefault(info => info.UserId == _currentUser.Id);
+                await CreateEmptyUserInfoAsync(_currentUser.Id).ConfigureAwait(false);
+                CurrentUserInfo = await _firestoreService.GetUserInfoAsync(_currentUser.Id).ConfigureAwait(false);
             }
+        }
+
+        public async Task CreateEmptyUserInfoAsync(string userId)
+        {
+            var newUserInfo = new UserInfoModel
+            {
+                UserId = userId,
+                Gender = "Не указано",
+                Age = 0,
+                Height = 0,
+                Weight = 0,
+                ActivityLevel = "Не указано"
+            };
+
+            await _firestoreService.SaveUserInfoAsync(newUserInfo).ConfigureAwait(false);
         }
 
         public bool HasUserInfo()
         {
-            return CurrentUserInfo != null && CurrentUserInfo.Age > 0 && CurrentUserInfo.Height > 0 && CurrentUserInfo.Weight > 0;
+            return CurrentUserInfo != null
+                   && CurrentUserInfo.Age > 0
+                   && CurrentUserInfo.Height > 0
+                   && CurrentUserInfo.Weight > 0;
         }
     }
 }

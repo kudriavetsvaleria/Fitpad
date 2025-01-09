@@ -6,7 +6,7 @@ namespace Fitpad.Model.Entities
     public class UserInfoModel
     {
         [FirestoreProperty]
-        public int UserId { get; set; } // Внешний ключ, связанный с Id из Users
+        public string UserId { get; set; } // Внешний ключ, связанный с Id из Users
 
         [FirestoreProperty]
         public string Gender { get; set; }

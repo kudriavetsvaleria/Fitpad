@@ -156,7 +156,6 @@
     </ApplicationDefinition>
     <Compile Include="Services\FirestoreService.cs" />
     <Compile Include="Model\Entities\UserInfoModel.cs" />
-    <Compile Include="Model\Repositories\ApplicationDbContext.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ButtonContentConverter.cs" />
     <Compile Include="Converters\ButtonWidthConverter.cs" />
