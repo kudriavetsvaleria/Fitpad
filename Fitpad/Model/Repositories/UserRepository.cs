@@ -34,21 +34,28 @@ namespace Fitpad.Model.Repositories
         {
             try
             {
-                var query = _firestoreDb.Collection(UsersCollection).WhereEqualTo("Username", username);
+                // Проверяем наличие пользователя с указанным именем
+                var query = _firestoreDb.Collection("Users").WhereEqualTo("Name", username);
                 var snapshot = await query.GetSnapshotAsync();
 
                 if (snapshot.Documents.Count > 0)
                 {
-                    return snapshot.Documents[0].ConvertTo<UserModel>();
+                    var user = snapshot.Documents[0].ConvertTo<UserModel>();
+                    Console.WriteLine($"Пользователь найден: {user.Name}");
+                    return user;
                 }
+
+                Console.WriteLine($"Пользователь с именем {username} не найден.");
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при получении пользователя: {ex.Message}");
-                return null;
+                Console.WriteLine($"Ошибка при поиске пользователя: {ex.Message}");
+                throw;
             }
         }
+
+
 
         // Метод для получения текущего пользователя
         public async Task<UserModel> GetCurrentUserAsync()

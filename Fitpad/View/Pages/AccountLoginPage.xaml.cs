@@ -48,11 +48,19 @@ namespace Fitpad.View.Pages
             try
             {
                 UserModel user = await _userRepository.GetUserAsync(username);
-                if (user == null || !VerifyPassword(password, user.Password))
+                if (user == null)
                 {
-                    ShowError("Неверный логин или пароль.");
+                    ShowError("Пользователь не найден.");
                     return;
                 }
+
+                if (!VerifyPassword(password, user.Password))
+                {
+                    ShowError("Неверный пароль.");
+                    return;
+                }
+
+                Console.WriteLine($"Пользователь {user.Name} успешно авторизован.");
 
                 UserRepository.CurrentUserId = user.Id.ToString();
                 var profileViewModel = new ProfileViewModel(user);
@@ -62,6 +70,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Ошибка авторизации: {ex.Message}");
                 MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -76,6 +85,7 @@ namespace Fitpad.View.Pages
                 return enteredHash == storedPasswordHash;
             }
         }
+
         private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
         {
             NavigationService.Navigate(AccountRegistrationPage.GetInstance());

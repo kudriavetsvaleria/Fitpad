@@ -53,12 +53,12 @@ namespace Fitpad.View.Pages
             }
 
             try
-            {
+            { 
                 var newUser = new UserModel
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = name,
-                    Email = email,
+                    Email = email,   
                     Password = HashPassword(password)
                 };
 

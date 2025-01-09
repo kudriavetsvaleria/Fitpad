@@ -28,7 +28,7 @@
         <StackPanel Grid.Row="1" Margin="0,0,0,20">
             <!-- Данные пользователя -->
             <TextBlock Text="Имя пользователя:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUser.Username}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="{Binding CurrentUser.Name}" FontSize="16" Margin="0,0,0,10" />
 
             <TextBlock Text="Email:" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="{Binding CurrentUser.Email}" FontSize="16" Margin="0,0,0,10" />
