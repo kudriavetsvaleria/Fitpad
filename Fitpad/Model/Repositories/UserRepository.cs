@@ -34,28 +34,21 @@ namespace Fitpad.Model.Repositories
         {
             try
             {
-                var query = _firestoreDb.Collection(UsersCollection)
-                                        .WhereEqualTo("Username", username);
+                var query = _firestoreDb.Collection(UsersCollection).WhereEqualTo("Username", username);
                 var snapshot = await query.GetSnapshotAsync();
 
                 if (snapshot.Documents.Count > 0)
                 {
-                    var doc = snapshot.Documents[0];
-                    Console.WriteLine($"Пользователь {username} найден.");
-                    return doc.ConvertTo<UserModel>();
+                    return snapshot.Documents[0].ConvertTo<UserModel>();
                 }
-
-                Console.WriteLine($"Пользователь {username} не найден.");
                 return null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при получении пользователя: {ex.Message}");
-                throw;
+                return null;
             }
         }
-
-
 
         // Метод для получения текущего пользователя
         public async Task<UserModel> GetCurrentUserAsync()
@@ -93,23 +86,15 @@ namespace Fitpad.Model.Repositories
         // Метод для сохранения данных пользователя
         public async Task SaveUserAsync(UserModel user)
         {
-            if (user == null)
-            {
-                Console.WriteLine("Попытка сохранить пустого пользователя.");
-                return;
-            }
-
             try
             {
-                var docRef = _firestoreDb.Collection(UsersCollection).Document(user.Id.ToString());
+                var docRef = _firestoreDb.Collection(UsersCollection).Document(user.Id);
                 await docRef.SetAsync(user);
-                CurrentUserId = user.Id.ToString(); // Сохраняем ID текущего пользователя
-                Console.WriteLine($"Пользователь с ID {user.Id} успешно сохранен.");
+                CurrentUserId = user.Id;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при сохранении данных пользователя: {ex.Message}");
-                MessageBox.Show($"Ошибка при сохранении данных пользователя: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"Ошибка при сохранении пользователя: {ex.Message}");
             }
         }
     }

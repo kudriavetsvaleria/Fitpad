@@ -11,9 +11,11 @@ namespace Fitpad.View.Pages
     public partial class AccountLoginPage : Page
     {
         private static AccountLoginPage _instance;
+        private static readonly object _lock = new object();
         private readonly UserRepository _userRepository;
 
-        private AccountLoginPage(ProfileViewModel profileViewModel)
+        // Сделать конструктор публичным
+        public AccountLoginPage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
             _userRepository = new UserRepository();
@@ -22,11 +24,14 @@ namespace Fitpad.View.Pages
 
         public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
         {
-            if (_instance == null)
+            lock (_lock)
             {
-                _instance = new AccountLoginPage(profileViewModel);
+                if (_instance == null)
+                {
+                    _instance = new AccountLoginPage(profileViewModel);
+                }
+                return _instance;
             }
-            return _instance;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -40,21 +45,26 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            UserModel user = await _userRepository.GetUserAsync(username);
-            if (user == null || !VerifyPassword(password, user.Password))
+            try
             {
-                ShowError("Неверный логин или пароль.");
-                return;
+                UserModel user = await _userRepository.GetUserAsync(username);
+                if (user == null || !VerifyPassword(password, user.Password))
+                {
+                    ShowError("Неверный логин или пароль.");
+                    return;
+                }
+
+                UserRepository.CurrentUserId = user.Id.ToString();
+                var profileViewModel = new ProfileViewModel(user);
+
+                MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
             }
-
-            // Сохраняем ID текущего пользователя
-            UserRepository.CurrentUserId = user.Id.ToString();
-
-            var profileViewModel = new ProfileViewModel(user);
-            MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-            NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
         {
@@ -66,22 +76,10 @@ namespace Fitpad.View.Pages
                 return enteredHash == storedPasswordHash;
             }
         }
-        // Метод для хэширования пароля
-        private string HashPassword(string password)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                byte[] passwordBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(passwordBytes).Replace("-", "").ToLower();
-            }
-        }
-
         private void NavigateToRegistrationPage_Click(object sender, RoutedEventArgs e)
         {
-            // Переход на страницу регистрации
             NavigationService.Navigate(AccountRegistrationPage.GetInstance());
         }
-
 
         private void ShowError(string message)
         {
