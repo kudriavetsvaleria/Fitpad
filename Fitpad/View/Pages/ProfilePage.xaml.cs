@@ -1,4 +1,6 @@
-﻿using Fitpad.ViewModel.PagesViewModels;
+﻿using Fitpad.Services;
+using Fitpad.ViewModel.PagesViewModels;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
@@ -30,7 +32,26 @@ namespace Fitpad.View.Pages
                 {
                     _instance._profileViewModel.UpdateUserData(profileViewModel.CurrentUser);
                 }
+
+                // Загружаем данные анкеты для текущего пользователя
+                if (_instance._profileViewModel.CurrentUser != null)
+                {
+                    _ = _instance.LoadUserInfoAsync(_instance._profileViewModel.CurrentUser.Id);
+                }
+
                 return _instance;
+            }
+        }
+
+        // Асинхронный метод для загрузки данных анкеты
+        private async Task LoadUserInfoAsync(string userId)
+        {
+            var firestoreService = new FirestoreService();
+            var userInfo = await firestoreService.GetUserInfoAsync(userId);
+
+            if (userInfo != null)
+            {
+                _profileViewModel.CurrentUserInfo = userInfo;
             }
         }
 

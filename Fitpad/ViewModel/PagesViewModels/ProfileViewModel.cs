@@ -7,6 +7,7 @@ namespace Fitpad.ViewModel.PagesViewModels
     public class ProfileViewModel : INotifyPropertyChanged
     {
         private UserModel _currentUser;
+        private UserInfoModel _currentUserInfo;
 
         public UserModel CurrentUser
         {
@@ -14,6 +15,16 @@ namespace Fitpad.ViewModel.PagesViewModels
             set
             {
                 _currentUser = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public UserInfoModel CurrentUserInfo
+        {
+            get => _currentUserInfo;
+            set
+            {
+                _currentUserInfo = value;
                 OnPropertyChanged();
             }
         }
@@ -35,7 +46,9 @@ namespace Fitpad.ViewModel.PagesViewModels
         public void ClearUserData()
         {
             CurrentUser = null;
+            CurrentUserInfo = null;
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
