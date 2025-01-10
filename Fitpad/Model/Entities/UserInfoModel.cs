@@ -24,6 +24,6 @@ namespace Fitpad.Model.Entities
         public string ActivityLevel { get; set; }
 
         [FirestoreProperty]
-        public string Purpose { get; set; }
+        public string Purpose { get; set; } // Новое поле "Цель"
     }
 }

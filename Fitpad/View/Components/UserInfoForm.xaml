@@ -34,6 +34,13 @@
             <ComboBoxItem Content="Высокая"/>
         </ComboBox>
 
+        <TextBlock Text="Цель:"/>
+        <ComboBox x:Name="PurposeInput" Width="250" Height="30">
+            <ComboBoxItem Content="Похудение"/>
+            <ComboBoxItem Content="Сохранение массы"/>
+            <ComboBoxItem Content="Набор массы"/>
+        </ComboBox>
+        
         <!-- Кнопка сохранения -->
         <Button Content="Сохранить" Width="120" Height="35" Margin="0,10,0,0"
                 Click="SaveButton_Click"/>

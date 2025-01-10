@@ -30,16 +30,16 @@ namespace Fitpad.View.Components
         {
             try
             {
-                // Проверяем корректность введенных данных
                 string gender = (GenderInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
                 string ageText = AgeInput?.Text;
                 string heightText = HeightInput?.Text;
                 string weightText = WeightInput?.Text;
                 string activityLevel = (ActivityLevelInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+                string purpose = (PurposeInput?.SelectedItem as ComboBoxItem)?.Content?.ToString(); // Новое поле "Цель"
 
-                if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel))
+                if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel) || string.IsNullOrWhiteSpace(purpose))
                 {
-                    MessageBox.Show("Пожалуйста, выберите пол и уровень активности.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Пожалуйста, заполните все поля корректно.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -51,15 +51,14 @@ namespace Fitpad.View.Components
 
                 var userInfo = new UserInfoModel
                 {
-                    UserId = _userId, // Используем правильный идентификатор пользователя
+                    UserId = _userId,
                     Gender = gender,
                     Age = age,
                     Height = height,
                     Weight = weight,
                     ActivityLevel = activityLevel,
-                    Purpose = "Поддержание формы"
+                    Purpose = purpose // Сохраняем "Цель"
                 };
-
 
                 await _userInfoRepository.SaveUserInfoAsync(userInfo);
                 MessageBox.Show("Данные успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -70,5 +69,6 @@ namespace Fitpad.View.Components
                 MessageBox.Show($"Ошибка при сохранении данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
     }
 }

@@ -80,7 +80,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (storedUser != null)
         {
             Console.WriteLine("Найден авторизованный пользователь. Выполняется автоматический вход...");
-            CurrentPage = await GetPageInstanceAsync<ProfilePage>();
+            CurrentPage = await GetPageInstanceAsync<NewsPage>();
         }
         else
         {
