@@ -56,14 +56,14 @@ public class MainViewModel : INotifyPropertyChanged
         _userRepository = new UserRepository();
         _profileViewModel = new ProfileViewModel();
 
-        ShowNewsCommand = new RelayCommand(o => NavigateTo<NewsPage>());
-        ShowFavoritesCommand = new RelayCommand(o => NavigateTo<FavoritesPage>());
-        ShowNutritionCommand = new RelayCommand(o => NavigateTo<NutritionPage>());
-        ShowWorkoutsCommand = new RelayCommand(o => NavigateTo<WorkoutsPage>());
-        ShowProfileCommand = new RelayCommand(o => NavigateToProfilePage());
-        ShowAccountLoginCommand = new RelayCommand(o => NavigateTo<AccountLoginPage>());
-        ShowAccountRegistrationCommand = new RelayCommand(o => NavigateTo<AccountRegistrationPage>());
-        ShowCaloriesCommand = new RelayCommand(o => NavigateTo<CaloriesPage>());
+        ShowNewsCommand = new RelayCommand(async o => await NavigateToAsync<NewsPage>());
+        ShowFavoritesCommand = new RelayCommand(async o => await NavigateToAsync<FavoritesPage>());
+        ShowNutritionCommand = new RelayCommand(async o => await NavigateToAsync<NutritionPage>());
+        ShowWorkoutsCommand = new RelayCommand(async o => await NavigateToAsync<WorkoutsPage>());
+        ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
+        ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
+        ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
+        ShowCaloriesCommand = new RelayCommand(async o => await NavigateToAsync<CaloriesPage>());
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 
@@ -76,15 +76,15 @@ public class MainViewModel : INotifyPropertyChanged
         var storedUser = await _userRepository.GetCurrentUserAsync();
         if (storedUser != null)
         {
-            CurrentPage = GetPageInstance<NewsPage>();
+            CurrentPage = await GetPageInstanceAsync<NewsPage>();
         }
         else
         {
-            CurrentPage = GetPageInstance<AccountLoginPage>();
+            CurrentPage = await GetPageInstanceAsync<AccountLoginPage>();
         }
     }
 
-    public async void NavigateTo<T>() where T : Page
+    public async Task NavigateToAsync<T>() where T : Page
     {
         var currentUser = await _userRepository.GetCurrentUserAsync();
 
@@ -95,7 +95,7 @@ public class MainViewModel : INotifyPropertyChanged
             return; // Прерываем выполнение метода, остаёмся на текущей странице
         }
 
-        var page = GetPageInstance<T>();
+        var page = await GetPageInstanceAsync<T>();
 
         if (CurrentPage is Page currentPage && currentPage.NavigationService != null)
         {
@@ -107,7 +107,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public async void NavigateToProfilePage()
+    public async Task NavigateToProfilePageAsync()
     {
         var storedUser = await _userRepository.GetCurrentUserAsync();
         if (storedUser != null)
@@ -117,13 +117,13 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Page GetPageInstance<T>() where T : Page
+    private async Task<Page> GetPageInstanceAsync<T>() where T : Page
     {
         var type = typeof(T);
 
         if (type == typeof(CaloriesPage))
         {
-            var currentUser = _userRepository.GetCurrentUserAsync().Result;
+            var currentUser = await _userRepository.GetCurrentUserAsync();
             return CaloriesPage.GetInstance(currentUser);
         }
 

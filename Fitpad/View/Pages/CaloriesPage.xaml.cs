@@ -22,11 +22,19 @@ namespace Fitpad.View.Pages
             _firestoreDb = firestoreService.GetFirestoreDb();
             _currentUserCache = currentUser;
 
+            Console.WriteLine($"Инициализация CaloriesPage для пользователя: {currentUser.Name}, ID: {currentUser.Id}");
             InitializePageContentAsync();
         }
 
+
         public static CaloriesPage GetInstance(UserModel currentUser)
         {
+            if (currentUser == null)
+            {
+                MessageBox.Show("Ошибка: Пользователь не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+
             if (_instance == null || _currentUserCache == null || _currentUserCache.Id != currentUser.Id)
             {
                 _instance = new CaloriesPage(currentUser);
@@ -34,19 +42,30 @@ namespace Fitpad.View.Pages
             return _instance;
         }
 
+
         private async void InitializePageContentAsync()
         {
-            var userInfo = await GetUserInfoAsync(_currentUserCache.Id);
+            try
+            {
+                var userInfo = await GetUserInfoAsync(_currentUserCache.Id);
 
-            if (userInfo == null || userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
-            {
-                ShowUserInfoForm();
+                if (userInfo == null || userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
+                {
+                    Console.WriteLine("Данные пользователя не найдены или неполные. Отображение формы ввода.");
+                    ShowUserInfoForm();
+                }
+                else
+                {
+                    Console.WriteLine("Данные пользователя загружены. Отображение суточной нормы калорий.");
+                    ShowCalorieIntake(userInfo);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ShowCalorieIntake(userInfo);
+                MessageBox.Show($"Ошибка при инициализации страницы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private async Task<UserInfoModel> GetUserInfoAsync(string userId) // Изменен тип userId на string
         {
