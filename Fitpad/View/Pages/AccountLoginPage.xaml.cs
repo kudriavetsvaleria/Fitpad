@@ -82,29 +82,29 @@ namespace Fitpad.View.Pages
         }
 
         // Метод для сохранения данных пользователя в JSON-файл
-        private void SaveCurrentUserToFile(UserModel user)
+private void SaveCurrentUserToFile(UserModel user)
+{
+    try
+    {
+        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+
+        // Сохраняем ID текущего пользователя вместе с данными пользователя
+        var data = new
         {
-            try
-            {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+            UserId = user.Id,
+            User = user
+        };
 
-                // Сохраняем ID текущего пользователя вместе с данными пользователя
-                var data = new
-                {
-                    UserId = user.Id,
-                    User = user
-                };
+        string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+        File.WriteAllText(filePath, json);
 
-                string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-                File.WriteAllText(filePath, json);
-
-                UserRepository.CurrentUserId = user.Id; // Устанавливаем CurrentUserId
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при сохранении данных пользователя: {ex.Message}");
-            }
-        }
+        UserRepository.CurrentUserId = user.Id; // Устанавливаем CurrentUserId
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка при сохранении данных пользователя: {ex.Message}");
+    }
+}
 
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
