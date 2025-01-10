@@ -88,10 +88,15 @@ namespace Fitpad.View.Pages
 
         private void ShowUserInfoForm()
         {
-            UserInfoForm.Visibility = Visibility.Visible;
+            var userInfoForm = new UserInfoForm(_currentUserCache); // Передаем текущего пользователя
+            UserInfoFormContainer.Content = userInfoForm; // Добавляем форму в контейнер
+            userInfoForm.Visibility = Visibility.Visible;
+
             DateTextBlock.Visibility = Visibility.Collapsed;
             CalorieTextBlock.Visibility = Visibility.Collapsed;
         }
+
+
 
         private void ShowCalorieIntake(UserInfoModel userInfo)
         {

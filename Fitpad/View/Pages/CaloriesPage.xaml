@@ -13,8 +13,8 @@
         <TextBlock x:Name="CalorieTextBlock" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="24"
                    FontWeight="Bold" Margin="0,40,0,0" Visibility="Collapsed"/>
 
-        <!-- Форма анкеты -->
-        <local:UserInfoForm x:Name="UserInfoForm" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- Контейнер для формы ввода данных -->
+        <ContentControl x:Name="UserInfoFormContainer" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 
 </Page>

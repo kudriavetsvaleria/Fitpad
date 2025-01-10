@@ -10,7 +10,7 @@ namespace Fitpad.View.Components
     public partial class UserInfoForm : UserControl
     {
         private readonly UserInfoRepository _userInfoRepository;
-        private readonly int _userId;
+        private readonly string _userId; 
 
         // Публичный конструктор без параметров
         public UserInfoForm()
@@ -20,9 +20,10 @@ namespace Fitpad.View.Components
         }
 
         // Конструктор с параметром userId
-        public UserInfoForm(int userId) : this()
+        public UserInfoForm(UserModel user) : this()
         {
-            _userId = userId;
+            _userInfoRepository = new UserInfoRepository();
+            _userId = user.Id; // Получаем уникальный идентификатор пользователя
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -50,7 +51,7 @@ namespace Fitpad.View.Components
 
                 var userInfo = new UserInfoModel
                 {
-                    UserId = _userId.ToString(), // Преобразуем int в string
+                    UserId = _userId, // Используем правильный идентификатор пользователя
                     Gender = gender,
                     Age = age,
                     Height = height,
@@ -58,6 +59,7 @@ namespace Fitpad.View.Components
                     ActivityLevel = activityLevel,
                     Purpose = "Поддержание формы"
                 };
+
 
                 await _userInfoRepository.SaveUserInfoAsync(userInfo);
                 MessageBox.Show("Данные успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
