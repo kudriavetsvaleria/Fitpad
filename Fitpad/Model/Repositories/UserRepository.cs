@@ -55,9 +55,6 @@ namespace Fitpad.Model.Repositories
             }
         }
 
-
-
-        // Метод для получения текущего пользователя
         public async Task<UserModel> GetCurrentUserAsync()
         {
             if (string.IsNullOrEmpty(CurrentUserId))
@@ -68,7 +65,7 @@ namespace Fitpad.Model.Repositories
 
             try
             {
-                var docRef = _firestoreDb.Collection(UsersCollection).Document(CurrentUserId);
+                var docRef = _firestoreDb.Collection("Users").Document(CurrentUserId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (snapshot.Exists)
@@ -85,10 +82,10 @@ namespace Fitpad.Model.Repositories
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
-                MessageBox.Show($"Ошибка при загрузке данных пользователя: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
+
 
         // Метод для сохранения данных пользователя
         public async Task SaveUserAsync(UserModel user)

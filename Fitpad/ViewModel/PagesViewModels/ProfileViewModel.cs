@@ -2,58 +2,53 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Fitpad.ViewModel.PagesViewModels
+public class ProfileViewModel : INotifyPropertyChanged
 {
-    public class ProfileViewModel : INotifyPropertyChanged
+    private UserModel _currentUser;
+    private UserInfoModel _currentUserInfo;
+
+    public UserModel CurrentUser
     {
-        private UserModel _currentUser;
-        private UserInfoModel _currentUserInfo;
-
-        public UserModel CurrentUser
+        get => _currentUser;
+        set
         {
-            get => _currentUser;
-            set
-            {
-                _currentUser = value;
-                OnPropertyChanged();
-            }
+            _currentUser = value;
+            OnPropertyChanged(); // Уведомляем интерфейс об изменении свойства
         }
+    }
 
-        public UserInfoModel CurrentUserInfo
+    public UserInfoModel CurrentUserInfo
+    {
+        get => _currentUserInfo;
+        set
         {
-            get => _currentUserInfo;
-            set
-            {
-                _currentUserInfo = value;
-                OnPropertyChanged();
-            }
+            _currentUserInfo = value;
+            OnPropertyChanged(); // Уведомляем интерфейс об изменении свойства
         }
+    }
 
-        public ProfileViewModel(UserModel user = null)
+    public ProfileViewModel(UserModel user = null)
+    {
+        CurrentUser = user;
+    }
+
+    public void UpdateUserData(UserModel updatedUser)
+    {
+        if (updatedUser != null)
         {
-            CurrentUser = user;
+            CurrentUser = updatedUser;
         }
+    }
 
-        // Метод для обновления данных пользователя
-        public void UpdateUserData(UserModel updatedUser)
-        {
-            if (updatedUser != null)
-            {
-                CurrentUser = updatedUser;
-            }
-        }
+    public void ClearUserData()
+    {
+        CurrentUser = null;
+        CurrentUserInfo = null;
+    }
 
-        public void ClearUserData()
-        {
-            CurrentUser = null;
-            CurrentUserInfo = null;
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -2,9 +2,11 @@
 using Fitpad.Model.Repositories;
 using Fitpad.View.Pages;
 using Fitpad.ViewModel.PagesViewModels;
+using Newtonsoft.Json;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.IO;
 
 namespace Fitpad.View.Pages
 {
@@ -65,6 +67,10 @@ namespace Fitpad.View.Pages
                 UserRepository.CurrentUserId = user.Id.ToString();
                 var profileViewModel = new ProfileViewModel(user);
 
+                // Сохраняем данные пользователя в файл
+                SaveCurrentUserToFile(user);
+                UserRepository.CurrentUserId = user.Id.ToString();
+
                 MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
             }
@@ -74,6 +80,32 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        // Метод для сохранения данных пользователя в JSON-файл
+        private void SaveCurrentUserToFile(UserModel user)
+        {
+            try
+            {
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+
+                // Сохраняем ID текущего пользователя вместе с данными пользователя
+                var data = new
+                {
+                    UserId = user.Id,
+                    User = user
+                };
+
+                string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+                File.WriteAllText(filePath, json);
+
+                UserRepository.CurrentUserId = user.Id; // Устанавливаем CurrentUserId
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении данных пользователя: {ex.Message}");
+            }
+        }
+
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
         {

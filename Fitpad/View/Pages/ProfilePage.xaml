@@ -27,27 +27,27 @@
         <!-- Информация о пользователе -->
         <StackPanel Grid.Row="1" Margin="0,0,0,20">
             <!-- Данные пользователя -->
-            <TextBlock Text="Имя пользователя:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUser.Name}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Имя пользователя:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUser.Name}" Margin="0,0,0,10"/>
 
             <TextBlock Text="Email:" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="{Binding CurrentUser.Email}" FontSize="16" Margin="0,0,0,10" />
 
-            <!-- Данные анкеты -->
-            <TextBlock Text="Пол:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUserInfo.Gender}" FontSize="16" Margin="0,0,0,10" />
+            <!-- Отображение данных анкеты -->
+            <TextBlock Text="Пол:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Gender}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Возраст:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUserInfo.Age}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Возраст:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Age}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Рост:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUserInfo.Height}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Рост:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Height}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Вес:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUserInfo.Weight}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Вес:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Weight}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Уровень активности:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Уровень активности:" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" Margin="0,0,0,10"/>
         </StackPanel>
 
         <!-- Кнопка выхода -->

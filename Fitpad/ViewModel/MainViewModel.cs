@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Newtonsoft.Json;
+using System.IO;
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -73,16 +75,53 @@ public class MainViewModel : INotifyPropertyChanged
 
     private async void InitializeCurrentPageAsync()
     {
-        var storedUser = await _userRepository.GetCurrentUserAsync();
+        var storedUser = LoadCurrentUserFromFile();
+
         if (storedUser != null)
         {
-            CurrentPage = await GetPageInstanceAsync<NewsPage>();
+            Console.WriteLine("Найден авторизованный пользователь. Выполняется автоматический вход...");
+            CurrentPage = await GetPageInstanceAsync<ProfilePage>();
         }
         else
         {
-            CurrentPage = await GetPageInstanceAsync<AccountLoginPage>();
+            storedUser = await _userRepository.GetCurrentUserAsync();
+            if (storedUser != null)
+            {
+                CurrentPage = await GetPageInstanceAsync<NewsPage>();
+            }
+            else
+            {
+                CurrentPage = await GetPageInstanceAsync<AccountLoginPage>();
+            }
         }
     }
+
+
+    // Метод для загрузки данных пользователя из JSON-файла
+    private UserModel LoadCurrentUserFromFile()
+    {
+        try
+        {
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+            if (File.Exists(filePath))
+            {
+                string json = File.ReadAllText(filePath);
+                var data = JsonConvert.DeserializeObject<dynamic>(json);
+
+                // Восстанавливаем ID текущего пользователя
+                UserRepository.CurrentUserId = data.UserId;
+
+                // Восстанавливаем данные пользователя
+                return JsonConvert.DeserializeObject<UserModel>(Convert.ToString(data.User));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
+        }
+        return null;
+    }
+
 
     public async Task NavigateToAsync<T>() where T : Page
     {
@@ -124,6 +163,11 @@ public class MainViewModel : INotifyPropertyChanged
         if (type == typeof(CaloriesPage))
         {
             var currentUser = await _userRepository.GetCurrentUserAsync();
+            if (currentUser == null)
+            {
+                MessageBox.Show("Ошибка: Пользователь не найден.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
             return CaloriesPage.GetInstance(currentUser);
         }
 
@@ -131,15 +175,17 @@ public class MainViewModel : INotifyPropertyChanged
         {
             if (type == typeof(ProfilePage))
             {
-                page = ProfilePage.GetInstance(_profileViewModel);
+                var currentUser = await _userRepository.GetCurrentUserAsync();
+                var profileViewModel = new ProfileViewModel(currentUser);
+                page = ProfilePage.GetInstance(profileViewModel);
             }
             else if (type == typeof(AccountLoginPage))
             {
-                page = AccountLoginPage.GetInstance(_profileViewModel);
+                page = AccountLoginPage.GetInstance(new ProfileViewModel());
             }
             else
             {
-                page = (Page)Activator.CreateInstance(type);
+                page = (Page)Activator.CreateInstance(type); // Создание страницы без параметров
             }
 
             _pageCache[type] = page;
@@ -147,6 +193,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         return page;
     }
+
+
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

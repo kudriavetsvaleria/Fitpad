@@ -1,9 +1,11 @@
 ﻿using Fitpad.Services;
 using Fitpad.ViewModel.PagesViewModels;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using System.IO;
 
 namespace Fitpad.View.Pages
 {
@@ -51,9 +53,15 @@ namespace Fitpad.View.Pages
 
             if (userInfo != null)
             {
+                Console.WriteLine("Данные анкеты успешно загружены.");
                 _profileViewModel.CurrentUserInfo = userInfo;
             }
+            else
+            {
+                Console.WriteLine("Данные анкеты не найдены.");
+            }
         }
+
 
         public static void ResetInstance()
         {
@@ -65,7 +73,26 @@ namespace Fitpad.View.Pages
             _profileViewModel.ClearUserData();
             ResetInstance();
 
+            // Удаляем файл с данными пользователя
+            ClearCurrentUserFile();
+
             NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
+        }
+
+        private void ClearCurrentUserFile()
+        {
+            try
+            {
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при удалении файла данных пользователя: {ex.Message}");
+            }
         }
     }
 }
