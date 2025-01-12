@@ -2,8 +2,10 @@
 using Fitpad.Services;
 using Fitpad.View.Components;
 using Google.Cloud.Firestore;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +18,7 @@ namespace Fitpad.View.Pages
         private static UserModel _currentUserCache;
         private readonly FirestoreDb _firestoreDb;
 
+
         public CaloriesPage(UserModel currentUser)
         {
             InitializeComponent();
@@ -26,7 +29,6 @@ namespace Fitpad.View.Pages
             Console.WriteLine($"Инициализация CaloriesPage для пользователя: {currentUser.Name}, ID: {currentUser.Id}");
             InitializePageContentAsync();
         }
-
 
         public static CaloriesPage GetInstance(UserModel currentUser)
         {
@@ -42,7 +44,14 @@ namespace Fitpad.View.Pages
             }
             return _instance;
         }
-
+        private async void ProductSearchBox_TextChanged(object sender, RoutedEventArgs e)
+        {
+            if (ProductSearchBox.Text.Length >= 2) // Проверяем, что введено минимум 2 символа
+            {
+                var products = await SearchProductsAsync(ProductSearchBox.Text); // Ищем продукты через API OpenFoodFacts
+                ProductSearchBox.ItemsSource = products; // Заполняем выпадающий список найденными продуктами
+            }
+        }
 
         private async void InitializePageContentAsync()
         {
@@ -67,8 +76,7 @@ namespace Fitpad.View.Pages
             }
         }
 
-
-        private async Task<UserInfoModel> GetUserInfoAsync(string userId) // Изменен тип userId на string
+        private async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
             try
             {
@@ -84,6 +92,106 @@ namespace Fitpad.View.Pages
             {
                 MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
+            }
+        }
+
+        private async Task<List<string>> SearchProductsAsync(string query)
+        {
+            var products = new List<string>();
+
+            try
+            {
+                using var client = new HttpClient();
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1";
+                var response = await client.GetStringAsync(url);
+
+                var json = JObject.Parse(response);
+                var productArray = json["products"];
+
+                if (productArray != null)
+                {
+                    foreach (var product in productArray)
+                    {
+                        string productName = product["product_name"]?.ToString();
+                        if (!string.IsNullOrEmpty(productName))
+                        {
+                            products.Add(productName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при поиске продуктов: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            return products;
+        }
+
+        private async void ProductSearchBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ProductSearchBox.Text.Length >= 2)
+            {
+                var products = await SearchProductsAsync(ProductSearchBox.Text);
+                ProductSearchBox.ItemsSource = products;
+            }
+        }
+
+
+        private async Task<dynamic> GetProductDetailsAsync(string productName)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={productName}&search_simple=1&action=process&json=1";
+                var response = await client.GetStringAsync(url);
+
+                var json = JObject.Parse(response);
+                var product = json["products"]?.First;
+
+                if (product != null)
+                {
+                    return new
+                    {
+                        Name = product["product_name"]?.ToString(),
+                        Calories = product["nutriments"]?["energy-kcal_100g"]?.ToObject<double>() ?? 0,
+                        Proteins = product["nutriments"]?["proteins_100g"]?.ToObject<double>() ?? 0,
+                        Fats = product["nutriments"]?["fat_100g"]?.ToObject<double>() ?? 0,
+                        Carbs = product["nutriments"]?["carbohydrates_100g"]?.ToObject<double>() ?? 0
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при получении информации о продукте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            return null;
+        }
+
+        private async void AddProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            string productName = ProductSearchBox.Text;
+            if (string.IsNullOrWhiteSpace(productName) || !int.TryParse(ProductQuantityTextBox.Text, out int quantity) || quantity <= 0)
+            {
+                MessageBox.Show("Введите корректное название продукта и количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var productDetails = await GetProductDetailsAsync(productName);
+            if (productDetails != null)
+            {
+                double factor = quantity / 100.0;
+
+                ProductsDataGrid.Items.Add(new
+                {
+                    Name = productDetails.Name,
+                    Quantity = quantity,
+                    Calories = productDetails.Calories * factor,
+                    Proteins = productDetails.Proteins * factor,
+                    Fats = productDetails.Fats * factor,
+                    Carbs = productDetails.Carbs * factor
+                });
             }
         }
 
@@ -130,67 +238,6 @@ namespace Fitpad.View.Pages
             WaterTextBlock.Visibility = Visibility.Visible;
         }
 
-
-        private void UpdateMeals(Dictionary<string, List<string>> meals)
-        {
-            BreakfastTextBlock.Text = meals.ContainsKey("Завтрак") && meals["Завтрак"].Count > 0
-                ? string.Join(", ", meals["Завтрак"])
-                : "-";
-
-            SecondBreakfastTextBlock.Text = meals.ContainsKey("Второй завтрак") && meals["Второй завтрак"].Count > 0
-                ? string.Join(", ", meals["Второй завтрак"])
-                : "-";
-
-            LunchTextBlock.Text = meals.ContainsKey("Обед") && meals["Обед"].Count > 0
-                ? string.Join(", ", meals["Обед"])
-                : "-";
-
-            AfternoonSnackTextBlock.Text = meals.ContainsKey("Полдник") && meals["Полдник"].Count > 0
-                ? string.Join(", ", meals["Полдник"])
-                : "-";
-
-            DinnerTextBlock.Text = meals.ContainsKey("Ужин") && meals["Ужин"].Count > 0
-                ? string.Join(", ", meals["Ужин"])
-                : "-";
-
-            SecondDinnerTextBlock.Text = meals.ContainsKey("Второй ужин") && meals["Второй ужин"].Count > 0
-                ? string.Join(", ", meals["Второй ужин"])
-                : "-";
-        }
-
-        private double CalculateWaterIntake(UserInfoModel userInfo, int activityMinutes = 0)
-        {
-            // Базовый расчет: 30-35 мл воды на 1 кг веса
-            double waterIntake = userInfo.Weight * 0.035; // Максимальный коэффициент: 35 мл = 0.035 л
-
-            // Дополнительная вода за активность: 0.5 л за каждые 30 минут
-            if (activityMinutes > 0)
-            {
-                waterIntake += (activityMinutes / 30.0) * 0.5;
-            }
-
-            return waterIntake; // Возвращаем норму воды в литрах
-        }
-
-        private string GetMealTypeByTime(TimeSpan time)
-        {
-            if (time >= TimeSpan.FromHours(6) && time < TimeSpan.FromHours(9))
-                return "Завтрак";
-            if (time >= TimeSpan.FromHours(9) && time < TimeSpan.FromHours(11))
-                return "Второй завтрак";
-            if (time >= TimeSpan.FromHours(12) && time < TimeSpan.FromHours(14))
-                return "Обед";
-            if (time >= TimeSpan.FromHours(15) && time < TimeSpan.FromHours(16))
-                return "Полдник";
-            if (time >= TimeSpan.FromHours(18) && time < TimeSpan.FromHours(20))
-                return "Ужин";
-            if (time >= TimeSpan.FromHours(20) && time < TimeSpan.FromHours(22))
-                return "Второй ужин";
-
-            return "Прочее";
-        }
-
-
         private double CalculateDailyCalorieIntake(UserInfoModel userInfo)
         {
             double bmr;
@@ -226,9 +273,9 @@ namespace Fitpad.View.Pages
             // Корректируем TDEE в зависимости от цели
             tdee = purpose switch
             {
-                "Похудение" => tdee - 400, // Уменьшаем TDEE на 400 калорий (можно изменить диапазон)
-                "Набор массы" => tdee + 400, // Увеличиваем TDEE на 400 калорий (можно изменить диапазон)
-                _ => tdee // Для "Сохранение массы" оставляем без изменений
+                "Похудение" => tdee - 400,
+                "Набор массы" => tdee + 400,
+                _ => tdee
             };
 
             return tdee;
@@ -236,35 +283,35 @@ namespace Fitpad.View.Pages
 
         private (double Proteins, double Fats, double Carbs, double Fiber, double Sugar, double Salt) CalculateNutritionDetails(UserInfoModel userInfo, double dailyCalories)
         {
-            // Соотношение макронутриентов в зависимости от цели
             (double ProteinPercent, double FatPercent, double CarbPercent) = userInfo.Purpose switch
             {
-                "Похудение" => (0.25, 0.225, 0.475), // Белки 25%, Жиры 22.5%, Углеводы 47.5%
-                "Набор массы" => (0.175, 0.275, 0.55), // Белки 17.5%, Жиры 27.5%, Углеводы 55%
-                _ => (0.175, 0.275, 0.55) // По умолчанию поддержание веса: Белки 17.5%, Жиры 27.5%, Углеводы 55%
+                "Похудение" => (0.25, 0.225, 0.475),
+                "Набор массы" => (0.175, 0.275, 0.55),
+                _ => (0.175, 0.275, 0.55)
             };
 
-            // Расчет КБЖУ
-            double proteins = (dailyCalories * ProteinPercent) / 4; // Белки (калории на грамм: 4)
-            double fats = (dailyCalories * FatPercent) / 9; // Жиры (калории на грамм: 9)
-            double carbs = (dailyCalories * CarbPercent) / 4; // Углеводы (калории на грамм: 4)
+            double proteins = (dailyCalories * ProteinPercent) / 4;
+            double fats = (dailyCalories * FatPercent) / 9;
+            double carbs = (dailyCalories * CarbPercent) / 4;
 
-            // Расчет клетчатки
             double fiber = (userInfo.Gender == "Мужской" ?
                            (userInfo.Age <= 50 ? 35 : 27) :
                            (userInfo.Age <= 50 ? 23 : 20));
 
-            // Расчет сахара (не более 10% калорий, в идеале 5%)
-            double sugar = dailyCalories * 0.05 / 4; // Сахар (калории на грамм: 4)
-
-            // Суточная норма соли: 5 г
+            double sugar = dailyCalories * 0.05 / 4;
             double salt = 5;
 
             return (proteins, fats, carbs, fiber, sugar, salt);
         }
 
-
-
-
+        private double CalculateWaterIntake(UserInfoModel userInfo, int activityMinutes = 0)
+        {
+            double waterIntake = userInfo.Weight * 0.035;
+            if (activityMinutes > 0)
+            {
+                waterIntake += (activityMinutes / 30.0) * 0.5;
+            }
+            return waterIntake;
+        }
     }
 }

@@ -59,8 +59,15 @@ namespace Fitpad.Model.Repositories
         {
             if (string.IsNullOrEmpty(CurrentUserId))
             {
-                Console.WriteLine("ID текущего пользователя отсутствует.");
-                return null;
+                Console.WriteLine("ID текущего пользователя отсутствует. Возвращаем пользователя по умолчанию.");
+
+                // Возвращаем пустого пользователя по умолчанию
+                return new UserModel
+                {
+                    Id = string.Empty,
+                    Name = "Гость",
+                    Email = "guest@example.com"
+                };
             }
 
             try
@@ -76,13 +83,23 @@ namespace Fitpad.Model.Repositories
                 else
                 {
                     Console.WriteLine($"Пользователь с ID {CurrentUserId} не найден.");
-                    return null;
+                    return new UserModel
+                    {
+                        Id = string.Empty,
+                        Name = "Гость",
+                        Email = "guest@example.com"
+                    };
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
-                return null;
+                return new UserModel
+                {
+                    Id = string.Empty,
+                    Name = "Гость",
+                    Email = "guest@example.com"
+                };
             }
         }
 

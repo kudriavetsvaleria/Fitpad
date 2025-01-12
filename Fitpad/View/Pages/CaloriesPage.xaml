@@ -1,73 +1,104 @@
 <Page x:Class="Fitpad.View.Pages.CaloriesPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="clr-namespace:Fitpad.View.Components"
       Title="Ввод данных пользователя">
 
-    <!-- Оборачиваем весь контент в ScrollViewer -->
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="20">
-            <!-- Дата и день недели -->
-            <TextBlock x:Name="DateTextBlock" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="14"
-                       FontWeight="Bold" Margin="0,10,10,0" Visibility="Collapsed"/>
-
-            <!-- Основной контент -->
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0">
-
-                <!-- Суточная норма калорий -->
-                <TextBlock x:Name="CalorieTextBlock" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" Visibility="Collapsed"/>
-
-                <!-- Блок КБЖУ -->
-                <StackPanel Margin="0,10,0,10">
-                    <TextBlock Text="КБЖУ:" FontSize="18" FontWeight="Bold" Margin="0,10,0,10"/>
-                    <TextBlock x:Name="ProteinTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                    <TextBlock x:Name="FatTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                    <TextBlock x:Name="CarbTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                </StackPanel>
+            <!-- Определение строк и колонок -->
+            <Grid.RowDefinitions>
                 
-                <StackPanel Margin="0,10,0,10">
-                    <TextBlock Text="Питьевой режим:" FontSize="18" FontWeight="Bold" Margin="0,10,0,10"/>
-                    <TextBlock x:Name="WaterTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Дата и день недели -->
+            <TextBlock x:Name="DateTextBlock" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" 
+                       FontSize="14" FontWeight="Bold" Margin="0,0,0,10" Visibility="Collapsed"/>
+
+            <!-- Суточная норма калорий -->
+            <TextBlock x:Name="CalorieTextBlock" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                       FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,20" Visibility="Collapsed"/>
+
+            <!-- Блок добавления продукта -->
+            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                <TextBlock Text="Добавить продукт:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Grid Width="300" Margin="0,0,0,10">
+                    <ComboBox x:Name="ProductSearchBox" Width="300" IsEditable="True" SelectionChanged="ProductSearchBox_SelectionChanged"/>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="Количество (г):" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox x:Name="ProductQuantityTextBox" Width="100"/>
                 </StackPanel>
 
-                <!-- Блок клетчатки, сахара и соли -->
-                <StackPanel Margin="0,10,0,10">
-                    <TextBlock Text="Клетчатка, сахар и соль:" FontSize="18" FontWeight="Bold" Margin="0,10,0,10"/>
-                    <TextBlock x:Name="FiberTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                    <TextBlock x:Name="SugarTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                    <TextBlock x:Name="SaltTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
-                </StackPanel>
-
-                <StackPanel Margin="0,20,0,0">
-                    <TextBlock Text="Рацион за день:" FontSize="18" FontWeight="Bold" Margin="0,10,0,10"/>
-
-                    <!-- Блок для отображения введенных блюд -->
-                    <StackPanel x:Name="MealsPanel" Margin="0,10,0,0">
-                        <TextBlock Text="Завтрак (06:00 - 09:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="BreakfastTextBlock" Text="-" Margin="10,5,0,10"/>
-
-                        <TextBlock Text="Второй завтрак (09:00 - 11:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="SecondBreakfastTextBlock" Text="-" Margin="10,5,0,10"/>
-
-                        <TextBlock Text="Обед (12:00 - 14:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="LunchTextBlock" Text="-" Margin="10,5,0,10"/>
-
-                        <TextBlock Text="Полдник (15:00 - 16:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="AfternoonSnackTextBlock" Text="-" Margin="10,5,0,10"/>
-
-                        <TextBlock Text="Ужин (18:00 - 20:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="DinnerTextBlock" Text="-" Margin="10,5,0,10"/>
-
-                        <TextBlock Text="Второй ужин (20:00 - 22:00):" FontSize="16" FontWeight="Bold"/>
-                        <TextBlock x:Name="SecondDinnerTextBlock" Text="-" Margin="10,5,0,10"/>
-                    </StackPanel>
-                </StackPanel>
-
+                <Button Content="Добавить" Width="100" HorizontalAlignment="Left" Click="AddProductButton_Click"/>
             </StackPanel>
 
-            <!-- Контейнер для формы ввода данных -->
-            <ContentControl x:Name="UserInfoFormContainer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,20,0,0"/>
+            <!-- Таблица продуктов -->
+            <DataGrid x:Name="ProductsDataGrid" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                      AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,20,0,0" Height="200">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Продукт" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Количество (г)" Binding="{Binding Quantity}" Width="*"/>
+                    <DataGridTextColumn Header="Калории" Binding="{Binding Calories}" Width="*"/>
+                    <DataGridTextColumn Header="Белки (г)" Binding="{Binding Proteins}" Width="*"/>
+                    <DataGridTextColumn Header="Жиры (г)" Binding="{Binding Fats}" Width="*"/>
+                    <DataGridTextColumn Header="Углеводы (г)" Binding="{Binding Carbs}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Блок КБЖУ -->
+            <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,10,20,0">
+                <TextBlock Text="КБЖУ:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="ProteinTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="FatTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="CarbTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+
+            <!-- Блок питьевого режима -->
+            <StackPanel Grid.Row="4" Grid.Column="1" Margin="20,10,0,0">
+                <TextBlock Text="Питьевой режим:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="WaterTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+
+            <!-- Блок клетчатки, сахара и соли -->
+            <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,10,20,0">
+                <TextBlock Text="Клетчатка, сахар и соль:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="FiberTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="SugarTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="SaltTextBlock" FontSize="16" Margin="0,5,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+
+            <!-- Блок рациона за день -->
+            <StackPanel Grid.Row="5" Grid.Column="1" Margin="20,10,0,0">
+                <TextBlock Text="Рацион за день:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="MealsPanel" Margin="0,10,0,0">
+                    <TextBlock Text="Завтрак (06:00 - 09:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="BreakfastTextBlock" Text="-" Margin="10,5,0,10"/>
+                    <TextBlock Text="Второй завтрак (09:00 - 11:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="SecondBreakfastTextBlock" Text="-" Margin="10,5,0,10"/>
+                    <TextBlock Text="Обед (12:00 - 14:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="LunchTextBlock" Text="-" Margin="10,5,0,10"/>
+                    <TextBlock Text="Полдник (15:00 - 16:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="AfternoonSnackTextBlock" Text="-" Margin="10,5,0,10"/>
+                    <TextBlock Text="Ужин (18:00 - 20:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="DinnerTextBlock" Text="-" Margin="10,5,0,10"/>
+                    <TextBlock Text="Второй ужин (20:00 - 22:00):" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock x:Name="SecondDinnerTextBlock" Text="-" Margin="10,5,0,10"/>
+                </StackPanel>
+            </StackPanel>
+            <ContentControl x:Name="UserInfoFormContainer" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,20,0,0"/>
+
         </Grid>
     </ScrollViewer>
-
 </Page>
