@@ -20,7 +20,7 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             if (!int.TryParse(ageText, out int age) || !int.TryParse(heightText, out int height) || !double.TryParse(weightText, out double weight))
             {
-                MessageBox.Show("Проверьте правильность введенных данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Перевірте правильність введених даних.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
@@ -28,7 +28,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             if (existingUserInfo == null)
             {
-                MessageBox.Show("Ошибка: запись пользователя не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Помилка: запис користувача не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 

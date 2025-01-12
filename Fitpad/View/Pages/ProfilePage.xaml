@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <!-- Заголовок -->
-        <TextBlock Text="Личный кабинет"
+        <TextBlock Text="Особистий кабінет"
                    FontSize="30"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
@@ -27,35 +27,35 @@
         <!-- Информация о пользователе -->
         <StackPanel Grid.Row="1" Margin="0,0,0,20">
             <!-- Данные пользователя -->
-            <TextBlock Text="Имя пользователя:" FontWeight="Bold"/>
+            <TextBlock Text="Ім'я користувача:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUser.Name}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Email:" FontWeight="Bold" FontSize="16" />
-            <TextBlock Text="{Binding CurrentUser.Email}" FontSize="16" Margin="0,0,0,10" />
+            <TextBlock Text="Пошта:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentUser.Email}" Margin="0,0,0,10" />
 
             <!-- Отображение данных анкеты -->
-            <TextBlock Text="Пол:" FontWeight="Bold"/>
+            <TextBlock Text="Стать:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.Gender}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Возраст:" FontWeight="Bold"/>
+            <TextBlock Text="Вік:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.Age}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Рост:" FontWeight="Bold"/>
+            <TextBlock Text="Ріст:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.Height}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Вес:" FontWeight="Bold"/>
+            <TextBlock Text="Вага:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.Weight}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Уровень активности:" FontWeight="Bold"/>
+            <TextBlock Text="Рівень активності:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Цель:" FontWeight="Bold"/>
+            <TextBlock Text="Мета:" FontWeight="Bold"/>
             <TextBlock Text="{Binding CurrentUserInfo.Purpose}" Margin="0,0,0,10"/>
 
         </StackPanel>
 
         <!-- Кнопка выхода -->
-        <Button Content="Выйти"
+        <Button Content="Вийти"
                 Foreground="White"
                 Background="#D9534F"
                 FontSize="16"

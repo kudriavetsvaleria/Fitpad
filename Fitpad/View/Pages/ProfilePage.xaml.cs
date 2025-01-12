@@ -53,12 +53,12 @@ namespace Fitpad.View.Pages
 
             if (userInfo != null)
             {
-                Console.WriteLine("Данные анкеты успешно загружены.");
+                Console.WriteLine("Дані анкети успішно завантажені.");
                 _profileViewModel.CurrentUserInfo = userInfo;
             }
             else
             {
-                Console.WriteLine("Данные анкеты не найдены.");
+                Console.WriteLine("Дані анкети не знайдено.");
             }
         }
 
@@ -91,7 +91,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при удалении файла данных пользователя: {ex.Message}");
+                Console.WriteLine($"Помилка під час видалення файлу даних користувача: {ex.Message}");
             }
         }
     }

@@ -38,13 +38,13 @@ namespace Fitpad.View.Pages
         private async void OnSearchButtonClick(object sender, RoutedEventArgs e)
         {
             string query = SearchTextBox.Text.Trim();
-            if (!string.IsNullOrEmpty(query) && query != "Введите запрос")
+            if (!string.IsNullOrEmpty(query) && query != "Введіть запит")
             {
                 await _viewModel.SearchNutritionAsync(query);
             }
             else
             {
-                MessageBox.Show("Введите запрос для поиска!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введіть запит для пошуку!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Fitpad.View.Pages
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;
-            if (textBox.Text == "Введите запрос")
+            if (textBox.Text == "Введіть запит")
             {
                 textBox.Text = string.Empty;
             }
@@ -63,7 +63,7 @@ namespace Fitpad.View.Pages
             var textBox = sender as TextBox;
             if (string.IsNullOrWhiteSpace(textBox.Text))
             {
-                textBox.Text = "Введите запрос";
+                textBox.Text = "Введіть запит";
             }
         }
 

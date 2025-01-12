@@ -1,9 +1,0 @@
-<UserControl x:Class="Fitpad.View.Components.NutritionItem"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Name="NutritionItemControl">
-	<Grid>
-		<TextBlock Text="Заголовок харчування" FontSize="18" />
-		<TextBlock Text="Текст харчування" FontSize="14" />
-	</Grid>
-</UserControl>

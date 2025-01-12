@@ -26,7 +26,7 @@ namespace Fitpad.View.Pages
             _firestoreDb = firestoreService.GetFirestoreDb();
             _currentUserCache = currentUser;
 
-            Console.WriteLine($"Инициализация CaloriesPage для пользователя: {currentUser.Name}, ID: {currentUser.Id}");
+            Console.WriteLine($"Ініціалізація CaloriesPage для користувача: {currentUser.Name}, ID: {currentUser.Id}");
             InitializePageContentAsync();
         }
 
@@ -34,7 +34,7 @@ namespace Fitpad.View.Pages
         {
             if (currentUser == null)
             {
-                MessageBox.Show("Ошибка: Пользователь не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Помилка: Користувач не знайдений", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
 
@@ -61,18 +61,18 @@ namespace Fitpad.View.Pages
 
                 if (userInfo == null || userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
                 {
-                    Console.WriteLine("Данные пользователя не найдены или неполные. Отображение формы ввода.");
+                    Console.WriteLine("Дані користувача не знайдено або неповні. Відображення форми введення.");
                     ShowUserInfoForm();
                 }
                 else
                 {
-                    Console.WriteLine("Данные пользователя загружены. Отображение суточной нормы калорий.");
+                    Console.WriteLine("Дані користувача завантажено. Відображення добової норми калорій.");
                     ShowCalorieIntake(userInfo);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при инициализации страницы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -90,7 +90,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Помилка завантаження даних: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -122,7 +122,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при поиске продуктов: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Помилка під час пошуку продуктів: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return products;
@@ -163,7 +163,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при получении информации о продукте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Помилка під час отримання інформації про продукт: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return null;
@@ -174,7 +174,7 @@ namespace Fitpad.View.Pages
             string productName = ProductSearchBox.Text;
             if (string.IsNullOrWhiteSpace(productName) || !int.TryParse(ProductQuantityTextBox.Text, out int quantity) || quantity <= 0)
             {
-                MessageBox.Show("Введите корректное название продукта и количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введіть коректну назву продукту та кількість.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -216,16 +216,16 @@ namespace Fitpad.View.Pages
             double dailyWaterIntake = CalculateWaterIntake(userInfo, activityMinutes: 30);
 
             // Отображаем калорийность и КБЖУ
-            CalorieTextBlock.Text = $"0 / {dailyCalories:0} калорий";
-            ProteinTextBlock.Text = $"Белки: 0 / {proteins:0} г";
-            FatTextBlock.Text = $"Жиры: 0 / {fats:0} г";
-            CarbTextBlock.Text = $"Углеводы: 0 / {carbs:0} г";
-            FiberTextBlock.Text = $"Клетчатка: 0 / {fiber:0} г";
-            SugarTextBlock.Text = $"Сахар: 0 / {sugar:0} г";
-            SaltTextBlock.Text = $"Соль: 0 / {salt:0} г";
+            CalorieTextBlock.Text = $"0 / {dailyCalories:0} калорій";
+            ProteinTextBlock.Text = $"Білки: 0 / {proteins:0} г";
+            FatTextBlock.Text = $"Жири: 0 / {fats:0} г";
+            CarbTextBlock.Text = $"Вуглеводи: 0 / {carbs:0} г";
+            FiberTextBlock.Text = $"Клітковина: 0 / {fiber:0} г";
+            SugarTextBlock.Text = $"Цукор: 0 / {sugar:0} г";
+            SaltTextBlock.Text = $"Сіль: 0 / {salt:0} г";
 
             // Отображаем норму воды
-            WaterTextBlock.Text = $"Питьевой режим: {dailyWaterIntake:0.0} л";
+            WaterTextBlock.Text = $"Питний режим: {dailyWaterIntake:0.0} л";
 
             // Делаем все элементы видимыми
             CalorieTextBlock.Visibility = Visibility.Visible;
@@ -249,7 +249,7 @@ namespace Fitpad.View.Pages
             string purpose = userInfo.Purpose;
 
             // Рассчитываем BMR по формуле Миффлина-Сан Жеора
-            if (gender == "Мужской")
+            if (gender == "Чоловік")
             {
                 bmr = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age);
             }
@@ -261,9 +261,9 @@ namespace Fitpad.View.Pages
             // Множитель активности
             double activityMultiplier = activityLevel switch
             {
-                "Низкая" => 1.2,
-                "Средняя" => 1.55,
-                "Высокая" => 1.9,
+                "Низька" => 1.2,
+                "Середня" => 1.55,
+                "Висока" => 1.9,
                 _ => 1.2
             };
 
@@ -273,8 +273,8 @@ namespace Fitpad.View.Pages
             // Корректируем TDEE в зависимости от цели
             tdee = purpose switch
             {
-                "Похудение" => tdee - 400,
-                "Набор массы" => tdee + 400,
+                "Схуднення" => tdee - 400,
+                "Набір маси" => tdee + 400,
                 _ => tdee
             };
 
@@ -294,7 +294,7 @@ namespace Fitpad.View.Pages
             double fats = (dailyCalories * FatPercent) / 9;
             double carbs = (dailyCalories * CarbPercent) / 4;
 
-            double fiber = (userInfo.Gender == "Мужской" ?
+            double fiber = (userInfo.Gender == "Чоловік" ?
                            (userInfo.Age <= 50 ? 35 : 27) :
                            (userInfo.Age <= 50 ? 23 : 20));
 

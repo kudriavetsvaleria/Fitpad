@@ -42,13 +42,13 @@ namespace Fitpad.View.Pages
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Пожалуйста, заполните все поля.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, заповніть усі поля.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (password != confirmPassword)
             {
-                MessageBox.Show("Пароли не совпадают. Попробуйте еще раз.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Паролі не збігаються. Спробуйте ще раз.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -64,12 +64,12 @@ namespace Fitpad.View.Pages
 
                 await _registrationService.RegisterUserAsync(newUser);
 
-                MessageBox.Show("Регистрация завершена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Реєстрація завершена!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
         
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка регистрации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Помилка реєстрації: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

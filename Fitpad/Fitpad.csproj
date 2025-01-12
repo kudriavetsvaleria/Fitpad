@@ -193,9 +193,6 @@
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
-    <Compile Include="View\Components\NewsItem.xaml.cs">
-      <DependentUpon>NewsItem.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\Components\UserInfoForm.xaml.cs">
       <DependentUpon>UserInfoForm.xaml</DependentUpon>
     </Compile>
@@ -226,12 +223,6 @@
     <Compile Include="View\Pages\WorkoutsPage.xaml.cs">
       <DependentUpon>WorkoutsPage.xaml</DependentUpon>
     </Compile>
-    <Page Include="View\Components\NewsItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Components\NutritionItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\Components\UserInfoForm.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -249,9 +240,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Components\WorkoutCard.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">

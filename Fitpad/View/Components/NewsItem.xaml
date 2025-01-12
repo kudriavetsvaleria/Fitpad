@@ -1,9 +1,0 @@
-<UserControl x:Class="Fitpad.View.Components.NewsItem"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Name="NewsItemControl">
-	<Grid>
-		<TextBlock Text="Заголовок новини" FontSize="18" />
-		<TextBlock Text="Текст новини" FontSize="14" />
-	</Grid>
-</UserControl>
