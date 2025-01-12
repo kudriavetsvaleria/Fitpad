@@ -18,15 +18,14 @@ namespace Fitpad.View.Pages
         private static UserModel _currentUserCache;
         private readonly FirestoreDb _firestoreDb;
 
-
         public CaloriesPage(UserModel currentUser)
         {
             InitializeComponent();
+            UserInfoFormContainer.Visibility = Visibility.Visible; // Принудительно показываем анкету
+            CaloriePageContainer.Visibility = Visibility.Collapsed; // Скрываем остальные элементы
             var firestoreService = new FirestoreService();
             _firestoreDb = firestoreService.GetFirestoreDb();
             _currentUserCache = currentUser;
-
-            Console.WriteLine($"Ініціалізація CaloriesPage для користувача: {currentUser.Name}, ID: {currentUser.Id}");
             InitializePageContentAsync();
         }
 
@@ -52,6 +51,21 @@ namespace Fitpad.View.Pages
                 ProductSearchBox.ItemsSource = products; // Заполняем выпадающий список найденными продуктами
             }
         }
+        private void ClearContent()
+        {
+            // Очищаем контейнер формы и скрываем все элементы страницы калорий
+            UserInfoFormContainer.Content = null;
+            UserInfoFormContainer.Visibility = Visibility.Collapsed;
+
+            CalorieTextBlock.Visibility = Visibility.Collapsed;
+            ProteinTextBlock.Visibility = Visibility.Collapsed;
+            FatTextBlock.Visibility = Visibility.Collapsed;
+            CarbTextBlock.Visibility = Visibility.Collapsed;
+            FiberTextBlock.Visibility = Visibility.Collapsed;
+            SugarTextBlock.Visibility = Visibility.Collapsed;
+            SaltTextBlock.Visibility = Visibility.Collapsed;
+            WaterTextBlock.Visibility = Visibility.Collapsed;
+        }
 
         private async void InitializePageContentAsync()
         {
@@ -62,12 +76,12 @@ namespace Fitpad.View.Pages
                 if (userInfo == null || userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
                 {
                     Console.WriteLine("Дані користувача не знайдено або неповні. Відображення форми введення.");
-                    ShowUserInfoForm();
+                    ShowUserInfoForm(); // Отображаем анкету
                 }
                 else
                 {
                     Console.WriteLine("Дані користувача завантажено. Відображення добової норми калорій.");
-                    ShowCalorieIntake(userInfo);
+                    ShowCalorieIntake(userInfo); // Отображаем страницу калорий
                 }
             }
             catch (Exception ex)
@@ -75,6 +89,8 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
 
         private async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
@@ -197,13 +213,16 @@ namespace Fitpad.View.Pages
 
         private void ShowUserInfoForm()
         {
-            var userInfoForm = new UserInfoForm(_currentUserCache); // Передаем текущего пользователя
-            UserInfoFormContainer.Content = userInfoForm; // Добавляем форму в контейнер
-            userInfoForm.Visibility = Visibility.Visible;
+            Console.WriteLine("Показ формы ввода данных пользователя.");
+            var userInfoForm = new UserInfoForm(_currentUserCache); // Создаём форму
+            UserInfoFormContainer.Content = userInfoForm; // Добавляем в контейнер
 
-            DateTextBlock.Visibility = Visibility.Collapsed;
-            CalorieTextBlock.Visibility = Visibility.Collapsed;
+            UserInfoFormContainer.Visibility = Visibility.Visible; // Делаем контейнер видимым
+            CaloriePageContainer.Visibility = Visibility.Collapsed; // Скрываем контейнер с калориями
+
+            Console.WriteLine("Форма ввода данных отображена.");
         }
+
 
         private void ShowCalorieIntake(UserInfoModel userInfo)
         {
@@ -223,20 +242,15 @@ namespace Fitpad.View.Pages
             FiberTextBlock.Text = $"Клітковина: 0 / {fiber:0} г";
             SugarTextBlock.Text = $"Цукор: 0 / {sugar:0} г";
             SaltTextBlock.Text = $"Сіль: 0 / {salt:0} г";
-
-            // Отображаем норму воды
             WaterTextBlock.Text = $"Питний режим: {dailyWaterIntake:0.0} л";
 
-            // Делаем все элементы видимыми
-            CalorieTextBlock.Visibility = Visibility.Visible;
-            ProteinTextBlock.Visibility = Visibility.Visible;
-            FatTextBlock.Visibility = Visibility.Visible;
-            CarbTextBlock.Visibility = Visibility.Visible;
-            FiberTextBlock.Visibility = Visibility.Visible;
-            SugarTextBlock.Visibility = Visibility.Visible;
-            SaltTextBlock.Visibility = Visibility.Visible;
-            WaterTextBlock.Visibility = Visibility.Visible;
+            // Делаем элементы страницы калорий видимыми
+            CaloriePageContainer.Visibility = Visibility.Visible;
+            UserInfoFormContainer.Visibility = Visibility.Collapsed;
         }
+
+
+
 
         private double CalculateDailyCalorieIntake(UserInfoModel userInfo)
         {

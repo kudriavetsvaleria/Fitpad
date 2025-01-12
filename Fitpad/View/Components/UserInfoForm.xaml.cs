@@ -22,9 +22,10 @@ namespace Fitpad.View.Components
         // Конструктор с параметром userId
         public UserInfoForm(UserModel user) : this()
         {
-            _userInfoRepository = new UserInfoRepository();
             _userId = user.Id; // Получаем уникальный идентификатор пользователя
+            Console.WriteLine($"Инициализация формы UserInfoForm для пользователя с ID: {_userId}");
         }
+
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
