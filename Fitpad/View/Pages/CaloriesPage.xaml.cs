@@ -5,10 +5,13 @@ using Google.Cloud.Firestore;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace Fitpad.View.Pages
 {
@@ -17,17 +20,30 @@ namespace Fitpad.View.Pages
         private static CaloriesPage _instance;
         private static UserModel _currentUserCache;
         private readonly FirestoreDb _firestoreDb;
+        private DispatcherTimer _searchTimer;
+        private string _lastQuery = string.Empty;
+        private DispatcherTimer _debounceTimer;
+        private Dictionary<string, List<string>> _productCache = new Dictionary<string, List<string>>();
 
         public CaloriesPage(UserModel currentUser)
         {
             InitializeComponent();
-            UserInfoFormContainer.Visibility = Visibility.Visible; // Принудительно показываем анкету
-            CaloriePageContainer.Visibility = Visibility.Collapsed; // Скрываем остальные элементы
+            UserInfoFormContainer.Visibility = Visibility.Visible;
+            CaloriePageContainer.Visibility = Visibility.Collapsed;
             var firestoreService = new FirestoreService();
             _firestoreDb = firestoreService.GetFirestoreDb();
             _currentUserCache = currentUser;
+
+            // Инициализация таймера для дебаунсинга
+            _debounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(300) // Задержка 300 мс
+            };
+            _debounceTimer.Tick += OnDebounceTimerTick;
+
             InitializePageContentAsync();
         }
+
 
         public static CaloriesPage GetInstance(UserModel currentUser)
         {
@@ -43,6 +59,30 @@ namespace Fitpad.View.Pages
             }
             return _instance;
         }
+
+        private async void OnDebounceTimerTick(object sender, EventArgs e)
+        {
+            _debounceTimer.Stop();
+            string query = ProductSearchBox.Text.Trim();
+
+            if (_productCache.ContainsKey(query))
+            {
+                ProductSearchBox.ItemsSource = _productCache[query];
+                ProductSearchBox.IsDropDownOpen = true;
+            }
+            else
+            {
+                var products = await SearchProductsAsync(query);
+                if (products != null && products.Any())
+                {
+                    _productCache[query] = products;
+                    ProductSearchBox.ItemsSource = products;
+                    ProductSearchBox.IsDropDownOpen = true;
+                }
+            }
+        }
+
+
         private async void ProductSearchBox_TextChanged(object sender, RoutedEventArgs e)
         {
             if (ProductSearchBox.Text.Length >= 2) // Проверяем, что введено минимум 2 символа
@@ -51,6 +91,17 @@ namespace Fitpad.View.Pages
                 ProductSearchBox.ItemsSource = products; // Заполняем выпадающий список найденными продуктами
             }
         }
+
+        private void ProductSearchBox_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (ProductSearchBox.Text.Length >= 2)
+            {
+                _debounceTimer.Stop();
+                _debounceTimer.Start();
+            }
+        }
+
+
         private void ClearContent()
         {
             // Очищаем контейнер формы и скрываем все элементы страницы калорий
@@ -89,8 +140,29 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        private void ProductSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (ProductSearchBox.Text.Length >= 2)
+            {
+                _lastQuery = ProductSearchBox.Text;
+                _searchTimer.Stop();
+                _searchTimer.Start(); // Запуск таймера для дебаунсинга
+            }
+            else
+            {
+                ProductSearchBox.ItemsSource = null;
+                ProductSearchBox.IsDropDownOpen = false;
+            }
+        }
 
 
+        private async void OnSearchTimerTick(object sender, EventArgs e)
+        {
+            _searchTimer.Stop();
+            var products = await SearchProductsAsync(_lastQuery);
+            ProductSearchBox.ItemsSource = products;
+            ProductSearchBox.IsDropDownOpen = products.Count > 0;
+        }
 
         private async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
@@ -114,14 +186,25 @@ namespace Fitpad.View.Pages
         private async Task<List<string>> SearchProductsAsync(string query)
         {
             var products = new List<string>();
+            var translator = new LibreTranslateService();
 
             try
             {
                 using var client = new HttpClient();
-                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1";
-                var response = await client.GetStringAsync(url);
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1&lc=en";
+                var response = await client.GetAsync(url);
 
-                var json = JObject.Parse(response);
+                if (response.StatusCode == (HttpStatusCode)429) // Проверка на Too Many Requests
+                {
+                    MessageBox.Show("Перевищено ліміт запитів. Спробуйте пізніше.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Task.Delay(2000); // Задержка перед повторным запросом
+                    return products;
+                }
+
+                response.EnsureSuccessStatusCode();
+                var responseData = await response.Content.ReadAsStringAsync();
+
+                var json = JObject.Parse(responseData);
                 var productArray = json["products"];
 
                 if (productArray != null)
@@ -131,7 +214,9 @@ namespace Fitpad.View.Pages
                         string productName = product["product_name"]?.ToString();
                         if (!string.IsNullOrEmpty(productName))
                         {
-                            products.Add(productName);
+                            // Переводим название продукта на украинский язык
+                            string translatedName = await translator.TranslateTextAsync(productName);
+                            products.Add(translatedName);
                         }
                     }
                 }
@@ -144,6 +229,8 @@ namespace Fitpad.View.Pages
             return products;
         }
 
+
+
         private async void ProductSearchBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ProductSearchBox.Text.Length >= 2)
@@ -153,13 +240,14 @@ namespace Fitpad.View.Pages
             }
         }
 
-
         private async Task<dynamic> GetProductDetailsAsync(string productName)
         {
+            var translator = new LibreTranslateService();
+
             try
             {
                 using var client = new HttpClient();
-                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={productName}&search_simple=1&action=process&json=1";
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={productName}&search_simple=1&action=process&json=1&lc=en";
                 var response = await client.GetStringAsync(url);
 
                 var json = JObject.Parse(response);
@@ -167,9 +255,13 @@ namespace Fitpad.View.Pages
 
                 if (product != null)
                 {
+                    string translatedName = await translator.TranslateTextAsync(product["product_name"]?.ToString() ?? string.Empty);
+                    string translatedDescription = await translator.TranslateTextAsync(product["generic_name"]?.ToString() ?? string.Empty);
+
                     return new
                     {
-                        Name = product["product_name"]?.ToString(),
+                        Name = translatedName,
+                        Description = translatedDescription,
                         Calories = product["nutriments"]?["energy-kcal_100g"]?.ToObject<double>() ?? 0,
                         Proteins = product["nutriments"]?["proteins_100g"]?.ToObject<double>() ?? 0,
                         Fats = product["nutriments"]?["fat_100g"]?.ToObject<double>() ?? 0,
@@ -184,6 +276,7 @@ namespace Fitpad.View.Pages
 
             return null;
         }
+
 
         private async void AddProductButton_Click(object sender, RoutedEventArgs e)
         {
