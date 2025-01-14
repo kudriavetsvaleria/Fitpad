@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -26,15 +27,18 @@ namespace Fitpad.View.Pages
             _viewModel = new NutritionViewModel();
             DataContext = _viewModel;
 
-            // Загрузка данных, если список пуст
+            // Асинхронная загрузка данных
+            _ = InitializeNutritionAsync(); // Запускаем асинхронный метод без ожидания завершения
+        }
+        private async Task InitializeNutritionAsync()
+        {
             if (_viewModel.NutritionCards.Count == 0)
             {
                 var random = new Random();
                 int offset = random.Next(0, 1000); // Диапазон для смещения
-                _ = _viewModel.LoadNutritionAsync(false, offset); // Асинхронная загрузка
+                await _viewModel.LoadNutritionAsync(false, offset);
             }
         }
-
         private async void OnSearchButtonClick(object sender, RoutedEventArgs e)
         {
             string query = SearchTextBox.Text.Trim();

@@ -39,7 +39,15 @@
                             <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="10" MouseDown="Card_MouseDown">
                                 <StackPanel Orientation="Vertical" Width="150" Height="220">
                                     <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
-                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextAlignment="Center" Margin="5,0" />
+
+                                    <TextBlock Text="{Binding Title}" 
+                                       FontSize="14" 
+                                       FontWeight="Bold" 
+                                       TextAlignment="Center" 
+                                       Margin="5,0" 
+                                       TextTrimming="CharacterEllipsis" 
+                                       TextWrapping="NoWrap" />
+
                                     <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
                                     <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center" />
                                     <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="12" TextAlignment="Center" />

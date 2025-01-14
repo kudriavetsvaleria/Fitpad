@@ -186,20 +186,12 @@ namespace Fitpad.View.Pages
         private async Task<List<string>> SearchProductsAsync(string query)
         {
             var products = new List<string>();
-            var translator = new LibreTranslateService();
 
             try
             {
                 using var client = new HttpClient();
-                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1&lc=en";
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1";
                 var response = await client.GetAsync(url);
-
-                if (response.StatusCode == (HttpStatusCode)429) // Проверка на Too Many Requests
-                {
-                    MessageBox.Show("Перевищено ліміт запитів. Спробуйте пізніше.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    await Task.Delay(2000); // Задержка перед повторным запросом
-                    return products;
-                }
 
                 response.EnsureSuccessStatusCode();
                 var responseData = await response.Content.ReadAsStringAsync();
@@ -209,15 +201,10 @@ namespace Fitpad.View.Pages
 
                 if (productArray != null)
                 {
+
                     foreach (var product in productArray)
                     {
                         string productName = product["product_name"]?.ToString();
-                        if (!string.IsNullOrEmpty(productName))
-                        {
-                            // Переводим название продукта на украинский язык
-                            string translatedName = await translator.TranslateTextAsync(productName);
-                            products.Add(translatedName);
-                        }
                     }
                 }
             }
@@ -242,7 +229,6 @@ namespace Fitpad.View.Pages
 
         private async Task<dynamic> GetProductDetailsAsync(string productName)
         {
-            var translator = new LibreTranslateService();
 
             try
             {
@@ -255,13 +241,9 @@ namespace Fitpad.View.Pages
 
                 if (product != null)
                 {
-                    string translatedName = await translator.TranslateTextAsync(product["product_name"]?.ToString() ?? string.Empty);
-                    string translatedDescription = await translator.TranslateTextAsync(product["generic_name"]?.ToString() ?? string.Empty);
 
                     return new
                     {
-                        Name = translatedName,
-                        Description = translatedDescription,
                         Calories = product["nutriments"]?["energy-kcal_100g"]?.ToObject<double>() ?? 0,
                         Proteins = product["nutriments"]?["proteins_100g"]?.ToObject<double>() ?? 0,
                         Fats = product["nutriments"]?["fat_100g"]?.ToObject<double>() ?? 0,
