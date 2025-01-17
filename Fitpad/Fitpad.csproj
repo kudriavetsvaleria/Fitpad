@@ -171,7 +171,7 @@
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="Model\Entities\AccountLogin.cs" />
     <Compile Include="Model\Repositories\UserInfoRepository.cs" />
-    <Compile Include="Services\LibreTranslateService.cs" />
+    <Compile Include="Services\Translator.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="Model\Entities\CaloriesModel.cs" />
@@ -350,9 +350,7 @@
     <None Include="protos\google\type\postal_address.proto" />
     <None Include="protos\google\type\quaternion.proto" />
     <None Include="protos\google\type\timeofday.proto" />
-    <None Include="Resources\fitpad-2025-firebase-adminsdk-orbvr-58072a89a6.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Resources\fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

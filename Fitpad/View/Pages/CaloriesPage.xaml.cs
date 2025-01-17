@@ -186,7 +186,7 @@ namespace Fitpad.View.Pages
         private async Task<List<string>> SearchProductsAsync(string query)
         {
             var products = new List<string>();
-            var translator = new LibreTranslateService();
+            var translator = new Translator();
 
             try
             {
@@ -215,8 +215,8 @@ namespace Fitpad.View.Pages
                         if (!string.IsNullOrEmpty(productName))
                         {
                             // Переводим название продукта на украинский язык
-                            string translatedName = await translator.TranslateTextAsync(productName);
-                            products.Add(translatedName);
+                             //string translatedName = await translator.TranslateTextAsync(productName);
+                            //products.Add(translatedName);
                         }
                     }
                 }
@@ -242,7 +242,7 @@ namespace Fitpad.View.Pages
 
         private async Task<dynamic> GetProductDetailsAsync(string productName)
         {
-            var translator = new LibreTranslateService();
+            var translator = new Translator();
 
             try
             {
@@ -255,13 +255,13 @@ namespace Fitpad.View.Pages
 
                 if (product != null)
                 {
-                    string translatedName = await translator.TranslateTextAsync(product["product_name"]?.ToString() ?? string.Empty);
-                    string translatedDescription = await translator.TranslateTextAsync(product["generic_name"]?.ToString() ?? string.Empty);
+                    //string translatedName = await translator.TranslateTextAsync(product["product_name"]?.ToString() ?? string.Empty);
+                    //string translatedDescription = await translator.TranslateTextAsync(product["generic_name"]?.ToString() ?? string.Empty);
 
                     return new
                     {
-                        Name = translatedName,
-                        Description = translatedDescription,
+                        //Name = translatedName,
+                        //Description = translatedDescription,
                         Calories = product["nutriments"]?["energy-kcal_100g"]?.ToObject<double>() ?? 0,
                         Proteins = product["nutriments"]?["proteins_100g"]?.ToObject<double>() ?? 0,
                         Fats = product["nutriments"]?["fat_100g"]?.ToObject<double>() ?? 0,

@@ -7,7 +7,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 {
     public class TranslationViewModel : INotifyPropertyChanged
     {
-        private readonly LibreTranslateService _translator;
+        private readonly Translator _translator;
 
         private string _inputText;
         public string InputText
@@ -33,16 +33,19 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public TranslationViewModel()
         {
-            _translator = new LibreTranslateService();
+            _translator = new Translator();
         }
 
         public async Task TranslateAsync()
         {
             if (!string.IsNullOrWhiteSpace(InputText))
             {
-                TranslatedText = await _translator.TranslateTextAsync(InputText, "uk");
+                // Only specify target language (source language defaults to "en")
+                string translatedText = await _translator.TranslateAsync(InputText, "uk");
+                TranslatedText = translatedText;
             }
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
