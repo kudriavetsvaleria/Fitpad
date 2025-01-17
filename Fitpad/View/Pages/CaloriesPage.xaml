@@ -19,7 +19,11 @@
                 <StackPanel Margin="0,10,0,0">
                     <TextBlock Text="Додати продукт:" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
                     <Grid Width="300" Margin="0,0,0,10">
-                        <ComboBox x:Name="ProductSearchBox" Width="300" IsEditable="True" SelectionChanged="ProductSearchBox_SelectionChanged"/>
+                        
+                        <ComboBox x:Name="ProductSearchBox"
+                                  Width="300"
+                                  IsEditable="True"
+                                  PreviewKeyUp="ProductSearchBox_PreviewKeyUp"/>
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">

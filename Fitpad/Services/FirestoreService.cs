@@ -17,7 +17,7 @@ namespace Fitpad.Services
         public FirestoreService()
         {
             // Абсолютный путь к файлу с учетными данными
-            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-58072a89a6.json");
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json");
             Console.WriteLine($"Path to key file: {pathToKeyFile}");
             if (!File.Exists(pathToKeyFile))
             {
