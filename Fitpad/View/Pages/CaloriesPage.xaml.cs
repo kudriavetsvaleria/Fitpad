@@ -62,8 +62,12 @@ namespace Fitpad.View.Pages
 
         private async void OnDebounceTimerTick(object sender, EventArgs e)
         {
-            _debounceTimer.Stop();
+            _debounceTimer.Stop(); // Останавливаем таймер перед выполнением поиска
+
             string query = ProductSearchBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(query))
+                return;
 
             if (_productCache.ContainsKey(query))
             {
@@ -79,8 +83,13 @@ namespace Fitpad.View.Pages
                     ProductSearchBox.ItemsSource = products;
                     ProductSearchBox.IsDropDownOpen = true;
                 }
+                else
+                {
+                    ProductSearchBox.IsDropDownOpen = false;
+                }
             }
         }
+
 
 
         private async void ProductSearchBox_TextChanged(object sender, RoutedEventArgs e)
@@ -140,13 +149,15 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void ProductSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (_debounceTimer.IsEnabled)
+                _debounceTimer.Stop(); // Останавливаем предыдущий таймер
+
             if (ProductSearchBox.Text.Length >= 2)
             {
-                _lastQuery = ProductSearchBox.Text;
-                _searchTimer.Stop();
-                _searchTimer.Start(); // Запуск таймера для дебаунсинга
+                _debounceTimer.Start(); // Запускаем таймер для нового запроса
             }
             else
             {
@@ -189,8 +200,11 @@ namespace Fitpad.View.Pages
 
             try
             {
+                var translator = new TranslatorService();
+                string translatedQuery = await translator.TranslateTextAsync(query, "en");
+
                 using var client = new HttpClient();
-                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1";
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={translatedQuery}&search_simple=1&action=process&json=1";
                 var response = await client.GetAsync(url);
 
                 response.EnsureSuccessStatusCode();
@@ -201,10 +215,19 @@ namespace Fitpad.View.Pages
 
                 if (productArray != null)
                 {
-
+                    int count = 0; // Счетчик продуктов
                     foreach (var product in productArray)
                     {
+                        if (count >= 6) break; // Ограничиваем до 6 продуктов
+
                         string productName = product["product_name"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(productName))
+                        {
+                            // Перевод имени продукта на украинский
+                            string translatedProductName = await translator.TranslateTextAsync(productName, "uk");
+                            products.Add(translatedProductName);
+                            count++;
+                        }
                     }
                 }
             }
@@ -215,7 +238,6 @@ namespace Fitpad.View.Pages
 
             return products;
         }
-
 
 
         private async void ProductSearchBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

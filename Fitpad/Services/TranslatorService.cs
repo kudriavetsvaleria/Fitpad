@@ -40,6 +40,20 @@ namespace Fitpad.Services
             }
         }
 
+        private async Task<string> TranslateQueryAsync(string query)
+        {
+            try
+            {
+                // Вызываем TranslateTextAsync напрямую
+                return await TranslateTextAsync(query, "en");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка перевода: {ex.Message}");
+                return query; // Возвращаем оригинальный запрос в случае ошибки
+            }
+        }
+
         // Метод для сохранения общего количества символов в Firebase
         private async Task SaveTotalCharactersAsync()
         {
