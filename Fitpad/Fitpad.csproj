@@ -171,8 +171,8 @@
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="Model\Entities\AccountLogin.cs" />
     <Compile Include="Model\Repositories\UserInfoRepository.cs" />
-    <Compile Include="Services\Translator.cs" />
     <Compile Include="Services\RegistrationService.cs" />
+    <Compile Include="Services\TranslatorService.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="Model\Entities\CaloriesModel.cs" />
     <Compile Include="Model\Repositories\CaloriesRepository.cs" />
@@ -194,7 +194,6 @@
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
-    <Compile Include="ViewModel\TranslationViewModel.cs" />
     <Compile Include="View\Components\UserInfoForm.xaml.cs">
       <DependentUpon>UserInfoForm.xaml</DependentUpon>
     </Compile>

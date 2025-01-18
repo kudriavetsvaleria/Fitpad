@@ -11,9 +11,13 @@
         <Button Content="←" HorizontalAlignment="Left" VerticalAlignment="Top" Click="BackButton_Click" Height="50" Width="50" Margin="10,10,0,0" />
 
         <StackPanel Margin="0,70,0,10" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-            <!-- Название -->
-            <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"
-                       d:Text="Назва рецепта" />
+            <!-- Название с переносом текста -->
+            <TextBlock Text="{Binding Title}" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20" 
+                       TextWrapping="Wrap" />
 
             <!-- Контейнер для ингредиентов и инструкции -->
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10,20,10,0" Height="460">

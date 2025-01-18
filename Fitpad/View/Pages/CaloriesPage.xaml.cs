@@ -62,8 +62,12 @@ namespace Fitpad.View.Pages
 
         private async void OnDebounceTimerTick(object sender, EventArgs e)
         {
-            _debounceTimer.Stop();
+            _debounceTimer.Stop(); // Останавливаем таймер перед выполнением поиска
+
             string query = ProductSearchBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(query))
+                return;
 
             if (_productCache.ContainsKey(query))
             {
@@ -79,8 +83,13 @@ namespace Fitpad.View.Pages
                     ProductSearchBox.ItemsSource = products;
                     ProductSearchBox.IsDropDownOpen = true;
                 }
+                else
+                {
+                    ProductSearchBox.IsDropDownOpen = false;
+                }
             }
         }
+
 
 
         private async void ProductSearchBox_TextChanged(object sender, RoutedEventArgs e)
@@ -140,13 +149,15 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void ProductSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (_debounceTimer.IsEnabled)
+                _debounceTimer.Stop(); // Останавливаем предыдущий таймер
+
             if (ProductSearchBox.Text.Length >= 2)
             {
-                _lastQuery = ProductSearchBox.Text;
-                _searchTimer.Stop();
-                _searchTimer.Start(); // Запуск таймера для дебаунсинга
+                _debounceTimer.Start(); // Запускаем таймер для нового запроса
             }
             else
             {
@@ -186,20 +197,15 @@ namespace Fitpad.View.Pages
         private async Task<List<string>> SearchProductsAsync(string query)
         {
             var products = new List<string>();
-            var translator = new Translator();
 
             try
             {
-                using var client = new HttpClient();
-                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1&lc=en";
-                var response = await client.GetAsync(url);
+                var translator = new TranslatorService();
+                string translatedQuery = await translator.TranslateTextAsync(query, "en");
 
-                if (response.StatusCode == (HttpStatusCode)429) // Проверка на Too Many Requests
-                {
-                    MessageBox.Show("Перевищено ліміт запитів. Спробуйте пізніше.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    await Task.Delay(2000); // Задержка перед повторным запросом
-                    return products;
-                }
+                using var client = new HttpClient();
+                string url = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={translatedQuery}&search_simple=1&action=process&json=1";
+                var response = await client.GetAsync(url);
 
                 response.EnsureSuccessStatusCode();
                 var responseData = await response.Content.ReadAsStringAsync();
@@ -209,14 +215,18 @@ namespace Fitpad.View.Pages
 
                 if (productArray != null)
                 {
+                    int count = 0; // Счетчик продуктов
                     foreach (var product in productArray)
                     {
+                        if (count >= 6) break; // Ограничиваем до 6 продуктов
+
                         string productName = product["product_name"]?.ToString();
-                        if (!string.IsNullOrEmpty(productName))
+                        if (!string.IsNullOrWhiteSpace(productName))
                         {
-                            // Переводим название продукта на украинский язык
-                             //string translatedName = await translator.TranslateTextAsync(productName);
-                            //products.Add(translatedName);
+                            // Перевод имени продукта на украинский
+                            string translatedProductName = await translator.TranslateTextAsync(productName, "uk");
+                            products.Add(translatedProductName);
+                            count++;
                         }
                     }
                 }
@@ -230,7 +240,6 @@ namespace Fitpad.View.Pages
         }
 
 
-
         private async void ProductSearchBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ProductSearchBox.Text.Length >= 2)
@@ -242,7 +251,6 @@ namespace Fitpad.View.Pages
 
         private async Task<dynamic> GetProductDetailsAsync(string productName)
         {
-            var translator = new Translator();
 
             try
             {
@@ -255,13 +263,9 @@ namespace Fitpad.View.Pages
 
                 if (product != null)
                 {
-                    //string translatedName = await translator.TranslateTextAsync(product["product_name"]?.ToString() ?? string.Empty);
-                    //string translatedDescription = await translator.TranslateTextAsync(product["generic_name"]?.ToString() ?? string.Empty);
 
                     return new
                     {
-                        //Name = translatedName,
-                        //Description = translatedDescription,
                         Calories = product["nutriments"]?["energy-kcal_100g"]?.ToObject<double>() ?? 0,
                         Proteins = product["nutriments"]?["proteins_100g"]?.ToObject<double>() ?? 0,
                         Fats = product["nutriments"]?["fat_100g"]?.ToObject<double>() ?? 0,

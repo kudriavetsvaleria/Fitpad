@@ -29,12 +29,37 @@ namespace Fitpad.Model.Repositories
 
             return Regex.Replace(input, "<.*?>", string.Empty).Trim();
         }
+        public async Task<NutritionModel> GetRecipeDetailsAsync(int recipeId)
+        {
+            var url = $"{BaseUrl}/{recipeId}/information?apiKey={ApiKey}&includeNutrition=true";
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var recipeDetails = JsonConvert.DeserializeObject<Recipe>(json);
+
+            return new NutritionModel
+            {
+                Id = recipeDetails.Id,
+                Title = recipeDetails.Title,
+                Image = recipeDetails.Image,
+                Calories = (int)(recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
+                Protein = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                Carbs = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                Fats = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                ReadyInMinutes = recipeDetails.ReadyInMinutes
+            };
+
+        }
+
 
         public async Task<List<NutritionModel>> SearchRecipesAsync(string query)
         {
-            string url = $"{BaseUrl}/complexSearch?query={Uri.EscapeDataString(query)}&number=10&addRecipeNutrition=true&apiKey={ApiKey}";
-
+            var url = $"{BaseUrl}/complexSearch?query={Uri.EscapeDataString(query)}&apiKey={ApiKey}&addRecipeInformation=true";
             var response = await _httpClient.GetAsync(url);
+
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
 
@@ -61,7 +86,6 @@ namespace Fitpad.Model.Repositories
         }
 
 
-
         /// <summary>
         /// Получает инструкции по рецепту по его ID.
         /// </summary>
@@ -70,7 +94,7 @@ namespace Fitpad.Model.Repositories
             var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
+                throw new HttpRequestException($"Помилка запиту: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
             var recipeDetails = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
@@ -84,7 +108,7 @@ namespace Fitpad.Model.Repositories
                 }
             }
 
-            return (StripHtmlTags(recipeDetails.Instructions ?? "Инструкции не найдены."), ingredients);
+            return (StripHtmlTags(recipeDetails.Instructions ?? "Інструкції не знайдено."), ingredients);
         }
 
         public class RecipeDetailsResponse
@@ -111,12 +135,12 @@ namespace Fitpad.Model.Repositories
             }
             else
             {
-                url = $"{BaseUrl}/complexSearch?number=24&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
+                url = $"{BaseUrl}/complexSearch?number=4&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
             }
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
+                throw new HttpRequestException($"Помилка запиту: {response.StatusCode}");
 
             var json = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
