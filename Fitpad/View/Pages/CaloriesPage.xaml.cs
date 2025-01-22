@@ -541,33 +541,37 @@ namespace Fitpad.View.Pages
             Console.WriteLine("Форма ввода данных отображена.");
         }
 
-
         private void ShowCalorieIntake(UserInfoModel userInfo)
         {
             double dailyCalories = CalculateDailyCalorieIntake(userInfo);
 
-            // Получаем детали питания
-            var (proteins, fats, carbs, fiber, sugar, salt) = CalculateNutritionDetails(userInfo, dailyCalories);
-
             // Рассчитываем норму воды (предположим, 30 минут активности)
             double dailyWaterIntake = CalculateWaterIntake(userInfo, activityMinutes: 30);
 
-            // Отображаем калорийность и КБЖУ
+            // Отображаем калорийность
             CalorieTextBlock.Text = $"0 / {dailyCalories:0} калорій";
-            ProteinTextBlock.Text = $"Білки: 0 / {proteins:0} г";
-            FatTextBlock.Text = $"Жири: 0 / {fats:0} г";
-            CarbTextBlock.Text = $"Вуглеводи: 0 / {carbs:0} г";
-            FiberTextBlock.Text = $"Клітковина: 0 / {fiber:0} г";
-            SugarTextBlock.Text = $"Цукор: 0 / {sugar:0} г";
-            SaltTextBlock.Text = $"Сіль: 0 / {salt:0} г";
-            WaterTextBlock.Text = $"Питний режим: {dailyWaterIntake:0.0} л";
+            CalorieTextBlock.HorizontalAlignment = HorizontalAlignment.Center;
+            CalorieTextBlock.VerticalAlignment = VerticalAlignment.Top;
+            CalorieTextBlock.Visibility = Visibility.Visible;
 
-            // Делаем элементы страницы калорий видимыми
+            // Обновляем блоки с белками, жирами, углеводами
+            ProteinTextBlock.Text = $"Білки: 0 г";
+            FatTextBlock.Text = $"Жири: 0 г";
+            CarbTextBlock.Text = $"Вуглеводи: 0 г";
+
+            // Обновляем другие текстовые блоки (если требуется)
+            FiberTextBlock.Text = $"Клітковина: 0 г";
+            SugarTextBlock.Text = $"Цукор: 0 г";
+            SaltTextBlock.Text = $"Сіль: 0 г";
+
+            // Отображаем элементы страницы калорий
             CaloriePageContainer.Visibility = Visibility.Visible;
             UserInfoFormContainer.Visibility = Visibility.Collapsed;
+
+            // Расположение верхней части (если требуется)
+            CalorieTextBlock.Margin = new Thickness(0, 20, 0, 0); // Отступ сверху
+            CalorieTextBlock.FontSize = 18; // Увеличиваем шрифт для большей видимости
         }
-
-
 
 
         private double CalculateDailyCalorieIntake(UserInfoModel userInfo)
@@ -583,11 +587,11 @@ namespace Fitpad.View.Pages
             // Рассчитываем BMR по формуле Миффлина-Сан Жеора
             if (gender == "Чоловік")
             {
-                bmr = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age);
+                bmr = 66 + (13.7 * weight) + (5 * height) - (6.8 * age);
             }
             else
             {
-                bmr = 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age);
+                bmr = 655 + (9.6 * weight) + (1.8 * height) - (4.7 * age);
             }
 
             // Множитель активности
