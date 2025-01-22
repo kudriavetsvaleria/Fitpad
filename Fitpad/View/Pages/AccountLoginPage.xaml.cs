@@ -43,7 +43,7 @@ namespace Fitpad.View.Pages
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                ShowError("Логин и пароль не могут быть пустыми.");
+                ShowError("Логін і пароль не можуть бути порожніми.");
                 return;
             }
 
@@ -52,17 +52,17 @@ namespace Fitpad.View.Pages
                 UserModel user = await _userRepository.GetUserAsync(username);
                 if (user == null)
                 {
-                    ShowError("Пользователь не найден.");
+                    ShowError("Користувач не знайдений.");
                     return;
                 }
 
                 if (!VerifyPassword(password, user.Password))
                 {
-                    ShowError("Неверный пароль.");
+                    ShowError("Неправильний пароль.");
                     return;
                 }
 
-                Console.WriteLine($"Пользователь {user.Name} успешно авторизован.");
+                Console.WriteLine($"Користувач {user.Name} успішно авторизований.");
 
                 UserRepository.CurrentUserId = user.Id.ToString();
                 var profileViewModel = new ProfileViewModel(user);

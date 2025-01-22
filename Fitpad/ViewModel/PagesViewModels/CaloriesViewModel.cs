@@ -9,6 +9,50 @@ namespace Fitpad.ViewModel.PagesViewModels
     {
         private readonly CaloriesRepository _repository;
         private CaloriesModel _caloriesData;
+        private double _currentCalories;
+        public double CurrentCalories
+        {
+            get => _currentCalories;
+            set
+            {
+                _currentCalories = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _currentProteins;
+        public double CurrentProteins
+        {
+            get => _currentProteins;
+            set
+            {
+                _currentProteins = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _currentFats;
+        public double CurrentFats
+        {
+            get => _currentFats;
+            set
+            {
+                _currentFats = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _currentCarbs;
+        public double CurrentCarbs
+        {
+            get => _currentCarbs;
+            set
+            {
+                _currentCarbs = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public CaloriesModel CaloriesData
         {
