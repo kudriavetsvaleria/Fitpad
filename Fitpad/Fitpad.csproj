@@ -163,6 +163,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Entities\DailyMealModel.cs" />
     <Compile Include="Services\FirestoreService.cs" />
     <Compile Include="Model\Entities\UserInfoModel.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />

@@ -107,6 +107,71 @@ namespace Fitpad.Services
             }
         }
 
+        public async Task<DailyMealModel> GetDailyMealAsync(string userId, string date)
+        {
+            try
+            {
+                string documentId = $"{userId}_{date}";
+                DocumentReference docRef = _firestoreDb.Collection("Meals").Document(documentId);
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
+                {
+                    Console.WriteLine("Данные о питании успешно загружены.");
+                    return snapshot.ConvertTo<DailyMealModel>();
+                }
+
+                Console.WriteLine("Данные о питании не найдены.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при загрузке данных о питании: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<DailyMealModel> GetDailyMealsAsync(string userId, string date)
+        {
+            try
+            {
+                DocumentReference docRef = _firestoreDb.Collection("DailyMeals").Document($"{userId}_{date}");
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
+                {
+                    return snapshot.ConvertTo<DailyMealModel>();
+                }
+                else
+                {
+                    Console.WriteLine("Данные не найдены.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка получения данных: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task SaveDailyMealAsync(DailyMealModel dailyMeal)
+        {
+            try
+            {
+                string documentId = $"{dailyMeal.UserId}_{dailyMeal.Date}";
+                DocumentReference docRef = _firestoreDb.Collection("Meals").Document(documentId);
+                await docRef.SetAsync(dailyMeal);
+                Console.WriteLine("Данные о питании успешно сохранены.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении данных о питании: {ex.Message}");
+                throw;
+            }
+        }
+
+
 
     }
 }

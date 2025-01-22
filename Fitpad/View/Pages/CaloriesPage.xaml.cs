@@ -133,24 +133,108 @@ namespace Fitpad.View.Pages
         {
             try
             {
+                // Создаем экземпляр FirestoreService
+                var firestoreService = new FirestoreService();
+
+                // Загрузка данных пользователя
                 var userInfo = await GetUserInfoAsync(_currentUserCache.Id);
 
                 if (userInfo == null || userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
                 {
-                    Console.WriteLine("Дані користувача не знайдено або неповні. Відображення форми введення.");
-                    ShowUserInfoForm(); // Отображаем анкету
+                    ShowUserInfoForm();
                 }
                 else
                 {
-                    // Передаем объект UserInfoModel в ShowCalorieIntake
                     ShowCalorieIntake(userInfo);
+
+                    // Загрузка данных о приёмах пищи
+                    var dailyMeal = await firestoreService.GetDailyMealsAsync(_currentUserCache.Id, DateTime.Now.ToString("yyyy-MM-dd"));
+
+                    if (dailyMeal != null)
+                    {
+                        LoadMealsToUI(dailyMeal);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка під час ініціалізації сторінки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка инициализации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
+        private void LoadMealsToUI(DailyMealModel dailyMeal)
+        {
+            foreach (var mealType in dailyMeal.Meals.Keys)
+            {
+                var mealText = string.Join("\n", dailyMeal.Meals[mealType].Select(meal =>
+                    $"{meal.Name}: {meal.Calories:0.0} ккал, Б: {meal.Proteins:0.0} г, Ж: {meal.Fats:0.0} г, В: {meal.Carbs:0.0} г"));
+
+                switch (mealType)
+                {
+                    case "Сніданок":
+                        BreakfastTextBlock.Text = mealText;
+                        BreakfastTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Другий сніданок":
+                        SecondBreakfastTextBlock.Text = mealText;
+                        SecondBreakfastTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Обід":
+                        LunchTextBlock.Text = mealText;
+                        LunchTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Полудень":
+                        AfternoonSnackTextBlock.Text = mealText;
+                        AfternoonSnackTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Вечеря":
+                        DinnerTextBlock.Text = mealText;
+                        DinnerTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Друга вечеря":
+                        SecondDinnerTextBlock.Text = mealText;
+                        SecondDinnerTextBlock.Visibility = Visibility.Visible;
+                        break;
+                    case "Інший час":
+                        if (OtherTimeTextBlock == null)
+                        {
+                            // Если элемент для отображения не создан, логируем
+                            Console.WriteLine("Текстовый блок для 'Інший час' отсутствует.");
+                        }
+                        else
+                        {
+                            OtherTimeTextBlock.Text = mealText;
+                            OtherTimeTextBlock.Visibility = Visibility.Visible;
+                        }
+                        break;
+                }
+            }
+        }
+
+
+        private async Task LoadDailyMeals(string userId, string date)
+        {
+            try
+            {
+                var firestoreService = new FirestoreService();
+                var dailyMeal = await firestoreService.GetDailyMealsAsync(userId, date);
+
+                if (dailyMeal != null)
+                {
+                    LoadMealsToUI(dailyMeal); // Здесь вызывается метод LoadMealsToUI
+                }
+                else
+                {
+                    Console.WriteLine("Нет данных для отображения.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
 
         private void ProductSearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -401,12 +485,11 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            string productId = selectedProduct.Id; // Получаем ID продукта
-            string productName = selectedProduct.Name; // Получаем имя продукта
+            string productId = selectedProduct.Id;
+            string productName = selectedProduct.Name;
 
             try
             {
-                // Передаем `quantity` в вызов метода `GetProductDetailsAsync`
                 var productDetails = await GetProductDetailsAsync(productId, quantity);
 
                 if (productDetails != null)
@@ -416,33 +499,23 @@ namespace Fitpad.View.Pages
                     double proteins = productDetails.Proteins * factor;
                     double fats = productDetails.Fats * factor;
                     double carbs = productDetails.Carbs * factor;
-                    double fiber = productDetails.Fiber * factor;
-                    double sugar = productDetails.Sugar * factor;
-                    double salt = productDetails.Salt * factor;
 
-                    Console.WriteLine($"Продукт добавлен: {productName}, Калории: {calories}, Белки: {proteins}, Жиры: {fats}, Углеводы: {carbs}");
+                    var mealType = DetermineMealType();
 
-                    // Обновление UI
-                    ProductsDataGrid.Items.Add(new
+                    var mealItem = new MealItem
                     {
                         Name = productName,
-                        Quantity = quantity,
                         Calories = calories,
                         Proteins = proteins,
                         Fats = fats,
-                        Carbs = carbs,
-                        Fiber = fiber,
-                        Sugar = sugar,
-                        Salt = salt
-                    });
+                        Carbs = carbs
+                    };
 
-                    UpdateTotalNutrition(calories, proteins, fats, carbs);
-                    UpdateFiberSugarSalt(fiber, sugar, salt);
+                    // Сохранение в Firestore
+                    await AddMealToFirestore(mealType, _currentUserCache.Id, DateTime.Now.ToString("yyyy-MM-dd"), mealItem);
 
-                    if (IsDrink(productName))
-                    {
-                        UpdateWaterIntake(quantity);
-                    }
+                    // Отображение в UI
+                    UpdateMealDetails(mealType, productName, calories, proteins, fats, carbs);
                 }
                 else
                 {
@@ -454,6 +527,8 @@ namespace Fitpad.View.Pages
                 MessageBox.Show($"Ошибка добавления продукта: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
 
         private void UpdateTotalNutrition(double calories, double proteins, double fats, double carbs)
         {
@@ -499,34 +574,73 @@ namespace Fitpad.View.Pages
             return defaultValue;
         }
 
-
-
         private void UpdateMealDetails(string mealType, string productName, double calories, double proteins, double fats, double carbs)
         {
             string mealText = $"{productName}: {calories:0.0} ккал, Б: {proteins:0.0} г, Ж: {fats:0.0} г, В: {carbs:0.0} г";
 
             switch (mealType)
             {
-                case "Сніданок":
+                case "Breakfast":
                     BreakfastTextBlock.Text += $"{mealText}\n";
                     break;
-                case "Другий сніданок":
+                case "SecondBreakfast":
                     SecondBreakfastTextBlock.Text += $"{mealText}\n";
                     break;
-                case "Обід":
+                case "Lunch":
                     LunchTextBlock.Text += $"{mealText}\n";
                     break;
-                case "Полудень":
+                case "AfternoonSnack":
                     AfternoonSnackTextBlock.Text += $"{mealText}\n";
                     break;
-                case "Вечеря":
+                case "Dinner":
                     DinnerTextBlock.Text += $"{mealText}\n";
                     break;
-                case "Друга вечеря":
+                case "SecondDinner":
                     SecondDinnerTextBlock.Text += $"{mealText}\n";
                     break;
             }
         }
+
+        public async Task AddMealToFirestore(string mealType, string userId, string date, MealItem mealItem)
+        {
+            try
+            {
+                var docRef = _firestoreDb.Collection("DailyMeals").Document($"{userId}_{date}");
+                var snapshot = await docRef.GetSnapshotAsync();
+
+                DailyMealModel dailyMeal;
+
+                if (snapshot.Exists)
+                {
+                    dailyMeal = snapshot.ConvertTo<DailyMealModel>();
+                }
+                else
+                {
+                    dailyMeal = new DailyMealModel
+                    {
+                        UserId = userId,
+                        Date = date,
+                        Meals = new Dictionary<string, List<MealItem>>()
+                    };
+                }
+
+                if (!dailyMeal.Meals.ContainsKey(mealType))
+                {
+                    dailyMeal.Meals[mealType] = new List<MealItem>();
+                }
+
+                dailyMeal.Meals[mealType].Add(mealItem);
+
+                await docRef.SetAsync(dailyMeal);
+                Console.WriteLine("Данные успешно добавлены.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка сохранения данных в Firestore: {ex.Message}");
+                throw;
+            }
+        }
+
 
 
         private void ShowUserInfoForm()
@@ -659,6 +773,7 @@ namespace Fitpad.View.Pages
 
             return "Інший час";
         }
+
 
 
         private UserInfoModel ConvertToUserInfoModel(UserModel userModel, UserInfoModel userInfo)

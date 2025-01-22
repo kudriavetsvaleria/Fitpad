@@ -85,6 +85,8 @@
                         <TextBlock x:Name="DinnerTextBlock" Text="-" Margin="10,5,0,10"/>
                         <TextBlock Text="Друга вечеря (20:00 - 22:00):" FontSize="16" FontWeight="Bold"/>
                         <TextBlock x:Name="SecondDinnerTextBlock" Text="-" Margin="10,5,0,10"/>
+                        <TextBlock Text="Інший час:" FontSize="16" FontWeight="Bold" Margin="10,5,0,10"/>
+                        <TextBlock x:Name="OtherTimeTextBlock" Text="-" Margin="10,5,0,10" Visibility="Collapsed"/>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
