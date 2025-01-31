@@ -20,12 +20,12 @@ namespace Fitpad.Services
             var userInfo = new UserInfoModel
             {
                 UserId = user.Id,
-                Gender = "Не указано",
+                Gender = "Не вказано",
                 Age = 0,
                 Height = 0,
                 Weight = 0,
-                ActivityLevel = "Не указано",
-                Purpose = "Не указано"
+                ActivityLevel = "Не вказано",
+                Purpose = "Не вказано"
             };
 
             await _firestoreService.SaveUserInfoAsync(userInfo).ConfigureAwait(false); // Создание пустой анкеты

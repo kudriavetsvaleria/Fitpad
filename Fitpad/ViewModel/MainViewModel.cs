@@ -32,7 +32,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public ICommand ShowNewsCommand { get; }
-    public ICommand ShowFavoritesCommand { get; }
+    public ICommand ShowMyDishesCommand { get; }
     public ICommand ShowNutritionCommand { get; }
     public ICommand ShowWorkoutsCommand { get; }
     public ICommand ShowProfileCommand { get; }
@@ -59,7 +59,7 @@ public class MainViewModel : INotifyPropertyChanged
         _profileViewModel = new ProfileViewModel();
 
         ShowNewsCommand = new RelayCommand(async o => await NavigateToAsync<NewsPage>());
-        ShowFavoritesCommand = new RelayCommand(async o => await NavigateToAsync<FavoritesPage>());
+        ShowMyDishesCommand = new RelayCommand(async o => await NavigateToAsync<MyDishesPage>());
         ShowNutritionCommand = new RelayCommand(async o => await NavigateToAsync<NutritionPage>());
         ShowWorkoutsCommand = new RelayCommand(async o => await NavigateToAsync<WorkoutsPage>());
         ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
@@ -79,7 +79,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (storedUser != null)
         {
-            Console.WriteLine("Найден авторизованный пользователь. Выполняется автоматический вход...");
+            Console.WriteLine("Знайдено авторизованого користувача. Виконується автоматичний вхід...");
             CurrentPage = await GetPageInstanceAsync<NewsPage>();
         }
         else
@@ -117,7 +117,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
+            Console.WriteLine($"Помилка під час завантаження даних користувача: {ex.Message}");
         }
         return null;
     }
@@ -130,7 +130,7 @@ public class MainViewModel : INotifyPropertyChanged
         // Проверяем, авторизован ли пользователь
         if (typeof(T) == typeof(CaloriesPage) && currentUser == null)
         {
-            MessageBox.Show("Войдите в аккаунт", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Увійдіть в акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             return; // Прерываем выполнение метода, остаёмся на текущей странице
         }
 
@@ -165,7 +165,7 @@ public class MainViewModel : INotifyPropertyChanged
             var currentUser = await _userRepository.GetCurrentUserAsync();
             if (currentUser == null)
             {
-                MessageBox.Show("Ошибка: Пользователь не найден.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Помилка: Користувач не знайдений.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
             return CaloriesPage.GetInstance(currentUser);
@@ -185,7 +185,7 @@ public class MainViewModel : INotifyPropertyChanged
             }
             else
             {
-                page = (Page)Activator.CreateInstance(type); // Создание страницы без параметров
+                page = (Page)Activator.CreateInstance(type); 
             }
 
             _pageCache[type] = page;
