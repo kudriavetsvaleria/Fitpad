@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Fitpad.Model.Entities;
 using Fitpad.Services;
 
 namespace Fitpad.View.Pages
 {
     public partial class MyDishesPage : Page
     {
-        private List<string> _products = new List<string>();
+        private List<ProductItem> _products = new List<ProductItem>();
         private TranslatorService _translatorService = new TranslatorService();
 
         public MyDishesPage()
@@ -35,20 +37,31 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            // 🔹 Логируем введённое значение
-            Console.WriteLine($"Введено: {productName}");
+            Console.WriteLine($"🔹 Введено: {productName}");
 
-            // 🔹 Переводим введённое название на английский перед поиском
+            // Переводим название продукта на английский (если необходимо)
             string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
+            Console.WriteLine($"🔹 Переведено: {translatedName}");
 
-            // 🔹 Логируем перевод
-            Console.WriteLine($"Переведено: {translatedName}");
+            USDAFood productData = await FetchProductFromUSDA(translatedName);
 
-            string productData = await FetchProductFromOpenFoodFacts(translatedName);
-
-            if (!string.IsNullOrEmpty(productData))
+            if (productData != null)
             {
-                _products.Add(productData);
+                double calories = productData.FoodNutrients?.Find(n => n.NutrientName == "Energy")?.Value ?? 0;
+                double protein = productData.FoodNutrients?.Find(n => n.NutrientName == "Protein")?.Value ?? 0;
+                double fat = productData.FoodNutrients?.Find(n => n.NutrientName == "Total lipid (fat)")?.Value ?? 0;
+                double carbs = productData.FoodNutrients?.Find(n => n.NutrientName == "Carbohydrate")?.Value ?? 0;
+
+                ProductItem newProduct = new ProductItem
+                {
+                    Name = productData.Description,
+                    Calories = calories,
+                    Protein = protein,
+                    Fat = fat,
+                    Carbs = carbs
+                };
+
+                _products.Add(newProduct);
                 ProductListBox.Items.Refresh();
             }
             else
@@ -57,53 +70,53 @@ namespace Fitpad.View.Pages
             }
         }
 
-        private async Task<string> FetchProductFromOpenFoodFacts(string productName)
+        private async Task<USDAFood> FetchProductFromUSDA(string productName)
         {
             using HttpClient client = new HttpClient();
-            string searchUrl = $"https://world.openfoodfacts.org/cgi/search.pl?search_terms={WebUtility.UrlEncode(productName)}&search_simple=1&json=1";
+            string apiKey = "vTsUonfbJdkCXVp8JiZ8nt1FC36J2ldKeqGAuDUJ";
+            string searchUrl = $"https://api.nal.usda.gov/fdc/v1/foods/search?query={WebUtility.UrlEncode(productName)}&api_key={apiKey}";
 
-            // 🔹 Логируем URL запроса
-            Console.WriteLine($" Запрос к Open Food Facts: {searchUrl}");
+            Console.WriteLine($"🔹 Запрос к USDA API: {searchUrl}");
 
             try
             {
                 HttpResponseMessage response = await client.GetAsync(searchUrl);
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+
+                // 🔹 Логируем ВЕСЬ JSON
+                Console.WriteLine($"🔹 Полный JSON-ответ: {jsonResponse}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($" Ошибка HTTP: {response.StatusCode}");
+                    Console.WriteLine($"❌ Ошибка HTTP: {response.StatusCode}");
                     return null;
                 }
 
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-
-                // 🔹 Логируем JSON-ответ
-                Console.WriteLine($" Ответ API: {jsonResponse}");
-
-                var productResult = JsonSerializer.Deserialize<OpenFoodFactsResponse>(jsonResponse);
-
-                if (productResult?.Products?.Count > 0)
+                // ✅ Исправленный разбор JSON
+                var result = JsonSerializer.Deserialize<USDAResponse>(jsonResponse);
+                if (result != null && result.Foods != null && result.Foods.Count > 0)
                 {
-                    string foundProduct = productResult.Products[0].ProductName;
-                    Console.WriteLine($" Найден продукт: {foundProduct}");
-                    return foundProduct;
+                    USDAFood foundFood = result.Foods[0]; // Берём ПЕРВЫЙ продукт из списка
+                    Console.WriteLine($"✅ Найден продукт: {foundFood.Description}");
+                    return foundFood;
                 }
                 else
                 {
-                    Console.WriteLine(" Продукт не найден в базе Open Food Facts.");
+                    Console.WriteLine("❌ Продукт не найден в USDA.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($" Ошибка при получении данных: {ex.Message}");
+                Console.WriteLine($"❌ Ошибка при получении данных: {ex.Message}");
             }
 
             return null;
         }
 
+
         private void RemoveProduct_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is string product)
+            if (sender is Button button && button.DataContext is ProductItem product)
             {
                 _products.Remove(product);
                 ProductListBox.Items.Refresh();
@@ -122,12 +135,18 @@ namespace Fitpad.View.Pages
                 return;
             }
 
+            List<string> ingredientNames = new List<string>();
+            foreach (var product in _products)
+            {
+                ingredientNames.Add($"{product.Name} (Калорії: {product.Calories}, Білки: {product.Protein}, Жири: {product.Fat}, Вуглеводи: {product.Carbs})");
+            }
+
             var dish = new Dish
             {
                 Name = dishName,
                 CookingTime = cookingTime,
                 Recipe = recipe,
-                Ingredients = new List<string>(_products)
+                Ingredients = ingredientNames
             };
 
             SaveDishToFile(dish);
@@ -149,23 +168,51 @@ namespace Fitpad.View.Pages
             string updatedJson = JsonSerializer.Serialize(dishes, new JsonSerializerOptions { WriteIndented = true });
             System.IO.File.WriteAllText(filePath, updatedJson);
         }
-    }
 
-    public class Dish
-    {
-        public string Name { get; set; }
-        public string CookingTime { get; set; }
-        public string Recipe { get; set; }
-        public List<string> Ingredients { get; set; }
-    }
+        public class Dish
+        {
+            public string Name { get; set; }
+            public string CookingTime { get; set; }
+            public string Recipe { get; set; }
+            public List<string> Ingredients { get; set; }
+        }
 
-    public class OpenFoodFactsResponse
-    {
-        public List<Product> Products { get; set; }
-    }
+        public class OpenFoodFactsResponse
+        {
+            public List<Product> Products { get; set; }
+        }
 
-    public class Product
-    {
-        public string ProductName { get; set; }
+        public class USDAResponse
+        {
+            [JsonPropertyName("foods")] // ✅ Указываем название, которое API возвращает
+            public List<USDAFood> Foods { get; set; }
+        }
+
+        public class USDAFood
+        {
+            [JsonPropertyName("fdcId")]
+            public int FdcId { get; set; }
+
+            [JsonPropertyName("description")]
+            public string Description { get; set; }
+
+            [JsonPropertyName("foodNutrients")]
+            public List<USDANutrient> FoodNutrients { get; set; }
+        }
+
+        public class USDANutrient
+        {
+            [JsonPropertyName("nutrientName")]
+            public string NutrientName { get; set; }
+
+            [JsonPropertyName("value")]
+            public double? Value { get; set; }
+        }
+
+
+        public class Product
+        {
+            public string ProductName { get; set; }
+        }
     }
 }

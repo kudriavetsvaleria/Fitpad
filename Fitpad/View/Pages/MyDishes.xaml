@@ -32,13 +32,19 @@
             <ListBox x:Name="ProductListBox" Height="150" Margin="0,10,0,0">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding}" Width="300"/>
+                        <StackPanel Orientation="Vertical" Margin="5">
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Calories, StringFormat='Калорії: {0} ккал'}"/>
+                            <TextBlock Text="{Binding Protein, StringFormat='Білки: {0} г'}"/>
+                            <TextBlock Text="{Binding Fat, StringFormat='Жири: {0} г'}"/>
+                            <TextBlock Text="{Binding Carbs, StringFormat='Вуглеводи: {0} г'}"/>
                             <Button Content="Видалити" Click="RemoveProduct_Click"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+
+
 
             <Button Content="Зберегти страву" Width="200" Height="40" Click="SaveDish_Click" Margin="0,20,0,0"/>
 
