@@ -1,53 +1,78 @@
 <Page x:Class="Fitpad.View.Pages.MyDishesPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
       Title="Мої страви">
 
     <Grid Margin="20">
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="400">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <!-- Левая часть -->
+            <ColumnDefinition Width="1*" />
+            <!-- Центральная часть -->
+            <ColumnDefinition Width="1*" />
+            <!-- Правая часть -->
+        </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold"/>
-            <TextBox x:Name="DishNameBox" Width="400" Height="30"/>
+        <!-- 🔹 Левая часть (Название, Поиск, Список продуктов, Рецепт) -->
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="350" Grid.Column="0">
 
-            <TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Bold" Margin="0,10,0,0"/>
-            <TextBox x:Name="CookingTimeBox" Width="400" Height="30"/>
-
-            <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,0"/>
-            <TextBox x:Name="RecipeBox" Width="400" Height="100" TextWrapping="Wrap" AcceptsReturn="True"/>
+            <!-- Название блюда -->
+            <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox x:Name="DishNameBox" Width="350" Height="30"/>
 
             <!-- Поиск продуктов -->
-            <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,0"/>
+            <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
             <Grid>
-                <TextBox x:Name="ProductSearchBox" Width="300" Height="30" TextChanged="ProductSearchBox_TextChanged"/>
-                <TextBlock x:Name="PlaceholderTextBlock"
-                           Text="Введіть назву продукту"
-                           Foreground="Gray"
-                           Margin="5,0,0,0"
-                           VerticalAlignment="Center"
-                           IsHitTestVisible="False"/>
+                <TextBox x:Name="ProductSearchBox" Width="260" Height="30"/>
+                <Button Content="🔍" Width="40" Height="30" HorizontalAlignment="Right" Click="SearchProduct_Click"/>
             </Grid>
-            <Button Content="Шукати" Click="SearchProduct_Click" Width="100" />
 
-            <!-- Список продуктов -->
-            <ListBox x:Name="ProductListBox" Height="150" Margin="0,10,0,0">
+            <!-- Список добавленных продуктов -->
+            <TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
+            <ListBox x:Name="ProductListBox" Height="150" Width="350" SelectionChanged="ProductListBox_SelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Vertical" Margin="5">
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Calories, StringFormat='Калорії: {0} ккал'}"/>
-                            <TextBlock Text="{Binding Protein, StringFormat='Білки: {0} г'}"/>
-                            <TextBlock Text="{Binding Fat, StringFormat='Жири: {0} г'}"/>
-                            <TextBlock Text="{Binding Carbs, StringFormat='Вуглеводи: {0} г'}"/>
-                            <Button Content="Видалити" Click="RemoveProduct_Click"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="{Binding Index}" FontWeight="Bold" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding Name}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
 
-
-
-            <Button Content="Зберегти страву" Width="200" Height="40" Click="SaveDish_Click" Margin="0,20,0,0"/>
-
+            <!-- Поле для рецепта (БЫЛО ОТСУТСТВУЮЩЕЕ) -->
+            <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
+            <TextBox x:Name="RecipeBox" Width="350" Height="100" TextWrapping="Wrap" AcceptsReturn="True"/>
         </StackPanel>
+
+        <!-- 🔹 Центральная часть (КБЖУ выбранного продукта) -->
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="250" Grid.Column="1" Margin="20,0,0,0">
+
+            <TextBlock Text="Інформація про продукт:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBlock x:Name="SelectedProductName" Text="Виберіть продукт" FontSize="16" FontWeight="Bold"/>
+            <TextBlock x:Name="SelectedProductCalories" Text="Калорії: -" FontSize="14"/>
+            <TextBlock x:Name="SelectedProductProtein" Text="Білки: -" FontSize="14"/>
+            <TextBlock x:Name="SelectedProductFat" Text="Жири: -" FontSize="14"/>
+            <TextBlock x:Name="SelectedProductCarbs" Text="Вуглеводи: -" FontSize="14"/>
+            <TextBlock x:Name="SelectedProductSugar" Text="Сахар: -" FontSize="14"/>
+        </StackPanel>
+
+        <!-- 🔹 Правая часть (Время приготовления и кнопка сохранения) -->
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="250" Grid.Column="2" Margin="20,0,0,0">
+
+            <!-- Время приготовления -->
+            <TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Bold"/>
+            <TextBox x:Name="CookingTimeBox" Width="150" Height="30" Margin="0,5,0,10"/>
+
+            <!-- Кнопка сохранения -->
+            <Button Content="Зберегти страву" Width="200" Height="40" Click="SaveDish_Click"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Grid.Column="2" Width="300" Margin="20,0,0,0">
+            <TextBlock Text="КБЖУ Розподіл" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+            <lvc:PieChart Name="MacroChart" Height="300" Width="300" LegendLocation="Right"/>
+        </StackPanel>
+
     </Grid>
 </Page>

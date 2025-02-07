@@ -7,8 +7,11 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Fitpad.Model.Entities;
 using Fitpad.Services;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace Fitpad.View.Pages
 {
@@ -16,16 +19,22 @@ namespace Fitpad.View.Pages
     {
         private List<ProductItem> _products = new List<ProductItem>();
         private TranslatorService _translatorService = new TranslatorService();
+        private SeriesCollection _macroSeries;
 
         public MyDishesPage()
         {
             InitializeComponent();
             ProductListBox.ItemsSource = _products;
-        }
+            _macroSeries = new SeriesCollection
+            {
+                new PieSeries { Title = "Білки", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Blue },
+                new PieSeries { Title = "Жири", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Red },
+                new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Green },
+                new PieSeries { Title = "Сахар", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Orange }
+            };
 
-        private void ProductSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            PlaceholderTextBlock.Visibility = string.IsNullOrWhiteSpace(ProductSearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            MacroChart.Series = _macroSeries;
+
         }
 
         private async void SearchProduct_Click(object sender, RoutedEventArgs e)
@@ -50,24 +59,52 @@ namespace Fitpad.View.Pages
                 double calories = productData.FoodNutrients?.Find(n => n.NutrientName == "Energy")?.Value ?? 0;
                 double protein = productData.FoodNutrients?.Find(n => n.NutrientName == "Protein")?.Value ?? 0;
                 double fat = productData.FoodNutrients?.Find(n => n.NutrientName == "Total lipid (fat)")?.Value ?? 0;
-                double carbs = productData.FoodNutrients?.Find(n => n.NutrientName == "Carbohydrate")?.Value ?? 0;
+                double carbs = productData.FoodNutrients?.Find(n => n.NutrientName.Contains("Carbohydrate"))?.Value ?? 0;
+                double sugar = productData.FoodNutrients?.Find(n => n.NutrientName.Contains("Sugars"))?.Value ?? 0;
 
                 ProductItem newProduct = new ProductItem
                 {
+                    Index = _products.Count + 1, // Добавляем индекс
                     Name = productData.Description,
                     Calories = calories,
                     Protein = protein,
                     Fat = fat,
-                    Carbs = carbs
+                    Carbs = carbs,
+                    Sugar = sugar
                 };
 
                 _products.Add(newProduct);
-                ProductListBox.Items.Refresh();
+                ProductListBox.ItemsSource = null;
+                ProductListBox.ItemsSource = _products;
             }
             else
             {
                 MessageBox.Show("Продукт не знайдено!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ProductListBox.SelectedItem is ProductItem selectedProduct)
+            {
+                SelectedProductName.Text = selectedProduct.Name;
+                SelectedProductCalories.Text = $"Калорії: {selectedProduct.Calories}";
+                SelectedProductProtein.Text = $"Білки: {selectedProduct.Protein} г";
+                SelectedProductFat.Text = $"Жири: {selectedProduct.Fat} г";
+                SelectedProductCarbs.Text = $"Вуглеводи: {selectedProduct.Carbs} г";
+                SelectedProductSugar.Text = $"Сахар: {selectedProduct.Sugar} г";
+
+                // Обновляем диаграмму
+                UpdatePieChart(selectedProduct.Protein, selectedProduct.Fat, selectedProduct.Carbs, selectedProduct.Sugar);
+            }
+        }
+
+        private void UpdatePieChart(double protein, double fat, double carbs, double sugar)
+        {
+            _macroSeries[0].Values[0] = protein;
+            _macroSeries[1].Values[0] = fat;
+            _macroSeries[2].Values[0] = carbs;
+            _macroSeries[3].Values[0] = sugar;
         }
 
         private async Task<USDAFood> FetchProductFromUSDA(string productName)
