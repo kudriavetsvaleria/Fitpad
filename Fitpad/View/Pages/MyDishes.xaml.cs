@@ -34,7 +34,7 @@ namespace Fitpad.View.Pages
             };
 
             MacroChart.Series = _macroSeries;
-
+            SetDefaultChart();
         }
 
         private async void SearchProduct_Click(object sender, RoutedEventArgs e)
@@ -87,13 +87,6 @@ namespace Fitpad.View.Pages
         {
             if (ProductListBox.SelectedItem is ProductItem selectedProduct)
             {
-                SelectedProductName.Text = selectedProduct.Name;
-                SelectedProductCalories.Text = $"Калорії: {selectedProduct.Calories}";
-                SelectedProductProtein.Text = $"Білки: {selectedProduct.Protein} г";
-                SelectedProductFat.Text = $"Жири: {selectedProduct.Fat} г";
-                SelectedProductCarbs.Text = $"Вуглеводи: {selectedProduct.Carbs} г";
-                SelectedProductSugar.Text = $"Сахар: {selectedProduct.Sugar} г";
-
                 // Обновляем диаграмму
                 UpdatePieChart(selectedProduct.Protein, selectedProduct.Fat, selectedProduct.Carbs, selectedProduct.Sugar);
             }
@@ -101,11 +94,23 @@ namespace Fitpad.View.Pages
 
         private void UpdatePieChart(double protein, double fat, double carbs, double sugar)
         {
-            _macroSeries[0].Values[0] = protein;
-            _macroSeries[1].Values[0] = fat;
-            _macroSeries[2].Values[0] = carbs;
-            _macroSeries[3].Values[0] = sugar;
+            _macroSeries.Clear();
+
+            if (protein == 0 && fat == 0 && carbs == 0 && sugar == 0)
+            {
+                SetDefaultChart(); // Если данных нет, показываем серый круг
+                return;
+            }
+
+            // Сбрасываем отступ, если диаграмма не пустая
+
+            _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { protein }, DataLabels = true, Fill = Brushes.Blue });
+            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { fat }, DataLabels = true, Fill = Brushes.Red });
+            _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { carbs }, DataLabels = true, Fill = Brushes.Green });
+            _macroSeries.Add(new PieSeries { Title = "Сахар", Values = new ChartValues<double> { sugar }, DataLabels = true, Fill = Brushes.Orange });
         }
+
+
 
         private async Task<USDAFood> FetchProductFromUSDA(string productName)
         {
@@ -246,10 +251,39 @@ namespace Fitpad.View.Pages
             public double? Value { get; set; }
         }
 
+        private void SetDefaultChart()
+        {
+            _macroSeries.Clear();
+            _macroSeries.Add(new PieSeries
+            {
+                Title = "Пусто",
+                Values = new ChartValues<double> { 1 },
+                DataLabels = false,
+                Fill = Brushes.Gray
+            });
+
+            MacroChart.Margin = new Thickness(0, 20, 0, 0); // Опускаем диаграмму ниже
+        }
+
+
+        private void AddPhoto_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Додавання фото ще не реалізовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MarkFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Позначення як улюблене ще не реалізовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
         public class Product
         {
             public string ProductName { get; set; }
+        }
+
+        private void MacroChart_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

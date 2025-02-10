@@ -5,74 +5,115 @@
       Title="Мої страви">
 
     <Grid Margin="20">
+        <!-- Подкорректировали ширину колонок -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <!-- Левая часть -->
-            <ColumnDefinition Width="1*" />
-            <!-- Центральная часть -->
-            <ColumnDefinition Width="1*" />
-            <!-- Правая часть -->
+            <ColumnDefinition Width="1.6*" />
+            <ColumnDefinition Width="1.7*" />
+            <ColumnDefinition Width="Auto"/>
+            <!-- Новая колонка для кнопок -->
         </Grid.ColumnDefinitions>
 
-        <!-- 🔹 Левая часть (Название, Поиск, Список продуктов, Рецепт) -->
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="350" Grid.Column="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <!-- Название блюда -->
-            <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBox x:Name="DishNameBox" Width="350" Height="30"/>
-
-            <!-- Поиск продуктов -->
-            <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
-            <Grid>
-                <TextBox x:Name="ProductSearchBox" Width="260" Height="30"/>
-                <Button Content="🔍" Width="40" Height="30" HorizontalAlignment="Right" Click="SearchProduct_Click"/>
-            </Grid>
-
-            <!-- Список добавленных продуктов -->
-            <TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
-            <ListBox x:Name="ProductListBox" Height="150" Width="350" SelectionChanged="ProductListBox_SelectionChanged">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="5">
-                            <TextBlock Text="{Binding Index}" FontWeight="Bold" Margin="0,0,5,0"/>
-                            <TextBlock Text="{Binding Name}"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-
-            <!-- Поле для рецепта (БЫЛО ОТСУТСТВУЮЩЕЕ) -->
-            <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="0,10,0,5"/>
-            <TextBox x:Name="RecipeBox" Width="350" Height="100" TextWrapping="Wrap" AcceptsReturn="True"/>
+        <!-- Левая колонка (название блюда) -->
+        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,3,3,50" Grid.RowSpan="2">
+            <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold" Margin="0,2,0,1"/>
+            <TextBox x:Name="DishNameBox" Width="280" Height="28" HorizontalAlignment="Left"/>
         </StackPanel>
 
-        <!-- 🔹 Центральная часть (КБЖУ выбранного продукта) -->
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="250" Grid.Column="1" Margin="20,0,0,0">
-
-            <TextBlock Text="Інформація про продукт:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBlock x:Name="SelectedProductName" Text="Виберіть продукт" FontSize="16" FontWeight="Bold"/>
-            <TextBlock x:Name="SelectedProductCalories" Text="Калорії: -" FontSize="14"/>
-            <TextBlock x:Name="SelectedProductProtein" Text="Білки: -" FontSize="14"/>
-            <TextBlock x:Name="SelectedProductFat" Text="Жири: -" FontSize="14"/>
-            <TextBlock x:Name="SelectedProductCarbs" Text="Вуглеводи: -" FontSize="14"/>
-            <TextBlock x:Name="SelectedProductSugar" Text="Сахар: -" FontSize="14"/>
-        </StackPanel>
-
-        <!-- 🔹 Правая часть (Время приготовления и кнопка сохранения) -->
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="250" Grid.Column="2" Margin="20,0,0,0">
-
-            <!-- Время приготовления -->
+        <!-- Правая колонка (время) -->
+        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,2,-5,6">
             <TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Bold"/>
-            <TextBox x:Name="CookingTimeBox" Width="150" Height="30" Margin="0,5,0,10"/>
-
-            <!-- Кнопка сохранения -->
-            <Button Content="Зберегти страву" Width="200" Height="40" Click="SaveDish_Click"/>
+            <TextBox x:Name="CookingTimeBox" Width="160" Height="28" Margin="0,4,0,0" HorizontalAlignment="Left"/>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" Grid.Column="2" Width="300" Margin="20,0,0,0">
-            <TextBlock Text="КБЖУ Розподіл" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
-            <lvc:PieChart Name="MacroChart" Height="300" Width="300" LegendLocation="Right"/>
+        <!-- Кнопки справа от времени -->
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="195,10,87,47" Grid.RowSpan="2">
+            <Button Width="32" Height="32" ToolTip="Додати фото" Click="AddPhoto_Click">
+                <TextBlock Text="📷" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Button>
+            <Button Width="32" Height="32" ToolTip="Позначити як улюблене" Click="MarkFavorite_Click" Margin="10,0,0,0">
+                <TextBlock Text="⭐" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Button>
         </StackPanel>
+
+        <!-- Поиск продукта -->
+        <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,10,0">
+            <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="0,6,0,1"/>
+            <Grid HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="45"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="ProductSearchBox" Width="235" Height="28" Grid.Column="0"/>
+                <Button Content="🔍" Width="45" Height="28" Grid.Column="1" Margin="4,0,0,0" Click="SearchProduct_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Список добавленных продуктов -->
+        <StackPanel Grid.Column="0" Grid.Row="2" Margin="0,0,10,0">
+            <TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Bold" Margin="0,6,0,1"/>
+            <ListBox x:Name="ProductListBox" Width="280" Height="140" HorizontalAlignment="Left" SelectionChanged="ProductListBox_SelectionChanged"/>
+        </StackPanel>
+
+        <!-- Поле для рецепта -->
+        <StackPanel Grid.Column="0" Grid.Row="3" Margin="0,0,10,0">
+            <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="0,6,0,1"/>
+            <TextBox x:Name="RecipeBox" Width="280" Height="153" TextWrapping="Wrap" AcceptsReturn="True" HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- Диаграмма КБЖУ -->
+        <StackPanel Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Margin="0,10,60,0">
+            <TextBlock Text="Розподіл макроелементів:" FontSize="14" FontWeight="Bold"/>
+
+            <!-- Кружочки в одну строку -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Foreground="Blue" Text="●" FontSize="24" VerticalAlignment="Center" Height="35"/>
+                    <TextBlock Text="Білки" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Foreground="Red" Text="●" FontSize="24" VerticalAlignment="Center" Height="35"/>
+                    <TextBlock Text="Жири" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Foreground="Green" Text="●" FontSize="24" VerticalAlignment="Center" Height="35"/>
+                    <TextBlock Text="Вуглеводи" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Foreground="Orange" Text="●" FontSize="24" VerticalAlignment="Center" Height="35"/>
+                    <TextBlock Text="Сахар" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+            <lvc:PieChart x:Name="MacroChart" Height="215" Width="258" LegendLocation="None"/>
+        </StackPanel>
+
+        <!-- Кнопка сохранения -->
+        <Button Content="Зберегти страву" Width="200" Height="45"
+        Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="6"
+        Margin="0,0,0,10" Click="SaveDish_Click"
+        Foreground="White" FontSize="16" FontWeight="Bold">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="#689F38" CornerRadius="14" Padding="10,5"
+                    BorderThickness="0" Margin="0,-45,0,45">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
 
     </Grid>
 </Page>
