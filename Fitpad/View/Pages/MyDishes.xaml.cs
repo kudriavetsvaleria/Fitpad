@@ -12,6 +12,8 @@ using Fitpad.Model.Entities;
 using Fitpad.Services;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Microsoft.Win32;
+using System.Windows.Media.Imaging;
 
 namespace Fitpad.View.Pages
 {
@@ -20,6 +22,7 @@ namespace Fitpad.View.Pages
         private List<ProductItem> _products = new List<ProductItem>();
         private TranslatorService _translatorService = new TranslatorService();
         private SeriesCollection _macroSeries;
+        private bool isFavorite = false;
 
         public MyDishesPage()
         {
@@ -35,6 +38,14 @@ namespace Fitpad.View.Pages
 
             MacroChart.Series = _macroSeries;
             SetDefaultChart();
+        }
+
+        private void MarkFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            isFavorite = !isFavorite;
+            string newImage = isFavorite ? "pack://siteoforigin:,,,/Images/star_yellow.png" : "pack://siteoforigin:,,,/Images/star_grey.png";
+
+            FavoriteIcon.Source = new BitmapImage(new Uri(newImage));
         }
 
         private async void SearchProduct_Click(object sender, RoutedEventArgs e)
@@ -87,10 +98,13 @@ namespace Fitpad.View.Pages
         {
             if (ProductListBox.SelectedItem is ProductItem selectedProduct)
             {
-                // Обновляем диаграмму
+                Console.WriteLine($"🔹 Выбран продукт: {selectedProduct.Name}");
+                Console.WriteLine($"Б: {selectedProduct.Protein}, Ж: {selectedProduct.Fat}, В: {selectedProduct.Carbs}, С: {selectedProduct.Sugar}");
+
                 UpdatePieChart(selectedProduct.Protein, selectedProduct.Fat, selectedProduct.Carbs, selectedProduct.Sugar);
             }
         }
+
 
         private void UpdatePieChart(double protein, double fat, double carbs, double sugar)
         {
@@ -98,18 +112,19 @@ namespace Fitpad.View.Pages
 
             if (protein == 0 && fat == 0 && carbs == 0 && sugar == 0)
             {
-                SetDefaultChart(); // Если данных нет, показываем серый круг
+                SetDefaultChart();
                 return;
             }
-
-            // Сбрасываем отступ, если диаграмма не пустая
 
             _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { protein }, DataLabels = true, Fill = Brushes.Blue });
             _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { fat }, DataLabels = true, Fill = Brushes.Red });
             _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { carbs }, DataLabels = true, Fill = Brushes.Green });
             _macroSeries.Add(new PieSeries { Title = "Сахар", Values = new ChartValues<double> { sugar }, DataLabels = true, Fill = Brushes.Orange });
-        }
 
+            // ✅ Обновляем диаграмму
+            MacroChart.Series = null;
+            MacroChart.Series = _macroSeries;
+        }
 
 
         private async Task<USDAFood> FetchProductFromUSDA(string productName)
@@ -265,16 +280,36 @@ namespace Fitpad.View.Pages
             MacroChart.Margin = new Thickness(0, 20, 0, 0); // Опускаем диаграмму ниже
         }
 
+        private void DisplayImage(string filePath)
+        {
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(filePath);
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+
+            DishImage.Source = bitmap;
+            DishImage.Visibility = Visibility.Visible; // Делаем изображение видимым
+        }
 
         private void AddPhoto_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Додавання фото ще не реалізовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
+            };
+
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                DishImage.Source = new BitmapImage(new Uri(dlg.FileName));
+                DishImage.Visibility = Visibility.Visible;
+
+                // Обновляем разметку, чтобы элементы съехали вниз
+                DishImage.UpdateLayout();
+            }
         }
 
-        private void MarkFavorite_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Позначення як улюблене ще не реалізовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
 
         public class Product
         {
