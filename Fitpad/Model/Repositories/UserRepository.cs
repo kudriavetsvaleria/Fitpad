@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Fitpad.Model.Entities;
 using System.Windows;
+using static Fitpad.Services.FirestoreService;
 
 namespace Fitpad.Model.Repositories
 {
@@ -57,51 +58,35 @@ namespace Fitpad.Model.Repositories
 
         public async Task<UserModel> GetCurrentUserAsync()
         {
-            if (string.IsNullOrEmpty(CurrentUserId))
+            if (string.IsNullOrEmpty(UserSession.CurrentUserId))
             {
                 Console.WriteLine("ID текущего пользователя отсутствует. Возвращаем пользователя по умолчанию.");
-
-                // Возвращаем пустого пользователя по умолчанию
-                return new UserModel
-                {
-                    Id = string.Empty,
-                    Name = "Гость",
-                    Email = "guest@example.com"
-                };
+                return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
             }
 
             try
             {
-                var docRef = _firestoreDb.Collection("Users").Document(CurrentUserId);
+                var docRef = _firestoreDb.Collection("Users").Document(UserSession.CurrentUserId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (snapshot.Exists)
                 {
-                    Console.WriteLine($"Пользователь с ID {CurrentUserId} успешно загружен.");
+                    Console.WriteLine($"Пользователь с ID {UserSession.CurrentUserId} успешно загружен.");
                     return snapshot.ConvertTo<UserModel>();
                 }
                 else
                 {
-                    Console.WriteLine($"Пользователь с ID {CurrentUserId} не найден.");
-                    return new UserModel
-                    {
-                        Id = string.Empty,
-                        Name = "Гость",
-                        Email = "guest@example.com"
-                    };
+                    Console.WriteLine($"Пользователь с ID {UserSession.CurrentUserId} не найден.");
+                    return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
-                return new UserModel
-                {
-                    Id = string.Empty,
-                    Name = "Гость",
-                    Email = "guest@example.com"
-                };
+                return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
             }
         }
+
 
 
         // Метод для сохранения данных пользователя

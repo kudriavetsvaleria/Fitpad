@@ -34,23 +34,23 @@
             <TextBlock Text="{Binding CurrentUser.Email}" Margin="0,0,0,10" />
 
             <!-- Отображение данных анкеты -->
-            <TextBlock Text="Стать:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Gender}" Margin="0,0,0,10"/>
+            <TextBlock Text="Стать:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Gender}" FontSize="14"/>
 
-            <TextBlock Text="Вік:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Age}" Margin="0,0,0,10"/>
+            <TextBlock Text="Вік:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Age}" FontSize="14"/>
 
-            <TextBlock Text="Ріст:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Height}" Margin="0,0,0,10"/>
+            <TextBlock Text="Зріст:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Height}" FontSize="14"/>
 
-            <TextBlock Text="Вага:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Weight}" Margin="0,0,0,10"/>
+            <TextBlock Text="Вага:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Weight}" FontSize="14"/>
 
-            <TextBlock Text="Рівень активності:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" Margin="0,0,0,10"/>
+            <TextBlock Text="Рівень активності:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" FontSize="14"/>
 
-            <TextBlock Text="Мета:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Purpose}" Margin="0,0,0,10"/>
+            <TextBlock Text="Мета:" FontSize="14" FontWeight="Bold"/>
+            <TextBlock Text="{Binding CurrentUserInfo.Purpose}" FontSize="14"/>
 
         </StackPanel>
 

@@ -1,21 +1,27 @@
-﻿using System;
+﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Fitpad.Model.Entities
+[FirestoreData]
+public class DishModel
 {
-    public class DishModel
-    {
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public string Name { get; set; }
-        public string CookingTime { get; set; }
-        public string Recipe { get; set; }
-        public List<string> Ingredients { get; set; }
-        public bool IsFavorite { get; set; }  // Новое поле
-    }
+    [FirestoreProperty]
+    public string Id { get; set; }
 
+    [FirestoreProperty]
+    public string UserId { get; set; }
 
+    [FirestoreProperty]
+    public string Name { get; set; }
+
+    [FirestoreProperty]
+    public string CookingTime { get; set; }
+
+    [FirestoreProperty]
+    public string Recipe { get; set; }
+
+    [FirestoreProperty]
+    public List<string> Ingredients { get; set; }
+
+    [FirestoreProperty]
+    public bool IsFavorite { get; set; }
 }

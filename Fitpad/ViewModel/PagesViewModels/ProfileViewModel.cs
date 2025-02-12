@@ -46,6 +46,7 @@ public class ProfileViewModel : INotifyPropertyChanged
         CurrentUserInfo = null;
     }
 
+
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {

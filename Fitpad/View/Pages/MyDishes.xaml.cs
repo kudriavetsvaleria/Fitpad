@@ -16,6 +16,9 @@ using System.Windows.Media.Imaging;
 using System.Linq;
 using System.Globalization;
 using System.Windows.Data;
+using static Fitpad.Services.FirestoreService;
+using Fitpad.Model.Repositories;
+using Newtonsoft.Json;
 
 
 namespace Fitpad.View.Pages
@@ -232,6 +235,39 @@ namespace Fitpad.View.Pages
             }
         }
 
+        private string GetCurrentUserId()
+        {
+            return UserSession.CurrentUserId;
+        }
+
+        private async void SaveDish_Click(object sender, RoutedEventArgs e)
+        {
+            string userId = UserRepository.CurrentUserId;
+            Console.WriteLine($"📌 Проверка перед сохранением: UserSession.CurrentUserId = {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                MessageBox.Show("Будь ласка, увійдіть у свій акаунт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dish = new DishModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Name = DishNameBox.Text,
+                CookingTime = CookingTimeBox.Text,
+                Recipe = RecipeBox.Text,
+                Ingredients = _products.Select(p => p.Name).ToList(),
+                IsFavorite = isFavorite
+            };
+
+            Console.WriteLine($"📌 Данные перед отправкой в Firestore: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
+
+            FirestoreService firestoreService = new FirestoreService();
+            await firestoreService.SaveDishToFirebase(dish);
+        }
+
 
 
         private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -289,7 +325,8 @@ namespace Fitpad.View.Pages
                     return null;
                 }
 
-                var result = JsonSerializer.Deserialize<USDAResponse>(jsonResponse);
+                var result = System.Text.Json.JsonSerializer.Deserialize<USDAResponse>(jsonResponse);
+
                 if (result != null && result.Foods != null && result.Foods.Any())
                 {
                     USDAFood foundFood = result.Foods.First(); // Берем первый найденный продукт
@@ -309,8 +346,6 @@ namespace Fitpad.View.Pages
             }
         }
 
-
-
         private void RemoveProduct_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.DataContext is ProductItem product)
@@ -318,36 +353,6 @@ namespace Fitpad.View.Pages
                 _products.Remove(product);
                 ProductListBox.Items.Refresh();
             }
-        }
-
-        private void SaveDish_Click(object sender, RoutedEventArgs e)
-        {
-            string dishName = DishNameBox.Text;
-            string cookingTime = CookingTimeBox.Text;
-            string recipe = RecipeBox.Text;
-
-            if (string.IsNullOrWhiteSpace(dishName) || string.IsNullOrWhiteSpace(recipe) || string.IsNullOrWhiteSpace(cookingTime))
-            {
-                MessageBox.Show("Будь ласка, заповніть усі поля.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            List<string> ingredientNames = new List<string>();
-            foreach (var product in _products)
-            {
-                ingredientNames.Add($"{product.Name} (Калорії: {product.Calories}, Білки: {product.Protein}, Жири: {product.Fat}, Вуглеводи: {product.Carbs})");
-            }
-
-            var dish = new Dish
-            {
-                Name = dishName,
-                CookingTime = cookingTime,
-                Recipe = recipe,
-                Ingredients = ingredientNames
-            };
-
-            SaveDishToFile(dish);
-            MessageBox.Show("Рецепт збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void SaveDishToFile(Dish dish)
@@ -358,13 +363,14 @@ namespace Fitpad.View.Pages
             if (System.IO.File.Exists(filePath))
             {
                 string json = System.IO.File.ReadAllText(filePath);
-                dishes = JsonSerializer.Deserialize<List<Dish>>(json) ?? new List<Dish>();
+                dishes = System.Text.Json.JsonSerializer.Deserialize<List<Dish>>(json) ?? new List<Dish>();
             }
 
             dishes.Add(dish);
-            string updatedJson = JsonSerializer.Serialize(dishes, new JsonSerializerOptions { WriteIndented = true });
+            string updatedJson = System.Text.Json.JsonSerializer.Serialize(dishes, new JsonSerializerOptions { WriteIndented = true });
             System.IO.File.WriteAllText(filePath, updatedJson);
         }
+
 
         public class Dish
         {

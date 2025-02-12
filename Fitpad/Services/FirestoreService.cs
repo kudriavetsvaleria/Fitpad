@@ -3,6 +3,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
 using Grpc.Auth;
 using Grpc.Core;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,6 +46,11 @@ namespace Fitpad.Services
 
             Console.WriteLine("Соединение с Firestore установлено.");
         }
+        public static class UserSession
+        {
+            public static string CurrentUserId { get; set; }
+        }
+
 
         // Метод для получения экземпляра FirestoreDb
         public FirestoreDb GetFirestoreDb()
@@ -184,21 +190,79 @@ namespace Fitpad.Services
             }
         }
 
-
         public async Task SaveDishToFirebase(DishModel dish)
         {
             try
             {
-                DocumentReference docRef = _firestoreDb.Collection("dishes").Document(dish.UserId).Collection("userDishes").Document(dish.Id);
-                await docRef.SetAsync(dish);
-                Console.WriteLine("Блюдо успешно сохранено в Firebase.");
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025"); // Создание подключения
+                CollectionReference dishesRef = db.Collection("dishes");
+
+                // Создаём новый документ в коллекции "dishes"
+                DocumentReference newDishRef = dishesRef.Document(dish.Id);
+                await newDishRef.SetAsync(dish);
+
+                Console.WriteLine($"✅ Блюдо '{dish.Name}' сохранено в Firestore (ID: {dish.Id})");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при сохранении блюда: {ex.Message}");
-                throw;
+                Console.WriteLine($"❌ Ошибка при сохранении блюда: {ex.Message}");
             }
         }
+
+
+        public async Task<List<DishModel>> GetUserDishes(string userId)
+        {
+            List<DishModel> dishes = new List<DishModel>();
+
+            try
+            {
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
+
+                // Запрос всех блюд, где UserId = userId
+                Query dishesQuery = db.Collection("dishes").WhereEqualTo("UserId", userId);
+                QuerySnapshot snapshot = await dishesQuery.GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        DishModel dish = doc.ConvertTo<DishModel>();
+                        dishes.Add(dish);
+                    }
+                }
+
+                Console.WriteLine($"✅ Загружено {dishes.Count} блюд для пользователя {userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при загрузке блюд: {ex.Message}");
+            }
+
+            return dishes;
+        }
+
+
+        public async Task CheckDishesCollection()
+        {
+            var db = FirestoreDb.Create("fitpad-2025"); // Подключаемся к Firestore
+            CollectionReference dishesRef = db.Collection("dishes");
+
+            QuerySnapshot snapshot = await dishesRef.GetSnapshotAsync();
+
+            if (snapshot.Documents.Count == 0)
+            {
+                Console.WriteLine("❌ Коллекция `dishes` пустая или не существует!");
+            }
+            else
+            {
+                Console.WriteLine($"✅ Найдено {snapshot.Documents.Count} блюд в коллекции `dishes`.");
+                foreach (var doc in snapshot.Documents)
+                {
+                    Console.WriteLine($"🔹 Блюдо ID: {doc.Id} - {doc.ToDictionary()}");
+                }
+            }
+        }
+
 
 
         public async Task SaveDailyMealAsync(DailyMealModel dailyMeal)

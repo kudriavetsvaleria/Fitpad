@@ -22,7 +22,53 @@ namespace Fitpad.View.Pages
             InitializeComponent();
             _userRepository = new UserRepository();
             DataContext = profileViewModel;
+
+            LoadCurrentUserFromFile();
         }
+
+        private void LoadCurrentUserFromFile()
+        {
+            try
+            {
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+                Console.WriteLine($"📂 Ищем файл: {filePath}");
+
+                if (File.Exists(filePath))
+                {
+                    string json = File.ReadAllText(filePath);
+                    Console.WriteLine($"📜 JSON: {json}");
+
+                    if (string.IsNullOrWhiteSpace(json))
+                    {
+                        Console.WriteLine("❌ Файл `current_user.json` пустой!");
+                        return;
+                    }
+
+                    var data = JsonConvert.DeserializeObject<dynamic>(json);
+
+                    if (data != null && data.UserId != null)
+                    {
+                        UserRepository.CurrentUserId = data.UserId.ToString();
+                        Console.WriteLine($"✅ User ID загружен из файла: {UserRepository.CurrentUserId}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("❌ Файл `current_user.json` не найден.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при загрузке UserID: {ex.Message}");
+            }
+        }
+
+
+
 
         public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
         {
@@ -62,49 +108,52 @@ namespace Fitpad.View.Pages
                     return;
                 }
 
-                Console.WriteLine($"Користувач {user.Name} успішно авторизований.");
+                Console.WriteLine($"✅ Користувач {user.Name} успішно авторизований.");
 
-                UserRepository.CurrentUserId = user.Id.ToString();
-                var profileViewModel = new ProfileViewModel(user);
+                // Устанавливаем `UserID` и логируем его
+                UserRepository.CurrentUserId = user.Id;
+                Console.WriteLine($"📌 Установлен UserID после авторизации: {UserRepository.CurrentUserId}");
 
-                // Сохраняем данные пользователя в файл
+                // Сохраняем `UserID` в файл
                 SaveCurrentUserToFile(user);
-                UserRepository.CurrentUserId = user.Id.ToString();
 
                 MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                NavigationService.Navigate(ProfilePage.GetInstance(profileViewModel));
+                NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка авторизации: {ex.Message}");
-                MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"❌ Ошибка авторизации: {ex.Message}");
             }
         }
 
+
+
         // Метод для сохранения данных пользователя в JSON-файл
-private void SaveCurrentUserToFile(UserModel user)
-{
-    try
-    {
-        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
-
-        // Сохраняем ID текущего пользователя вместе с данными пользователя
-        var data = new
+        private void SaveCurrentUserToFile(UserModel user)
         {
-            UserId = user.Id,
-            User = user
-        };
+            try
+            {
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
 
-        string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-        File.WriteAllText(filePath, json);
+                var data = new
+                {
+                    UserId = user.Id,
+                    User = user
+                };
 
-        UserRepository.CurrentUserId = user.Id; // Устанавливаем CurrentUserId
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Ошибка при сохранении данных пользователя: {ex.Message}");
-    }
-}
+                string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+                File.WriteAllText(filePath, json);
+
+                UserRepository.CurrentUserId = user.Id; // 🔹 Устанавливаем ID текущего пользователя
+                Console.WriteLine($"✅ UserID сохранен в файл: {UserRepository.CurrentUserId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при сохранении данных пользователя: {ex.Message}");
+            }
+        }
+
 
 
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)

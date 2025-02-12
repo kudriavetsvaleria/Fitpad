@@ -204,7 +204,6 @@
     <Compile Include="Model\Repositories\NutritionRepository.cs" />
     <Compile Include="Model\Repositories\UserRepository.cs" />
     <Compile Include="Model\Repositories\WorkoutRepository.cs" />
-    <Compile Include="ViewModel\PagesViewModels\AccountLoginViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\CaloriesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\MyDishesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />

@@ -15,12 +15,23 @@ namespace Fitpad.View.Pages
         private static readonly object _lock = new object();
         private readonly ProfileViewModel _profileViewModel;
 
-        private ProfilePage(ProfileViewModel profileViewModel)
+        public ProfilePage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
             _profileViewModel = profileViewModel;
             DataContext = profileViewModel;
+
+            if (_profileViewModel.CurrentUser != null)
+            {
+                Console.WriteLine($"🔹 Загружаем данные анкеты для пользователя: {_profileViewModel.CurrentUser.Id}");
+                _ = LoadUserInfoAsync(_profileViewModel.CurrentUser.Id);
+            }
+            else
+            {
+                Console.WriteLine("❌ Нет текущего пользователя!");
+            }
         }
+
 
         public static ProfilePage GetInstance(ProfileViewModel profileViewModel = null)
         {
@@ -48,19 +59,30 @@ namespace Fitpad.View.Pages
         // Асинхронный метод для загрузки данных анкеты
         private async Task LoadUserInfoAsync(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Console.WriteLine("❌ Ошибка: UserId пустой!");
+                return;
+            }
+
+            Console.WriteLine($"🔹 Загружаем данные пользователя с ID: {userId}");
+
             var firestoreService = new FirestoreService();
             var userInfo = await firestoreService.GetUserInfoAsync(userId);
 
             if (userInfo != null)
             {
-                Console.WriteLine("Дані анкети успішно завантажені.");
+                Console.WriteLine("✅ Дані анкети успішно завантажені:");
+                Console.WriteLine($"Стать: {userInfo.Gender}, Вік: {userInfo.Age}, Зріст: {userInfo.Height}, Вага: {userInfo.Weight}");
+
                 _profileViewModel.CurrentUserInfo = userInfo;
             }
             else
             {
-                Console.WriteLine("Дані анкети не знайдено.");
+                Console.WriteLine("❌ Дані анкети не знайдено.");
             }
         }
+
 
 
         public static void ResetInstance()
