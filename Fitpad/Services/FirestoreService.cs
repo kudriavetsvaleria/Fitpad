@@ -241,6 +241,33 @@ namespace Fitpad.Services
             return dishes;
         }
 
+        public async Task UpdateFavoriteStatus(string dishId, bool isFavorite)
+        {
+            if (string.IsNullOrWhiteSpace(dishId))
+            {
+                Console.WriteLine("❌ Ошибка: ID блюда пустой!");
+                return;
+            }
+
+            Console.WriteLine($"🔥 Обновляем избранное в Firestore: {dishId}, IsFavorite: {isFavorite}");
+
+            var db = FirestoreDb.Create("fitpad-2025");
+            var dishRef = db.Collection("Dishes").Document(dishId);
+
+            await dishRef.UpdateAsync(new Dictionary<string, object>
+    {
+        { "IsFavorite", isFavorite }
+    });
+
+            Console.WriteLine("✅ Избранное успешно обновлено в Firestore!");
+        }
+
+        public string GenerateDishId()
+        {
+            return Guid.NewGuid().ToString(); // Генерирует уникальный ID
+        }
+
+
 
         public async Task CheckDishesCollection()
         {
@@ -280,8 +307,6 @@ namespace Fitpad.Services
                 throw;
             }
         }
-
-
 
     }
 }

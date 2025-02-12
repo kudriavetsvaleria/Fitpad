@@ -189,7 +189,6 @@
     <Compile Include="Converters\ButtonContentConverter.cs" />
     <Compile Include="Converters\ButtonWidthConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
-    <Compile Include="Model\Entities\AccountLogin.cs" />
     <Compile Include="Model\Repositories\UserInfoRepository.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\TranslatorService.cs" />
@@ -197,13 +196,10 @@
     <Compile Include="Model\Entities\CaloriesModel.cs" />
     <Compile Include="Model\Repositories\CaloriesRepository.cs" />
     <Compile Include="ViewModel\BaseViewModel.cs" />
-    <Compile Include="ViewModel\ComponentViewModels\NewsItemViewModel.cs" />
     <Compile Include="ViewModel\ComponentViewModels\NutritionItemViewModel.cs" />
-    <Compile Include="ViewModel\ComponentViewModels\WorkoutCardViewModel.cs" />
     <Compile Include="Model\Repositories\NewsRepository.cs" />
     <Compile Include="Model\Repositories\NutritionRepository.cs" />
     <Compile Include="Model\Repositories\UserRepository.cs" />
-    <Compile Include="Model\Repositories\WorkoutRepository.cs" />
     <Compile Include="ViewModel\PagesViewModels\CaloriesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\MyDishesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
@@ -211,7 +207,6 @@
     <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoFormViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
-    <Compile Include="ViewModel\PagesViewModels\WorkoutsViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\Components\UserInfoForm.xaml.cs">
       <DependentUpon>UserInfoForm.xaml</DependentUpon>
@@ -239,9 +234,6 @@
     </Compile>
     <Compile Include="View\Pages\RecipePage.xaml.cs">
       <DependentUpon>RecipePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Pages\WorkoutsPage.xaml.cs">
-      <DependentUpon>WorkoutsPage.xaml</DependentUpon>
     </Compile>
     <Page Include="View\Components\UserInfoForm.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -285,9 +277,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\ProfilePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Pages\WorkoutsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -99,13 +99,19 @@
                     <TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Bold" Margin="25,4,0,0" HorizontalAlignment="Center"/>
                     <TextBox x:Name="CookingTimeBox" Width="160" Height="28" Margin="25,4,0,0" HorizontalAlignment="Center"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="15,21,0,0" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="15,24,0,0" HorizontalAlignment="Center">
                     <Button Width="32" Height="32" ToolTip="Додати фото" Click="AddPhoto_Click" HorizontalAlignment="Center">
                         <Image Source="pack://application:,,,/Images/camera.png" Width="24" Height="24"/>
                     </Button>
-                    <Button Width="32" Height="32" ToolTip="Позначити як улюблене" Click="MarkFavorite_Click" Margin="10,0,0,0" HorizontalAlignment="Center">
-                        <Image x:Name="FavoriteIcon" Source="pack://siteoforigin:,,,/Images/star_grey.png" Width="24" Height="24"/>
+                    <Button Width="32" Height="32" ToolTip="Позначити як улюблене"
+                    Click="MarkFavorite_Click" Margin="15,0,0,0"
+                    DataContext="{Binding}">
+                      <Image x:Name="FavoriteIcon" 
+                       Source="pack://siteoforigin:,,,/Images/star_grey.png" 
+                       Width="24" Height="24"/>
                     </Button>
+
+
                 </StackPanel>
             </StackPanel>
 

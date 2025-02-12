@@ -19,6 +19,7 @@ using System.Windows.Data;
 using static Fitpad.Services.FirestoreService;
 using Fitpad.Model.Repositories;
 using Newtonsoft.Json;
+using static Fitpad.View.Pages.MyDishesPage;
 
 
 namespace Fitpad.View.Pages
@@ -46,9 +47,9 @@ namespace Fitpad.View.Pages
                 new PieSeries { Title = "Білки", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Blue },
                 new PieSeries { Title = "Жири", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Red },
                 new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Green },
-                new PieSeries { Title = "Сахар", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Orange }
+                new PieSeries { Title = "Цукор", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Orange }
             };
-
+            this.DataContext = new DishModel();
             MacroChart.Series = _macroSeries;
             SetDefaultChart();
         }
@@ -68,42 +69,34 @@ namespace Fitpad.View.Pages
             FavoriteIcon.Source = new BitmapImage(new Uri(newImage));
         }
 
-
-        private async void MarkFavorite_Click(object sender, RoutedEventArgs e)
+        private void MarkFavorite_Click(object sender, RoutedEventArgs e)
         {
-            isFavorite = !isFavorite;
-            string newImage = isFavorite ? "pack://siteoforigin:,,,/Images/star_yellow.png" : "pack://siteoforigin:,,,/Images/star_grey.png";
+            Console.WriteLine("⭐ Клик по кнопке избранного!");
 
-            FavoriteIcon.Source = new BitmapImage(new Uri(newImage));
-
-            // Получаем ID текущего пользователя
-            string userId = "123456"; // 🔹 Тут должен быть реальный ID пользователя
-
-            // Получаем название блюда
-            string dishName = DishNameBox.Text;
-
-            if (string.IsNullOrWhiteSpace(dishName))
+            if (sender is Button button)
             {
-                MessageBox.Show("Будь ласка, введіть назву страви!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                // Инвертируем текущее состояние избранного
+                isFavorite = !isFavorite;
+
+                Console.WriteLine($"✅ Новый статус избранного: {isFavorite}");
+
+                // Обновляем иконку звезды
+                string newImage = isFavorite
+                    ? "pack://siteoforigin:,,,/Images/star_yellow.png"
+                    : "pack://siteoforigin:,,,/Images/star_grey.png";
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (FavoriteIcon != null)
+                    {
+                        Console.WriteLine("🔄 Обновление иконки избранного...");
+                        FavoriteIcon.Source = new BitmapImage(new Uri(newImage, UriKind.RelativeOrAbsolute));
+                        Console.WriteLine("✅ Иконка обновлена!");
+                    }
+                });
             }
-
-            // Создаем объект блюда
-            var dish = new DishModel
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = userId,
-                Name = dishName,
-                CookingTime = CookingTimeBox.Text,
-                Recipe = RecipeBox.Text,
-                Ingredients = _products.Select(p => $"{p.Name} (Калорії: {p.Calories}, Білки: {p.Protein}, Жири: {p.Fat}, Вуглеводи: {p.Carbs})").ToList(),
-                IsFavorite = isFavorite
-            };
-
-            // Отправляем в Firebase
-            FirestoreService firestoreService = new FirestoreService();
-            await firestoreService.SaveDishToFirebase(dish);
         }
+
 
         private void ConfirmQuantity_Click(object sender, RoutedEventArgs e)
         {
@@ -243,17 +236,18 @@ namespace Fitpad.View.Pages
         private async void SaveDish_Click(object sender, RoutedEventArgs e)
         {
             string userId = UserRepository.CurrentUserId;
-            Console.WriteLine($"📌 Проверка перед сохранением: UserSession.CurrentUserId = {userId}");
-
             if (string.IsNullOrEmpty(userId))
             {
                 MessageBox.Show("Будь ласка, увійдіть у свій акаунт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
+            FirestoreService firestoreService = new FirestoreService();
+            string dishId = firestoreService.GenerateDishId();
+
             var dish = new DishModel
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = dishId,
                 UserId = userId,
                 Name = DishNameBox.Text,
                 CookingTime = CookingTimeBox.Text,
@@ -262,10 +256,12 @@ namespace Fitpad.View.Pages
                 IsFavorite = isFavorite
             };
 
-            Console.WriteLine($"📌 Данные перед отправкой в Firestore: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
+            Console.WriteLine($"📌 Данные перед сохранением: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
 
-            FirestoreService firestoreService = new FirestoreService();
             await firestoreService.SaveDishToFirebase(dish);
+
+            // ✅ Показываем уведомление пользователю
+            MessageBox.Show("Блюдо успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
 

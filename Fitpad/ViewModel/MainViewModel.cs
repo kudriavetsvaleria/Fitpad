@@ -61,7 +61,6 @@ public class MainViewModel : INotifyPropertyChanged
         ShowNewsCommand = new RelayCommand(async o => await NavigateToAsync<NewsPage>());
         ShowMyDishesCommand = new RelayCommand(async o => await NavigateToAsync<MyDishesPage>());
         ShowNutritionCommand = new RelayCommand(async o => await NavigateToAsync<NutritionPage>());
-        ShowWorkoutsCommand = new RelayCommand(async o => await NavigateToAsync<WorkoutsPage>());
         ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
