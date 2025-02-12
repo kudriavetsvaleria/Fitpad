@@ -2,16 +2,23 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+      xmlns:local="clr-namespace:Fitpad.View.Converters"
       Title="Мої страви">
+
+    <Page.Resources>
+        <local:HalfConverter x:Key="HalfConverter"/>
+    </Page.Resources>
+
 
     <Grid Margin="20">
         <!-- Главная сетка: две колонки (левая и правая) -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.6*"/>
             <!-- Левая колонка -->
-            <ColumnDefinition Width="1.7*"/>
+            <ColumnDefinition Width="1.9*"/>
             <!-- Правая колонка -->
         </Grid.ColumnDefinitions>
+
 
         <!-- ЛЕВАЯ ЧАСТЬ -->
         <Grid Grid.Column="0">
@@ -24,6 +31,15 @@
                 <!-- Заполняет оставшееся пространство -->
             </Grid.RowDefinitions>
 
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="45"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="ProductSearchBox" Width="235" Height="28" Margin="0,-20,0,0"/>
+                <Button Content="🔍" Width="45" Height="28" Click="SearchProduct_Click" Grid.ColumnSpan="2" Margin="228,-10,10,10"/>
+            </Grid>
+
             <!-- Название блюда -->
             <StackPanel Grid.Row="0" Margin="0,3,3,50" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold" Margin="0,3,0,0"/>
@@ -32,26 +48,38 @@
 
             <!-- Поиск продукта -->
             <StackPanel Grid.Row="1">
-                <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="30,-35,0,0"/>
+                <TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Bold" Margin="38,-35,0,0"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="45"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="ProductSearchBox" Width="235" Height="28" Margin="0,-20,0,0"/>
                     <Button Content="🔍" Width="45" Height="28" Click="SearchProduct_Click" Grid.ColumnSpan="2" Margin="228,-10,10,10"/>
                 </Grid>
             </StackPanel>
 
             <!-- Список добавленных продуктов -->
             <StackPanel Grid.Row="2">
-                <TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Bold" Margin="30,-3,0,0"/>
-                <ListBox x:Name="ProductListBox" Width="280" Height="150" Margin="0,5,0,0" SelectionChanged="ProductListBox_SelectionChanged"/>
+                <TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Bold" Margin="38,-3,0,0"/>
+                <ListBox x:Name="ProductListBox" Width="280" Height="150" Margin="0,5,0,0"
+         SelectionChanged="ProductListBox_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" FontSize="14" Width="140"/>
+                                <TextBlock Text="{Binding Quantity}" FontSize="14" Width="40" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding Unit}" FontSize="14" Width="40" HorizontalAlignment="Right"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+
             </StackPanel>
 
             <!-- Поле для рецепта -->
             <StackPanel Grid.Row="3">
-                <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="30,5,0,0"/>
+                <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="38,5,0,0"/>
                 <TextBox x:Name="RecipeBox" Width="280" Height="159" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,5,0,0"/>
             </StackPanel>
         </Grid>
@@ -107,7 +135,7 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Foreground="Orange" Text="●" FontSize="24"/>
-                        <TextBlock Text="Сахар" FontSize="14" Margin="2,8,0,0"/>
+                        <TextBlock Text="Цукор" FontSize="14" Margin="2,8,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -116,10 +144,12 @@
             </StackPanel>
         </Grid>
 
+
+
         <!-- Кнопка сохранения -->
         <Button Content="Зберегти страву" Width="200" Height="45"
                 Grid.ColumnSpan="2" HorizontalAlignment="Left"
-                Margin="245,474,0,-30" Click="SaveDish_Click"
+                Margin="265,474,0,-30" Click="SaveDish_Click"
                 Foreground="White" FontSize="16" FontWeight="Bold">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
@@ -129,6 +159,36 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
+
+
+        <Grid x:Name="OverlayCanvas" Visibility="Collapsed" Margin="0,-80,-380,0">
+            <Border x:Name="QuantityInputPanel" Background="White" BorderBrush="Gray" BorderThickness="2"
+                CornerRadius="10" Padding="15" Width="280" Height="220"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <!-- Тень -->
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="9" Opacity="0.5"/>
+                </Border.Effect>
+
+                <StackPanel>
+                    <TextBlock Text="Введіть кількість:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="QuantityBox" Width="220" Height="30" Margin="0,5"/>
+                    <TextBlock Text="Оберіть одиницю виміру:" FontSize="14" FontWeight="Bold" Margin="0,5"/>
+                    <ComboBox x:Name="UnitComboBox" Width="220" Height="30" Margin="0,5">
+                        <ComboBoxItem Content="г"/>
+                        <ComboBoxItem Content="кг"/>
+                        <ComboBoxItem Content="шт"/>
+                        <ComboBoxItem Content="л"/>
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button Content="OK" Width="80" Height="30" Click="ConfirmQuantity_Click"  Margin="0,0,20,0"/>
+                        <Button Content="Скасувати" Width="80" Height="30" Click="CancelQuantity_Click" Margin="0,0,35,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </Grid>
 
     </Grid>
 </Page>

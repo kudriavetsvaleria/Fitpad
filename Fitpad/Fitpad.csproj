@@ -179,7 +179,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanConverter.cs" />
+    <Compile Include="Converters\HalfConverter.cs" />
     <Compile Include="Model\Entities\DailyMealModel.cs" />
+    <Compile Include="Model\Entities\DishModel.cs" />
     <Compile Include="Model\Entities\ProductItem.cs" />
     <Compile Include="Services\FirestoreService.cs" />
     <Compile Include="Model\Entities\UserInfoModel.cs" />

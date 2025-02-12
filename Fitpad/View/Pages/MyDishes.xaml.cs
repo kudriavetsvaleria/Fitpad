@@ -12,8 +12,11 @@ using Fitpad.Model.Entities;
 using Fitpad.Services;
 using LiveCharts;
 using LiveCharts.Wpf;
-using Microsoft.Win32;
 using System.Windows.Media.Imaging;
+using System.Linq;
+using System.Globalization;
+using System.Windows.Data;
+
 
 namespace Fitpad.View.Pages
 {
@@ -22,7 +25,14 @@ namespace Fitpad.View.Pages
         private List<ProductItem> _products = new List<ProductItem>();
         private TranslatorService _translatorService = new TranslatorService();
         private SeriesCollection _macroSeries;
+        private string _pendingProductName;
         private bool isFavorite = false;
+
+        private double _pendingCalories;
+        private double _pendingProtein;
+        private double _pendingFat;
+        private double _pendingCarbs;
+        private double _pendingSugar;
 
         public MyDishesPage()
         {
@@ -40,59 +50,189 @@ namespace Fitpad.View.Pages
             SetDefaultChart();
         }
 
-        private void MarkFavorite_Click(object sender, RoutedEventArgs e)
+        private async Task LoadFavoriteStatus()
+        {
+            string userId = "123456"; // Заменить на ID текущего пользователя
+            string dishName = DishNameBox.Text;
+
+            FirestoreService firestoreService = new FirestoreService();
+            var favoriteDishes = await firestoreService.GetFavoriteDishes(userId);
+
+            // Проверяем, есть ли текущее блюдо в списке избранных
+            isFavorite = favoriteDishes.Any(d => d.Name == dishName);
+
+            string newImage = isFavorite ? "pack://siteoforigin:,,,/Images/star_yellow.png" : "pack://siteoforigin:,,,/Images/star_grey.png";
+            FavoriteIcon.Source = new BitmapImage(new Uri(newImage));
+        }
+
+
+        private async void MarkFavorite_Click(object sender, RoutedEventArgs e)
         {
             isFavorite = !isFavorite;
             string newImage = isFavorite ? "pack://siteoforigin:,,,/Images/star_yellow.png" : "pack://siteoforigin:,,,/Images/star_grey.png";
 
             FavoriteIcon.Source = new BitmapImage(new Uri(newImage));
+
+            // Получаем ID текущего пользователя
+            string userId = "123456"; // 🔹 Тут должен быть реальный ID пользователя
+
+            // Получаем название блюда
+            string dishName = DishNameBox.Text;
+
+            if (string.IsNullOrWhiteSpace(dishName))
+            {
+                MessageBox.Show("Будь ласка, введіть назву страви!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Создаем объект блюда
+            var dish = new DishModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Name = dishName,
+                CookingTime = CookingTimeBox.Text,
+                Recipe = RecipeBox.Text,
+                Ingredients = _products.Select(p => $"{p.Name} (Калорії: {p.Calories}, Білки: {p.Protein}, Жири: {p.Fat}, Вуглеводи: {p.Carbs})").ToList(),
+                IsFavorite = isFavorite
+            };
+
+            // Отправляем в Firebase
+            FirestoreService firestoreService = new FirestoreService();
+            await firestoreService.SaveDishToFirebase(dish);
+        }
+
+        private void ConfirmQuantity_Click(object sender, RoutedEventArgs e)
+        {
+            if (!double.TryParse(QuantityBox.Text, out double quantity) || quantity <= 0)
+            {
+                MessageBox.Show("Будь ласка, введіть коректну кількість.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string unit = (UnitComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (string.IsNullOrEmpty(unit))
+            {
+                MessageBox.Show("Будь ласка, виберіть одиницю виміру.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 🔹 Пересчитываем КБЖУ с учетом введенного количества
+            double factor = quantity / 100.0; // Все значения даются на 100 г
+            double calories = _pendingCalories * factor;
+            double protein = _pendingProtein * factor;
+            double fat = _pendingFat * factor;
+            double carbs = _pendingCarbs * factor;
+            double sugar = _pendingSugar * factor;
+
+            // ✅ Добавляем продукт в список
+            ProductItem newProduct = new ProductItem
+            {
+                Name = _pendingProductName,
+                Quantity = quantity,
+                Unit = unit,
+                Calories = calories,
+                Protein = protein,
+                Fat = fat,
+                Carbs = carbs,
+                Sugar = sugar
+            };
+
+            _products.Add(newProduct);
+
+            // ✅ Обновляем ListBox
+            ProductListBox.ItemsSource = null;
+            ProductListBox.ItemsSource = _products;
+
+            // ✅ Обновляем диаграмму КБЖУ
+            UpdatePieChart();
+
+            // ✅ Закрываем окно
+            OverlayCanvas.Visibility = Visibility.Collapsed;
+            QuantityInputPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdatePieChart()
+        {
+            _macroSeries.Clear();
+
+            double totalProtein = _products.Sum(p => p.Protein);
+            double totalFat = _products.Sum(p => p.Fat);
+            double totalCarbs = _products.Sum(p => p.Carbs);
+            double totalSugar = _products.Sum(p => p.Sugar);
+
+            if (totalProtein == 0 && totalFat == 0 && totalCarbs == 0 && totalSugar == 0)
+            {
+                SetDefaultChart();
+                return;
+            }
+
+            _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { totalProtein }, DataLabels = true, Fill = Brushes.Blue });
+            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { totalFat }, DataLabels = true, Fill = Brushes.Red });
+            _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { totalCarbs }, DataLabels = true, Fill = Brushes.Green });
+            _macroSeries.Add(new PieSeries { Title = "Цукор", Values = new ChartValues<double> { totalSugar }, DataLabels = true, Fill = Brushes.Orange });
+
+            // ✅ Обновляем диаграмму
+            MacroChart.Series = null;
+            MacroChart.Series = _macroSeries;
+        }
+
+
+
+        private void CancelQuantity_Click(object sender, RoutedEventArgs e)
+        {
+            // Закрываем всплывающее окно
+            OverlayCanvas.Visibility = Visibility.Collapsed;
+            QuantityInputPanel.Visibility = Visibility.Collapsed;
         }
 
         private async void SearchProduct_Click(object sender, RoutedEventArgs e)
         {
-            string productName = ProductSearchBox.Text;
+            string productName = ProductSearchBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(productName))
             {
                 MessageBox.Show("Введіть назву продукту!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            Console.WriteLine($"🔹 Введено: {productName}");
+            Console.WriteLine($"🔹 Введено пользователем: {productName}");
 
-            // Переводим название продукта на английский (если необходимо)
+            // 🔹 Переводим название на английский (если API требует)
             string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
+            if (string.IsNullOrWhiteSpace(translatedName))
+            {
+                MessageBox.Show("Помилка перекладу назви продукту!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             Console.WriteLine($"🔹 Переведено: {translatedName}");
 
+            // 🔹 Отправляем запрос в базу данных USDA
             USDAFood productData = await FetchProductFromUSDA(translatedName);
 
             if (productData != null)
             {
-                double calories = productData.FoodNutrients?.Find(n => n.NutrientName == "Energy")?.Value ?? 0;
-                double protein = productData.FoodNutrients?.Find(n => n.NutrientName == "Protein")?.Value ?? 0;
-                double fat = productData.FoodNutrients?.Find(n => n.NutrientName == "Total lipid (fat)")?.Value ?? 0;
-                double carbs = productData.FoodNutrients?.Find(n => n.NutrientName.Contains("Carbohydrate"))?.Value ?? 0;
-                double sugar = productData.FoodNutrients?.Find(n => n.NutrientName.Contains("Sugars"))?.Value ?? 0;
+                Console.WriteLine($"✅ Найден продукт: {productData.Description}");
 
-                ProductItem newProduct = new ProductItem
-                {
-                    Index = _products.Count + 1, // Добавляем индекс
-                    Name = productData.Description,
-                    Calories = calories,
-                    Protein = protein,
-                    Fat = fat,
-                    Carbs = carbs,
-                    Sugar = sugar
-                };
+                // 🔹 Сохраняем КБЖУ для дальнейших расчетов
+                _pendingCalories = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName == "Energy")?.Value ?? 0;
+                _pendingProtein = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName == "Protein")?.Value ?? 0;
+                _pendingFat = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("lipid"))?.Value ?? 0;
+                _pendingCarbs = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("Carbohydrate"))?.Value ?? 0;
+                _pendingSugar = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("Sugars"))?.Value ?? 0;
 
-                _products.Add(newProduct);
-                ProductListBox.ItemsSource = null;
-                ProductListBox.ItemsSource = _products;
+                _pendingProductName = productData.Description;
+
+                // 🔹 Открываем окно для ввода количества
+                OverlayCanvas.Visibility = Visibility.Visible;
+                QuantityInputPanel.Visibility = Visibility.Visible;
             }
             else
             {
                 MessageBox.Show("Продукт не знайдено!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+
 
         private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -119,7 +259,7 @@ namespace Fitpad.View.Pages
             _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { protein }, DataLabels = true, Fill = Brushes.Blue });
             _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { fat }, DataLabels = true, Fill = Brushes.Red });
             _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { carbs }, DataLabels = true, Fill = Brushes.Green });
-            _macroSeries.Add(new PieSeries { Title = "Сахар", Values = new ChartValues<double> { sugar }, DataLabels = true, Fill = Brushes.Orange });
+            _macroSeries.Add(new PieSeries { Title = "Цукор", Values = new ChartValues<double> { sugar }, DataLabels = true, Fill = Brushes.Orange });
 
             // ✅ Обновляем диаграмму
             MacroChart.Series = null;
@@ -133,42 +273,42 @@ namespace Fitpad.View.Pages
             string apiKey = "vTsUonfbJdkCXVp8JiZ8nt1FC36J2ldKeqGAuDUJ";
             string searchUrl = $"https://api.nal.usda.gov/fdc/v1/foods/search?query={WebUtility.UrlEncode(productName)}&api_key={apiKey}";
 
-            Console.WriteLine($"🔹 Запрос к USDA API: {searchUrl}");
+            Console.WriteLine($"🔹 Отправляем запрос к USDA API: {searchUrl}");
 
             try
             {
                 HttpResponseMessage response = await client.GetAsync(searchUrl);
                 string jsonResponse = await response.Content.ReadAsStringAsync();
 
-                // 🔹 Логируем ВЕСЬ JSON
-                Console.WriteLine($"🔹 Полный JSON-ответ: {jsonResponse}");
+                // 🔹 Логируем полный JSON-ответ
+                Console.WriteLine($"🔹 Ответ от API: {jsonResponse}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"❌ Ошибка HTTP: {response.StatusCode}");
+                    Console.WriteLine($"❌ Ошибка запроса: {response.StatusCode}");
                     return null;
                 }
 
-                // ✅ Исправленный разбор JSON
                 var result = JsonSerializer.Deserialize<USDAResponse>(jsonResponse);
-                if (result != null && result.Foods != null && result.Foods.Count > 0)
+                if (result != null && result.Foods != null && result.Foods.Any())
                 {
-                    USDAFood foundFood = result.Foods[0]; // Берём ПЕРВЫЙ продукт из списка
+                    USDAFood foundFood = result.Foods.First(); // Берем первый найденный продукт
                     Console.WriteLine($"✅ Найден продукт: {foundFood.Description}");
                     return foundFood;
                 }
                 else
                 {
-                    Console.WriteLine("❌ Продукт не найден в USDA.");
+                    Console.WriteLine("❌ Продукт не найден в базе USDA.");
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при получении данных: {ex.Message}");
+                Console.WriteLine($"❌ Ошибка при запросе к API: {ex.Message}");
+                return null;
             }
-
-            return null;
         }
+
 
 
         private void RemoveProduct_Click(object sender, RoutedEventArgs e)

@@ -4,6 +4,7 @@ using Google.Cloud.Firestore;
 using Grpc.Auth;
 using Grpc.Core;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -50,6 +51,8 @@ namespace Fitpad.Services
         {
             return _firestoreDb;
         }
+
+
 
         public async Task SaveUserAsync(UserModel user)
         {
@@ -154,6 +157,49 @@ namespace Fitpad.Services
                 throw;
             }
         }
+
+        public async Task<List<DishModel>> GetFavoriteDishes(string userId)
+        {
+            try
+            {
+                var querySnapshot = await _firestoreDb.Collection("dishes").Document(userId).Collection("userDishes")
+                                        .WhereEqualTo("IsFavorite", true)
+                                        .GetSnapshotAsync();
+
+                List<DishModel> favoriteDishes = new List<DishModel>();
+
+                foreach (var document in querySnapshot.Documents)
+                {
+                    DishModel dish = document.ConvertTo<DishModel>();
+                    favoriteDishes.Add(dish);
+                }
+
+                Console.WriteLine($"Найдено {favoriteDishes.Count} избранных блюд.");
+                return favoriteDishes;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при получении избранных блюд: {ex.Message}");
+                return new List<DishModel>();
+            }
+        }
+
+
+        public async Task SaveDishToFirebase(DishModel dish)
+        {
+            try
+            {
+                DocumentReference docRef = _firestoreDb.Collection("dishes").Document(dish.UserId).Collection("userDishes").Document(dish.Id);
+                await docRef.SetAsync(dish);
+                Console.WriteLine("Блюдо успешно сохранено в Firebase.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении блюда: {ex.Message}");
+                throw;
+            }
+        }
+
 
         public async Task SaveDailyMealAsync(DailyMealModel dailyMeal)
         {
