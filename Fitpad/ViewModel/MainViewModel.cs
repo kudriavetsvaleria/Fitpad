@@ -73,12 +73,11 @@ public class MainViewModel : INotifyPropertyChanged
         InitializeCurrentPageAsync();
     }
 
-
-    private async Task InitializeCurrentPageAsync()
+    private async void InitializeCurrentPageAsync()
     {
         Console.WriteLine("🏁 Инициализация страницы...");
 
-        // Загружаем UserID из файла
+        // 🔹 Загружаем UserID из файла перед работой с ним
         UserSession.LoadUserIdFromFile();
 
         Console.WriteLine($"🔹 После загрузки файла, UserSession.CurrentUserId = {UserSession.CurrentUserId}");

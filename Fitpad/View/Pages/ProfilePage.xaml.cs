@@ -104,26 +104,36 @@ namespace Fitpad.View.Pages
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            _profileViewModel.ClearUserData();
-            ResetInstance();
-            ClearCurrentUserFile();
+            Console.WriteLine("🚪 Выход из аккаунта. Очистка UserSession...");
+
+            // 1️⃣ Очистка данных пользователя
+            UserSession.ClearUserData();
+
+            // 2️⃣ Перенаправление на страницу входа
             NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
         }
+
 
         private void ClearCurrentUserFile()
         {
             try
             {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "current_user.json");
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
+                    Console.WriteLine("✅ Файл current_user.json успешно удалён.");
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ Файл current_user.json уже отсутствует.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Помилка під час видалення файлу даних користувача: {ex.Message}");
+                Console.WriteLine($"❌ Ошибка при удалении файла: {ex.Message}");
             }
         }
+
     }
 }

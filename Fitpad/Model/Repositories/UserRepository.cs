@@ -59,10 +59,17 @@ namespace Fitpad.Model.Repositories
 
         public async Task<UserModel> GetCurrentUserAsync()
         {
+            // 🔹 Принудительно загружаем UserID, если он ещё пуст
             if (string.IsNullOrEmpty(UserSession.CurrentUserId))
             {
-                Console.WriteLine("ID текущего пользователя отсутствует. Возвращаем пользователя по умолчанию.");
-                return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
+                Console.WriteLine("⚠️ UserSession.CurrentUserId пуст. Пробуем загрузить из файла...");
+                UserSession.LoadUserIdFromFile();
+            }
+
+            if (string.IsNullOrEmpty(UserSession.CurrentUserId))
+            {
+                Console.WriteLine("❌ ID текущего пользователя отсутствует. Возвращаем NULL.");
+                return null;
             }
 
             try
@@ -72,22 +79,21 @@ namespace Fitpad.Model.Repositories
 
                 if (snapshot.Exists)
                 {
-                    Console.WriteLine($"Пользователь с ID {UserSession.CurrentUserId} успешно загружен.");
+                    Console.WriteLine($"✅ Пользователь с ID {UserSession.CurrentUserId} успешно загружен.");
                     return snapshot.ConvertTo<UserModel>();
                 }
                 else
                 {
-                    Console.WriteLine($"Пользователь с ID {UserSession.CurrentUserId} не найден.");
-                    return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
+                    Console.WriteLine($"❌ Пользователь с ID {UserSession.CurrentUserId} не найден. Возвращаем NULL.");
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при загрузке данных пользователя: {ex.Message}");
-                return new UserModel { Id = string.Empty, Name = "Гість", Email = "guest@example.com" };
+                Console.WriteLine($"❌ Ошибка при загрузке данных пользователя: {ex.Message}");
+                return null;
             }
         }
-
 
 
         // Метод для сохранения данных пользователя
