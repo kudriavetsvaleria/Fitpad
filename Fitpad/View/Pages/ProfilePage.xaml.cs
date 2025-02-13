@@ -43,7 +43,7 @@ namespace Fitpad.View.Pages
                 }
                 else if (profileViewModel != null)
                 {
-                    _instance._profileViewModel.UpdateUserData(profileViewModel.CurrentUser);
+                    return _instance;
                 }
 
                 // Загружаем данные анкеты для текущего пользователя
@@ -94,10 +94,7 @@ namespace Fitpad.View.Pages
         {
             _profileViewModel.ClearUserData();
             ResetInstance();
-
-            // Удаляем файл с данными пользователя
             ClearCurrentUserFile();
-
             NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
         }
 
@@ -116,5 +113,6 @@ namespace Fitpad.View.Pages
                 Console.WriteLine($"Помилка під час видалення файлу даних користувача: {ex.Message}");
             }
         }
+
     }
 }

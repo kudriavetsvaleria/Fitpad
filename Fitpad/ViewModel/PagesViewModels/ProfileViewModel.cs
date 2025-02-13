@@ -1,6 +1,8 @@
 ﻿using Fitpad.Model.Entities;
+using Fitpad.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 public class ProfileViewModel : INotifyPropertyChanged
 {
@@ -30,6 +32,23 @@ public class ProfileViewModel : INotifyPropertyChanged
     public ProfileViewModel(UserModel user = null)
     {
         CurrentUser = user;
+        if (user != null)
+        {
+            _ = LoadUserInfoAsync(user.Id); // Загружаем данные анкеты
+        }
+    }
+
+    public async Task LoadUserInfoAsync(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId)) return;
+
+        var firestoreService = new FirestoreService();
+        var userInfo = await firestoreService.GetUserInfoAsync(userId);
+
+        if (userInfo != null)
+        {
+            CurrentUserInfo = userInfo; // Обновляем данные анкеты
+        }
     }
 
     public void UpdateUserData(UserModel updatedUser)
