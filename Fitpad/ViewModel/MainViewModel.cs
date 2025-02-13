@@ -75,7 +75,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     private async void InitializeCurrentPageAsync()
     {
-        Console.WriteLine("🏁 Инициализация страницы...");
+        Console.WriteLine("🏁 Инициализация стартовой страницы...");
 
         // 🔹 Загружаем UserID из файла перед работой с ним
         UserSession.LoadUserIdFromFile();
@@ -84,7 +84,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
-            Console.WriteLine("❌ UserSession.CurrentUserId пуст. Не удалось загрузить данные пользователя.");
+            Console.WriteLine("❌ UserSession.CurrentUserId пуст. Загружаем страницу входа...");
+            CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel()); // Загружаем страницу авторизации
             return;
         }
 
@@ -94,10 +95,14 @@ public class MainViewModel : INotifyPropertyChanged
         if (userInfo != null)
         {
             Console.WriteLine($"✅ Данные профиля загружены: {userInfo.Weight}, {userInfo.Age}");
+
+            // 🔹 Устанавливаем страницу новостей, если вход выполнен
+            CurrentPage = NewsPage.GetInstance();
         }
         else
         {
-            Console.WriteLine("❌ Ошибка загрузки профиля.");
+            Console.WriteLine("❌ Ошибка загрузки профиля. Перенаправляем на страницу входа.");
+            CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel()); // Загружаем страницу авторизации
         }
     }
 
