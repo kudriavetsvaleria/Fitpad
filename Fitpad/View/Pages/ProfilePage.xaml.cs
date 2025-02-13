@@ -37,16 +37,12 @@ namespace Fitpad.View.Pages
         {
             lock (_lock)
             {
-                if (_instance == null)
+                if (_instance == null || profileViewModel != null)
                 {
                     _instance = new ProfilePage(profileViewModel ?? new ProfileViewModel());
                 }
-                else if (profileViewModel != null)
-                {
-                    return _instance;
-                }
 
-                // Загружаем данные анкеты для текущего пользователя
+                // 🔹 Обновляем данные профиля перед отображением
                 if (_instance._profileViewModel.CurrentUser != null)
                 {
                     _ = _instance.LoadUserInfoAsync(_instance._profileViewModel.CurrentUser.Id);
@@ -55,6 +51,7 @@ namespace Fitpad.View.Pages
                 return _instance;
             }
         }
+
 
         public void UpdateProfileData(ProfileViewModel profileViewModel)
         {
