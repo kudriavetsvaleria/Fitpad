@@ -192,6 +192,7 @@
     <Compile Include="Model\Repositories\UserInfoRepository.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\TranslatorService.cs" />
+    <Compile Include="Services\UserSession.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="Model\Entities\CaloriesModel.cs" />
     <Compile Include="Model\Repositories\CaloriesRepository.cs" />

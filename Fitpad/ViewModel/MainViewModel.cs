@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Newtonsoft.Json;
 using System.IO;
+using Fitpad.Services;
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -72,29 +73,32 @@ public class MainViewModel : INotifyPropertyChanged
         InitializeCurrentPageAsync();
     }
 
-    private async void InitializeCurrentPageAsync()
+
+    private async Task InitializeCurrentPageAsync()
     {
-        Console.WriteLine("🔄 Запускаем InitializeCurrentPageAsync...");
+        Console.WriteLine("🏁 Инициализация страницы...");
 
-        var storedUser = LoadCurrentUserFromFile();
+        // Загружаем UserID из файла
+        UserSession.LoadUserIdFromFile();
 
-        if (storedUser != null)
+        Console.WriteLine($"🔹 После загрузки файла, UserSession.CurrentUserId = {UserSession.CurrentUserId}");
+
+        if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
-            Console.WriteLine("✅ Найден сохранённый пользователь. Автоматический вход...");
-            CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(storedUser));
+            Console.WriteLine("❌ UserSession.CurrentUserId пуст. Не удалось загрузить данные пользователя.");
+            return;
+        }
+
+        var firestoreService = new FirestoreService();
+        var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
+
+        if (userInfo != null)
+        {
+            Console.WriteLine($"✅ Данные профиля загружены: {userInfo.Weight}, {userInfo.Age}");
         }
         else
         {
-            storedUser = await _userRepository.GetCurrentUserAsync();
-            if (storedUser != null)
-            {
-                CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(storedUser));
-            }
-            else
-            {
-                Console.WriteLine("❌ Не найдено сохранённых данных. Переход на страницу логина.");
-                CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
-            }
+            Console.WriteLine("❌ Ошибка загрузки профиля.");
         }
     }
 

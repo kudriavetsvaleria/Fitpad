@@ -46,10 +46,6 @@ namespace Fitpad.Services
 
             Console.WriteLine("Соединение с Firestore установлено.");
         }
-        public static class UserSession
-        {
-            public static string CurrentUserId { get; set; }
-        }
 
 
         // Метод для получения экземпляра FirestoreDb

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Fitpad.Model.Entities;
 using System.Windows;
 using static Fitpad.Services.FirestoreService;
+using Fitpad.Services;
 
 namespace Fitpad.Model.Repositories
 {
