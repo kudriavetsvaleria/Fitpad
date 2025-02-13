@@ -30,7 +30,7 @@ namespace Fitpad.View.Pages
         {
             try
             {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
                 Console.WriteLine($"📂 Ищем файл: {filePath}");
 
                 if (File.Exists(filePath))
@@ -117,8 +117,11 @@ namespace Fitpad.View.Pages
                 // Сохраняем `UserID` в файл
                 SaveCurrentUserToFile(user);
 
+                // 🔹 Обновляем профильные данные, если страница уже создана
+                ProfilePage.GetInstance().UpdateProfileData(new ProfileViewModel(user));
+
                 MessageBox.Show("Авторизация успешна!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
+                NavigationService.Navigate(ProfilePage.GetInstance());
 
             }
             catch (Exception ex)
@@ -134,7 +137,7 @@ namespace Fitpad.View.Pages
         {
             try
             {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
 
                 var data = new
                 {

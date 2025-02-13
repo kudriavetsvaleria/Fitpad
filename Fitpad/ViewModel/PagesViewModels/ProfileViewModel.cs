@@ -51,6 +51,7 @@ public class ProfileViewModel : INotifyPropertyChanged
         }
     }
 
+
     public void UpdateUserData(UserModel updatedUser)
     {
         if (updatedUser != null)

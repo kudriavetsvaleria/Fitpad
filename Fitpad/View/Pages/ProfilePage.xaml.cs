@@ -56,6 +56,18 @@ namespace Fitpad.View.Pages
             }
         }
 
+        public void UpdateProfileData(ProfileViewModel profileViewModel)
+        {
+            if (profileViewModel != null)
+            {
+                _profileViewModel.CurrentUser = profileViewModel.CurrentUser;
+                _profileViewModel.CurrentUserInfo = profileViewModel.CurrentUserInfo;
+                DataContext = _profileViewModel; // 🔹 Обновляем DataContext
+                Console.WriteLine("🔄 Данные профиля обновлены!");
+            }
+        }
+
+
         // Асинхронный метод для загрузки данных анкеты
         private async Task LoadUserInfoAsync(string userId)
         {
@@ -113,6 +125,5 @@ namespace Fitpad.View.Pages
                 Console.WriteLine($"Помилка під час видалення файлу даних користувача: {ex.Message}");
             }
         }
-
     }
 }

@@ -74,23 +74,26 @@ public class MainViewModel : INotifyPropertyChanged
 
     private async void InitializeCurrentPageAsync()
     {
+        Console.WriteLine("🔄 Запускаем InitializeCurrentPageAsync...");
+
         var storedUser = LoadCurrentUserFromFile();
 
         if (storedUser != null)
         {
-            Console.WriteLine("Знайдено авторизованого користувача. Виконується автоматичний вхід...");
-            CurrentPage = await GetPageInstanceAsync<NewsPage>();
+            Console.WriteLine("✅ Найден сохранённый пользователь. Автоматический вход...");
+            CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(storedUser));
         }
         else
         {
             storedUser = await _userRepository.GetCurrentUserAsync();
             if (storedUser != null)
             {
-                CurrentPage = await GetPageInstanceAsync<NewsPage>();
+                CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(storedUser));
             }
             else
             {
-                CurrentPage = await GetPageInstanceAsync<AccountLoginPage>();
+                Console.WriteLine("❌ Не найдено сохранённых данных. Переход на страницу логина.");
+                CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
             }
         }
     }
@@ -101,25 +104,40 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "current_user.json");
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+            Console.WriteLine($"📂 Ищем файл по пути: {filePath}");
+
             if (File.Exists(filePath))
             {
                 string json = File.ReadAllText(filePath);
+                Console.WriteLine($"📜 Загруженные данные: {json}");
+
                 var data = JsonConvert.DeserializeObject<dynamic>(json);
 
-                // Восстанавливаем ID текущего пользователя
-                UserRepository.CurrentUserId = data.UserId;
+                if (data != null && data.UserId != null)
+                {
+                    UserRepository.CurrentUserId = data.UserId.ToString();
+                    Console.WriteLine($"✅ UserID загружен: {UserRepository.CurrentUserId}");
 
-                // Восстанавливаем данные пользователя
-                return JsonConvert.DeserializeObject<UserModel>(Convert.ToString(data.User));
+                    return JsonConvert.DeserializeObject<UserModel>(JsonConvert.SerializeObject(data.User));
+                }
+                else
+                {
+                    Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("❌ Файл `current_user.json` не найден!");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Помилка під час завантаження даних користувача: {ex.Message}");
+            Console.WriteLine($"❌ Ошибка загрузки данных пользователя: {ex.Message}");
         }
         return null;
     }
+
 
 
     public async Task NavigateToAsync<T>() where T : Page
