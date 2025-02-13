@@ -97,7 +97,6 @@ namespace Fitpad.View.Pages
             }
         }
 
-
         private void ConfirmQuantity_Click(object sender, RoutedEventArgs e)
         {
             if (!double.TryParse(QuantityBox.Text, out double quantity) || quantity <= 0)
@@ -114,15 +113,15 @@ namespace Fitpad.View.Pages
             }
 
             // 🔹 Пересчитываем КБЖУ с учетом введенного количества
-            double factor = quantity / 100.0; // Все значения даются на 100 г
+            double factor = quantity / 100.0;
             double calories = _pendingCalories * factor;
             double protein = _pendingProtein * factor;
             double fat = _pendingFat * factor;
             double carbs = _pendingCarbs * factor;
             double sugar = _pendingSugar * factor;
 
-            // ✅ Добавляем продукт в список
-            ProductItem newProduct = new ProductItem
+            // ✅ Добавляем обновленный продукт в список
+            ProductItem updatedProduct = new ProductItem
             {
                 Name = _pendingProductName,
                 Quantity = quantity,
@@ -134,7 +133,7 @@ namespace Fitpad.View.Pages
                 Sugar = sugar
             };
 
-            _products.Add(newProduct);
+            _products.Add(updatedProduct);
 
             // ✅ Обновляем ListBox
             ProductListBox.ItemsSource = null;
@@ -147,6 +146,7 @@ namespace Fitpad.View.Pages
             OverlayCanvas.Visibility = Visibility.Collapsed;
             QuantityInputPanel.Visibility = Visibility.Collapsed;
         }
+
 
         private void UpdatePieChart()
         {
@@ -235,7 +235,7 @@ namespace Fitpad.View.Pages
 
         private async void SaveDish_Click(object sender, RoutedEventArgs e)
         {
-            string userId = UserRepository.CurrentUserId;
+            string userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 MessageBox.Show("Будь ласка, увійдіть у свій акаунт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -260,10 +260,79 @@ namespace Fitpad.View.Pages
 
             await firestoreService.SaveDishToFirebase(dish);
 
-            // ✅ Показываем уведомление пользователю
             MessageBox.Show("Блюдо успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // ✅ Сбрасываем все поля
+            ResetForm();
         }
 
+        private void ResetForm()
+        {
+            Console.WriteLine("🔄 Сброс формы после сохранения блюда...");
+
+            // Очистка текстовых полей
+            DishNameBox.Text = string.Empty;
+            CookingTimeBox.Text = string.Empty;
+            RecipeBox.Text = string.Empty;
+            ProductSearchBox.Text = string.Empty; // ✅ Очистка поля "Додати продукти"
+
+            // Очистка списка продуктов
+            _products.Clear();
+            ProductListBox.ItemsSource = null;
+            ProductListBox.ItemsSource = _products;
+
+            // Сброс состояния избранного (делаем серую иконку)
+            isFavorite = false;
+            string newImage = "pack://siteoforigin:,,,/Images/star_grey.png";
+            FavoriteIcon.Source = new BitmapImage(new Uri(newImage, UriKind.RelativeOrAbsolute));
+
+            // Удаление загруженной картинки (если была)
+            DishImage.Source = null;
+            DishImage.Visibility = Visibility.Collapsed;
+
+            // Сброс диаграммы КБЖУ
+            SetDefaultChart();
+
+            Console.WriteLine("✅ Форма сброшена!");
+        }
+
+        private void RemoveProduct_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is ProductItem product)
+            {
+                _products.Remove(product);
+                ProductListBox.Items.Refresh();
+                UpdatePieChart(); // Обновляем диаграмму после удаления
+                Console.WriteLine($"❌ Продукт {product.Name} удалён.");
+            }
+        }
+
+        private void EditProduct_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is ProductItem product)
+            {
+                Console.WriteLine($"✏️ Изменение продукта: {product.Name}");
+
+                // Запоминаем редактируемый продукт
+                _pendingProductName = product.Name;
+                _pendingCalories = product.Calories;
+                _pendingProtein = product.Protein;
+                _pendingFat = product.Fat;
+                _pendingCarbs = product.Carbs;
+                _pendingSugar = product.Sugar;
+
+                // Заполняем поля ввода
+                QuantityBox.Text = product.Quantity.ToString();
+
+                // Отображаем окно для редактирования
+                OverlayCanvas.Visibility = Visibility.Visible;
+                QuantityInputPanel.Visibility = Visibility.Visible;
+
+                // Удаляем продукт из списка перед обновлением (чтобы не дублировался)
+                _products.Remove(product);
+                ProductListBox.Items.Refresh();
+            }
+        }
 
 
         private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -342,14 +411,6 @@ namespace Fitpad.View.Pages
             }
         }
 
-        private void RemoveProduct_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.DataContext is ProductItem product)
-            {
-                _products.Remove(product);
-                ProductListBox.Items.Refresh();
-            }
-        }
 
         private void SaveDishToFile(Dish dish)
         {
@@ -458,9 +519,5 @@ namespace Fitpad.View.Pages
             public string ProductName { get; set; }
         }
 
-        private void MacroChart_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }
