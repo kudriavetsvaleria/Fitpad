@@ -8,10 +8,11 @@ namespace Fitpad.View.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double d)
-                return (d - 125) / 2; // Центрирование
-
-            return 0;
+            if (value is double doubleValue)
+            {
+                return doubleValue / 2;
+            }
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

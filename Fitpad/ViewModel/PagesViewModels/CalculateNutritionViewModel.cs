@@ -23,11 +23,18 @@ namespace Fitpad.ViewModel.PagesViewModels
             if (products.Count > 0)
             {
                 var product = products[0]; // Берем первый найденный продукт
+
+                if (string.IsNullOrWhiteSpace(product.Title))
+                {
+                    product.Title = query; // Заполняем названием запроса, если пустое
+                }
+
                 SavedProducts.Add(product);
                 return product;
             }
 
             return null;
         }
+
     }
 }

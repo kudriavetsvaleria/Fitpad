@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using Fitpad.Model.Entities;
+
 
 namespace Fitpad.View.Pages
 {

@@ -2,82 +2,138 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Grid Margin="20">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="*"/>
-		</Grid.ColumnDefinitions>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-		<Border Grid.Row="0" Grid.Column="0"
-                Background="White"
-                BorderBrush="#ccc"
-                BorderThickness="1"
-                Padding="10"
-                Margin="0,10,20,10"
-                Width="730"
-                Height="560">
-			<DataGrid ItemsSource="{Binding SavedProducts}"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      HeadersVisibility="Column"
-                      RowHeight="35"
-                      GridLinesVisibility="None"
-                      AlternatingRowBackground="#F0F0F0"
-                      BorderThickness="0" Margin="0,0,194,-1">
-				<DataGrid.Columns>
-					<DataGridTextColumn Header="Час" Binding="{Binding Time}" Width="60"/>
-					<DataGridTextColumn Header="Назва" Binding="{Binding Title}" Width="130"/>
-					<DataGridTextColumn Header="Вага (г)" Binding="{Binding Weight}" Width="60"/>
-					<DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="60"/>
-					<DataGridTextColumn Header="Білки (г)" Binding="{Binding Protein}" Width="60"/>
-					<DataGridTextColumn Header="Жири (г)" Binding="{Binding Fats}" Width="60"/>
-					<DataGridTextColumn Header="Вуглеводи (г)" Binding="{Binding Carbs}" Width="82"/>
-				</DataGrid.Columns>
-			</DataGrid>
-		</Border>
+        <Border Grid.Row="0" Grid.Column="0"
+        Background="White"
+        BorderThickness="0"
+        Padding="10"
+        Margin="0,10,40,22"
+        Width="765"
+        CornerRadius="20">
 
-		<StackPanel Grid.Row="1" Grid.Column="0"
+            <DataGrid ItemsSource="{Binding SavedProducts}"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              HeadersVisibility="Column"
+              RowHeight="40"
+              GridLinesVisibility="None"
+              BorderThickness="0"
+              Background="Transparent"
+              AlternationCount="2"
+              HorizontalGridLinesBrush="Transparent"
+              VerticalGridLinesBrush="Transparent"
+              ScrollViewer.CanContentScroll="True" Margin="0,0,31,0" Height="507" VerticalAlignment="Center">
+
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="Margin" Value="5"/>
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect Color="Gray" BlurRadius="5" ShadowDepth="2"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridRow">
+                                    <Border CornerRadius="15" Background="{TemplateBinding Background}">
+                                        <Grid>
+                                            <DataGridCellsPresenter/>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#3E2E8F"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="Padding" Value="10"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridColumnHeader">
+                                    <Border Background="{TemplateBinding Background}" 
+                                    Padding="{TemplateBinding Padding}" 
+                                    CornerRadius="15,15,0,0">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.Resources>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Час" Binding="{Binding Time}" Width="60"/>
+                    <DataGridTextColumn Header="Назва" Binding="{Binding Title}" Width="150"/>
+                    <DataGridTextColumn Header="Вага" Binding="{Binding Weight}" Width="90"/>
+                    <DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="100"/>
+                    <DataGridTextColumn Header="Білки (г)" Binding="{Binding Protein}" Width="90"/>
+                    <DataGridTextColumn Header="Жири (г)" Binding="{Binding Fats}" Width="90"/>
+                    <DataGridTextColumn Header="Вуглеводи (г)" Binding="{Binding Carbs}" Width="115"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+ 
+        <StackPanel Grid.Row="1" Grid.Column="0"
                     Orientation="Horizontal"
                     VerticalAlignment="Center"
                     Margin="0,0,10,0">
-			<Border Background="White"
+            <Border Background="White"
                     BorderBrush="#ccc"
                     BorderThickness="1"
                     CornerRadius="20"
                     Padding="5" Height="35">
-				<TextBox x:Name="SearchBox"
-                         Width="289"
-                         Height="35"
-                         FontSize="16"
-                         Padding="5"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Text="Назва продукту..."
-                         Foreground="Gray"
-                         GotFocus="SearchTextBox_GotFocus" Margin="0,-6,0,-6"/>
-			</Border>
+                <TextBox x:Name="SearchBox"
+						 Width="289"
+						 Height="35"
+						 FontSize="16"
+						 Padding="5"
+						 Background="Transparent"
+						 BorderThickness="0"
+						 Text="Назва продукту..."
+						 Foreground="Gray"
+						 GotFocus="SearchTextBox_GotFocus"
+						 LostFocus="SearchTextBox_LostFocus"
+						 Margin="0,-6,0,-6"/>
 
-			<Border Background="White"
+
+            </Border>
+
+            <Border Background="White"
                     BorderBrush="#ccc"
                     BorderThickness="1"
                     CornerRadius="20"
                     Padding="5"
                     Margin="10,0" Height="35">
-				<TextBox x:Name="WeightBox"
+                <TextBox x:Name="WeightBox"
                          Width="156"
                          Height="35"
                          FontSize="16"
-						 Text="Вага... (г)"
+                         Text="Вага... (г)"
                          Padding="5"
                          Background="Transparent"
                          BorderThickness="0"
-                         Foreground="Gray" Margin="0,-6,0,-6"/>
-			</Border>
-			<Button Width="35"
+                         Foreground="Gray"
+                         GotFocus="WeightBox_GotFocus"
+                         LostFocus="WeightBox_LostFocus"
+                         Margin="0,-6,0,-6"/>
+
+            </Border>
+            <Button Width="35"
                     Height="35"
                     Click="SearchButton_Click"
                     Foreground="White"
@@ -86,14 +142,14 @@
                     Padding="5"
                     RenderTransformOrigin="0.50,0.50"
                     Content="🔍">
-				<Button.Template>
-					<ControlTemplate TargetType="{x:Type Button}">
-						<Border Background="#3E2E8F" CornerRadius="10" Padding="8,4">
-							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20"/>
-						</Border>
-					</ControlTemplate>
-				</Button.Template>
-			</Button>
-		</StackPanel>
-	</Grid>
+                <Button.Template>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="#3E2E8F" CornerRadius="10" Padding="8,4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Grid>
 </Page>
