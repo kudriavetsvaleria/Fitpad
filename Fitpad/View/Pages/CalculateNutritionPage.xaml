@@ -16,22 +16,26 @@
         Background="White"
         BorderThickness="0"
         Padding="10"
-        Margin="0,10,40,22"
+        Margin="0,0,0,0"
         Width="765"
+        Height="500"
         CornerRadius="20">
 
             <DataGrid ItemsSource="{Binding SavedProducts}"
-              AutoGenerateColumns="False"
-              CanUserAddRows="False"
-              HeadersVisibility="Column"
-              RowHeight="40"
-              GridLinesVisibility="None"
-              BorderThickness="0"
-              Background="Transparent"
-              AlternationCount="2"
-              HorizontalGridLinesBrush="Transparent"
-              VerticalGridLinesBrush="Transparent"
-              ScrollViewer.CanContentScroll="True" Margin="0,0,31,0" Height="507" VerticalAlignment="Center">
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      HeadersVisibility="Column"
+                      RowHeight="40"
+                      GridLinesVisibility="None"
+                      BorderThickness="0"
+                      Background="Transparent"
+                      AlternationCount="2"
+                      HorizontalGridLinesBrush="Transparent"
+                      VerticalGridLinesBrush="Transparent"
+                      ScrollViewer.CanContentScroll="True"
+                      Height="340" 
+                      VerticalAlignment="Top"
+                      Margin="0,-40,21,0">
 
                 <DataGrid.Resources>
                     <Style TargetType="DataGridRow">
@@ -57,7 +61,7 @@
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="#3E2E8F"/>
                         <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="FontSize" Value="17"/>
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         <Setter Property="Padding" Value="10"/>
@@ -77,14 +81,94 @@
                 </DataGrid.Resources>
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Час" Binding="{Binding Time}" Width="60"/>
-                    <DataGridTextColumn Header="Назва" Binding="{Binding Title}" Width="150"/>
-                    <DataGridTextColumn Header="Вага" Binding="{Binding Weight}" Width="90"/>
-                    <DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="100"/>
-                    <DataGridTextColumn Header="Білки (г)" Binding="{Binding Protein}" Width="90"/>
-                    <DataGridTextColumn Header="Жири (г)" Binding="{Binding Fats}" Width="90"/>
-                    <DataGridTextColumn Header="Вуглеводи (г)" Binding="{Binding Carbs}" Width="115"/>
+                    <DataGridTextColumn Header="Час" Binding="{Binding Time}" Width="60">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <!-- Увеличенный шрифт -->
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                                <!-- Цвет текста -->
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Назва" Binding="{Binding Title}" Width="140">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Вага" Binding="{Binding Weight}" Width="90">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="100">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Білки" Binding="{Binding Protein}" Width="90">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Жири" Binding="{Binding Fats}" Width="90">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Вуглеводи" Binding="{Binding Carbs}" Width="115">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="Foreground" Value="#5C5C5C"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
+
+
             </DataGrid>
         </Border>
  
@@ -123,14 +207,15 @@
                          Width="156"
                          Height="35"
                          FontSize="16"
-                         Text="Вага... (г)"
                          Padding="5"
                          Background="Transparent"
                          BorderThickness="0"
-                         Foreground="Gray"
+                         Foreground="Black"
+                         Text="Вага... (г)"
                          GotFocus="WeightBox_GotFocus"
                          LostFocus="WeightBox_LostFocus"
                          Margin="0,-6,0,-6"/>
+
 
             </Border>
             <Button Width="35"

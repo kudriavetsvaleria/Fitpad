@@ -60,48 +60,35 @@ namespace Fitpad.View.Pages
             }
         }
 
-
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             string productName = SearchBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(productName) || productName == "Введите название продукта...")
+            if (string.IsNullOrWhiteSpace(productName) || productName == "Назва продукту...")
             {
-                MessageBox.Show("Введите название продукта!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введіть назву продукту!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            Console.WriteLine($"🔹 Введено пользователем: {productName}");
-
-            // Переводим название, если требуется API
-            string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
-            if (string.IsNullOrWhiteSpace(translatedName))
+            if (!double.TryParse(WeightBox.Text.Trim(), out double weight) || weight <= 0)
             {
-                MessageBox.Show("Ошибка перевода названия продукта!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, введіть коректну вагу!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            Console.WriteLine($"🔹 Переведено: {translatedName}");
 
-            // Отправляем запрос в API
-            var product = await _viewModel.SearchAndAddProductAsync(translatedName);
+            Console.WriteLine($"🔹 Введено користувачем: {productName}, вага: {weight} г");
+
+            // Отправляем запрос в API и добавляем продукт с учетом веса
+            var product = await _viewModel.SearchAndAddProductAsync(productName, weight);
 
             if (product != null)
             {
-                Console.WriteLine($"✅ Найден продукт: {product.Title}");
-
-                // Проверяем, нет ли уже такого продукта в таблице
-                if (!_viewModel.SavedProducts.Any(p => p.Title == product.Title))
-                {
-                    _viewModel.SavedProducts.Add(product);
-                }
-                else
-                {
-                    Console.WriteLine("⚠️ Продукт уже добавлен в таблицу, повторное добавление предотвращено.");
-                }
+                Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}");
             }
             else
             {
-                MessageBox.Show("Продукт не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Продукт не знайдено", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
     }
 }

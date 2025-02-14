@@ -27,7 +27,7 @@ namespace Fitpad.View.Pages
 {
     public partial class MyDishesPage : Page, INotifyPropertyChanged
     {
-        private List<ProductItem> _products = new List<ProductItem>();
+        private List<NutritionModel> _products = new List<NutritionModel>();
         private TranslatorService _translatorService = new TranslatorService();
         private SeriesCollection _macroSeries;
         private string _pendingProductName;
@@ -35,7 +35,7 @@ namespace Fitpad.View.Pages
 
         private double _pendingCalories;
         private double _pendingProtein;
-        private double _pendingFat;
+        private double _pendingFats;
         private double _pendingCarbs;
         private double _pendingSugar;
 
@@ -154,19 +154,19 @@ namespace Fitpad.View.Pages
             double factor = quantity / 100.0;
             double calories = _pendingCalories * factor;
             double protein = _pendingProtein * factor;
-            double fat = _pendingFat * factor;
+            double Fats = _pendingFats * factor;
             double carbs = _pendingCarbs * factor;
             double sugar = _pendingSugar * factor;
 
             // ✅ Добавляем обновленный продукт в список
-            ProductItem updatedProduct = new ProductItem
+            NutritionModel updatedProduct = new NutritionModel
             {
                 Name = _pendingProductName,
                 Quantity = quantity,
                 Unit = unit,
                 Calories = calories,
                 Protein = protein,
-                Fat = fat,
+                Fats = Fats,
                 Carbs = carbs,
                 Sugar = sugar
             };
@@ -191,18 +191,18 @@ namespace Fitpad.View.Pages
             _macroSeries.Clear();
 
             double totalProtein = _products.Sum(p => p.Protein);
-            double totalFat = _products.Sum(p => p.Fat);
+            double totalFats = _products.Sum(p => p.Fats);
             double totalCarbs = _products.Sum(p => p.Carbs);
             double totalSugar = _products.Sum(p => p.Sugar);
 
-            if (totalProtein == 0 && totalFat == 0 && totalCarbs == 0 && totalSugar == 0)
+            if (totalProtein == 0 && totalFats == 0 && totalCarbs == 0 && totalSugar == 0)
             {
                 SetDefaultChart();
                 return;
             }
 
             _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { totalProtein }, DataLabels = true, Fill = Brushes.Blue });
-            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { totalFat }, DataLabels = true, Fill = Brushes.Red });
+            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { totalFats }, DataLabels = true, Fill = Brushes.Red });
             _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { totalCarbs }, DataLabels = true, Fill = Brushes.Green });
             _macroSeries.Add(new PieSeries { Title = "Цукор", Values = new ChartValues<double> { totalSugar }, DataLabels = true, Fill = Brushes.Orange });
 
@@ -248,7 +248,7 @@ namespace Fitpad.View.Pages
                 // 🔹 Сохраняем КБЖУ для дальнейших расчетов
                 _pendingCalories = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName == "Energy")?.Value ?? 0;
                 _pendingProtein = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName == "Protein")?.Value ?? 0;
-                _pendingFat = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("lipid"))?.Value ?? 0;
+                _pendingFats = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("lipid"))?.Value ?? 0;
                 _pendingCarbs = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("Carbohydrate"))?.Value ?? 0;
                 _pendingSugar = productData.FoodNutrients?.FirstOrDefault(n => n.NutrientName.Contains("Sugars"))?.Value ?? 0;
 
@@ -339,7 +339,7 @@ namespace Fitpad.View.Pages
 
         private void RemoveProduct_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is ProductItem product)
+            if (sender is Button button && button.DataContext is NutritionModel product)
             {
                 _products.Remove(product);
                 ProductListBox.Items.Refresh();
@@ -350,7 +350,7 @@ namespace Fitpad.View.Pages
 
         private void EditProduct_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is ProductItem product)
+            if (sender is Button button && button.DataContext is NutritionModel product)
             {
                 Console.WriteLine($"✏️ Изменение продукта: {product.Name}");
 
@@ -358,7 +358,7 @@ namespace Fitpad.View.Pages
                 _pendingProductName = product.Name;
                 _pendingCalories = product.Calories;
                 _pendingProtein = product.Protein;
-                _pendingFat = product.Fat;
+                _pendingFats = product.Fats;
                 _pendingCarbs = product.Carbs;
                 _pendingSugar = product.Sugar;
 
@@ -378,33 +378,33 @@ namespace Fitpad.View.Pages
 
         private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ProductListBox.SelectedItem is ProductItem selectedProduct)
+            if (ProductListBox.SelectedItem is NutritionModel selectedProduct)
             {
                 Console.WriteLine($"🔹 Выбран продукт: {selectedProduct.Name}");
-                Console.WriteLine($"Б: {selectedProduct.Protein}, Ж: {selectedProduct.Fat}, В: {selectedProduct.Carbs}, С: {selectedProduct.Sugar}");
+                Console.WriteLine($"Б: {selectedProduct.Protein}, Ж: {selectedProduct.Fats}, В: {selectedProduct.Carbs}, С: {selectedProduct.Sugar}");
 
-                UpdatePieChart(selectedProduct.Protein, selectedProduct.Fat, selectedProduct.Carbs, selectedProduct.Sugar);
+                UpdatePieChart(selectedProduct.Protein, selectedProduct.Fats, selectedProduct.Carbs, selectedProduct.Sugar);
             }
         }
 
 
-        private void UpdatePieChart(double protein, double fat, double carbs, double sugar)
+        private void UpdatePieChart(double protein, double Fats, double carbs, double sugar)
         {
             _macroSeries.Clear();
 
             double totalProtein = _products.Sum(p => p.Protein);
-            double totalFat = _products.Sum(p => p.Fat);
+            double totalFats = _products.Sum(p => p.Fats);
             double totalCarbs = _products.Sum(p => p.Carbs);
             double totalSugar = _products.Sum(p => p.Sugar);
 
-            if (totalProtein == 0 && totalFat == 0 && totalCarbs == 0 && totalSugar == 0)
+            if (totalProtein == 0 && totalFats == 0 && totalCarbs == 0 && totalSugar == 0)
             {
                 SetDefaultChart();
                 return;
             }
 
             _macroSeries.Add(new PieSeries { Title = "Білки", Values = new ChartValues<double> { protein }, DataLabels = true, Fill = Brushes.Blue });
-            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { fat }, DataLabels = true, Fill = Brushes.Red });
+            _macroSeries.Add(new PieSeries { Title = "Жири", Values = new ChartValues<double> { Fats }, DataLabels = true, Fill = Brushes.Red });
             _macroSeries.Add(new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { carbs }, DataLabels = true, Fill = Brushes.Green });
             _macroSeries.Add(new PieSeries { Title = "Цукор", Values = new ChartValues<double> { sugar }, DataLabels = true, Fill = Brushes.Orange });
 

@@ -182,8 +182,6 @@
     <Compile Include="Converters\HalfConverter.cs" />
     <Compile Include="Model\Entities\DailyMealModel.cs" />
     <Compile Include="Model\Entities\DishModel.cs" />
-    <Compile Include="Model\Entities\ProductItem.cs" />
-    <Compile Include="Model\Entities\SavedProductodelModel.cs" />
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />
     <Compile Include="Model\Repositories\DishRepository.cs" />
     <Compile Include="Services\FirestoreService.cs" />
