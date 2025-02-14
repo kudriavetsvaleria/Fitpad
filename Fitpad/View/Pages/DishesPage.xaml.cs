@@ -15,7 +15,10 @@ namespace Fitpad.View.Pages
             InitializeComponent();
             _viewModel = new DishViewModel(FirestoreDb.Create("fitpad-2025"));
             DataContext = _viewModel;
+            
             _viewModel.LoadUserDishesAsync();
+
+            CreateDishButton.DataContext = MainViewModel.Instance;
         }
 
         // 🔍 Обработчик поиска

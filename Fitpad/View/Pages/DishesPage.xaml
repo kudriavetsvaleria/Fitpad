@@ -84,6 +84,7 @@
 
 		<!-- ✅ Кнопка "Створити блюдо" с закругленными углами -->
 		<Button Grid.Row="3"
+                x:Name="CreateDishButton"
                 Content="Створити блюдо"
                 Width="250"
                 Height="50"
@@ -92,6 +93,7 @@
                 FontSize="16"
                 FontWeight="Bold"
                 HorizontalAlignment="Center"
+                Command="{Binding ShowMyDishesCommand}"
                 Margin="0,10,0,40">
 			<Button.Template>
 				<ControlTemplate TargetType="Button">

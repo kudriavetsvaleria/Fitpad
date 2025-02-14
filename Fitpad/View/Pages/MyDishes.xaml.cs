@@ -20,11 +20,12 @@ using static Fitpad.Services.FirestoreService;
 using Fitpad.Model.Repositories;
 using Newtonsoft.Json;
 using static Fitpad.View.Pages.MyDishesPage;
-
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Fitpad.View.Pages
 {
-    public partial class MyDishesPage : Page
+    public partial class MyDishesPage : Page, INotifyPropertyChanged
     {
         private List<ProductItem> _products = new List<ProductItem>();
         private TranslatorService _translatorService = new TranslatorService();
@@ -38,6 +39,18 @@ namespace Fitpad.View.Pages
         private double _pendingCarbs;
         private double _pendingSugar;
 
+        private bool _isSaveEnabled;
+
+        public bool IsSaveEnabled
+        {
+            get => _isSaveEnabled;
+            set
+            {
+                _isSaveEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
         public MyDishesPage()
         {
             InitializeComponent();
@@ -49,10 +62,35 @@ namespace Fitpad.View.Pages
                 new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Green },
                 new PieSeries { Title = "Цукор", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Orange }
             };
-            this.DataContext = new DishModel();
+            this.DataContext = this;
+
             MacroChart.Series = _macroSeries;
+            DataContext = this; // Привязываем DataContext к странице
+            ValidateInputs();
             SetDefaultChart();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+
+        private void InputFields_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ValidateInputs();
+        }
+
+
+        private void ValidateInputs()
+        {
+            IsSaveEnabled = !string.IsNullOrWhiteSpace(DishNameBox.Text)
+                            && !string.IsNullOrWhiteSpace(RecipeBox.Text)
+                            && !string.IsNullOrWhiteSpace(CookingTimeBox.Text);
+            OnPropertyChanged(nameof(IsSaveEnabled)); // 🔹 Обновляем привязку кнопки!
+        }
+
 
         private async Task LoadFavoriteStatus()
         {
@@ -173,8 +211,6 @@ namespace Fitpad.View.Pages
             MacroChart.Series = _macroSeries;
         }
 
-
-
         private void CancelQuantity_Click(object sender, RoutedEventArgs e)
         {
             // Закрываем всплывающее окно
@@ -236,9 +272,13 @@ namespace Fitpad.View.Pages
         private async void SaveDish_Click(object sender, RoutedEventArgs e)
         {
             string userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
+
+            // Проверяем, заполнены ли поля перед сохранением
+            if (string.IsNullOrWhiteSpace(DishNameBox.Text) ||
+                string.IsNullOrWhiteSpace(RecipeBox.Text) ||
+                string.IsNullOrWhiteSpace(CookingTimeBox.Text))
             {
-                MessageBox.Show("Будь ласка, увійдіть у свій акаунт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, заповніть всі обов'язкові поля!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -262,9 +302,10 @@ namespace Fitpad.View.Pages
 
             MessageBox.Show("Блюдо успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // ✅ Сбрасываем все поля
+            // ✅ Сбрасываем все поля после успешного сохранения
             ResetForm();
         }
+
 
         private void ResetForm()
         {
@@ -351,7 +392,12 @@ namespace Fitpad.View.Pages
         {
             _macroSeries.Clear();
 
-            if (protein == 0 && fat == 0 && carbs == 0 && sugar == 0)
+            double totalProtein = _products.Sum(p => p.Protein);
+            double totalFat = _products.Sum(p => p.Fat);
+            double totalCarbs = _products.Sum(p => p.Carbs);
+            double totalSugar = _products.Sum(p => p.Sugar);
+
+            if (totalProtein == 0 && totalFat == 0 && totalCarbs == 0 && totalSugar == 0)
             {
                 SetDefaultChart();
                 return;
@@ -474,14 +520,16 @@ namespace Fitpad.View.Pages
             _macroSeries.Clear();
             _macroSeries.Add(new PieSeries
             {
-                Title = "Пусто",
-                Values = new ChartValues<double> { 1 },
-                DataLabels = false,
-                Fill = Brushes.Gray
+                Values = new ChartValues<double> { 1 }, // Значение для отображения
+                DataLabels = false, // ❌ Отключаем подписи
+                Fill = Brushes.Orange, // Оранжевый цвет
+                IsHitTestVisible = false, // ❌ Отключаем всплывающие подсказки
+                Title = "" // ❌ Очищаем текст "Series 1"
             });
 
-            MacroChart.Margin = new Thickness(0, 20, 0, 0); // Опускаем диаграмму ниже
+            MacroChart.Series = _macroSeries;
         }
+
 
         private void DisplayImage(string filePath)
         {

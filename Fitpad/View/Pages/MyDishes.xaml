@@ -43,7 +43,7 @@
             <!-- Название блюда -->
             <StackPanel Grid.Row="0" Margin="0,3,3,50" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="Назва страви:" FontSize="14" FontWeight="Bold" Margin="0,3,0,7"/>
-                <TextBox x:Name="DishNameBox" Width="280" Height="28" HorizontalAlignment="Center"/>
+                <TextBox x:Name="DishNameBox" Width="280" Height="28" TextChanged="InputFields_TextChanged" HorizontalAlignment="Center" />
             </StackPanel>
 
             <!-- Поиск продукта -->
@@ -69,10 +69,10 @@
                                 <TextBlock Text="{Binding Quantity, StringFormat='{}{0} г'}" Width="60" VerticalAlignment="Center"/>
 
                                 <!-- Кнопка редактирования -->
-                                <Button Content="✏️" Width="30" Margin="5,0,0,0" Click="EditProduct_Click"/>
+                                <Button Content="✏️" Width="20" Margin="31,0,0,0" Click="EditProduct_Click"/>
 
                                 <!-- Кнопка удаления -->
-                                <Button Content="🗑️" Width="30" Margin="5,0,0,0" Click="RemoveProduct_Click"/>
+                                <Button Content="🗑️" Width="20" Margin="5,0,0,0" Click="RemoveProduct_Click"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -83,7 +83,7 @@
             <!-- Поле для рецепта -->
             <StackPanel Grid.Row="3">
                 <TextBlock Text="Рецепт:" FontSize="14" FontWeight="Bold" Margin="30,5,0,0"/>
-                <TextBox x:Name="RecipeBox" Width="280" Height="159" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,5,0,0"/>
+                <TextBox x:Name="RecipeBox" Width="280" Height="159" TextChanged="InputFields_TextChanged" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,5,0,0"/>
             </StackPanel>
         </Grid>
 
@@ -100,7 +100,7 @@
             <StackPanel Orientation="Horizontal" Margin="19,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Bold" Margin="25,4,0,0" HorizontalAlignment="Center"/>
-                    <TextBox x:Name="CookingTimeBox" Width="160" Height="28" Margin="25,9,0,0" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="CookingTimeBox" Width="160" Height="28" Margin="25,9,0,0" HorizontalAlignment="Center" TextChanged="InputFields_TextChanged"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="15,24,0,0" HorizontalAlignment="Center">
                     <Button Width="32" Height="32" ToolTip="Додати фото" Click="AddPhoto_Click" HorizontalAlignment="Center">
@@ -109,7 +109,7 @@
                     <Button Width="32" Height="32" ToolTip="Позначити як улюблене"
                     Click="MarkFavorite_Click" Margin="15,0,0,0"
                     DataContext="{Binding}">
-                      <Image x:Name="FavoriteIcon" 
+                        <Image x:Name="FavoriteIcon" 
                        Source="pack://siteoforigin:,,,/Images/star_grey.png" 
                        Width="24" Height="24"/>
                     </Button>
@@ -119,7 +119,7 @@
             </StackPanel>
 
             <!-- Картинка блюда -->
-            <Image x:Name="DishImage" Width="160" Height="160" Margin="-123,10,0,0"
+            <Image x:Name="DishImage" Width="160" Height="160" Margin="-147,10,0,0"
                    Visibility="Collapsed" Stretch="UniformToFill"
                    Grid.Row="1"/>
 
@@ -153,18 +153,17 @@
             </StackPanel>
         </Grid>
 
-
-
-        <!-- Кнопка сохранения -->
-        <Button Content="Зберегти страву" 
-                Grid.ColumnSpan="2" HorizontalAlignment="Left"
-                Margin="241,460,0,-32" Click="SaveDish_Click"
-                Width="250"
-                Height="50"
-                Foreground="White"
-                FontSize="16"
-                FontWeight="Bold">
-            
+        <Button x:Name="SaveDishButton"
+        Content="Зберегти страву"
+        Grid.ColumnSpan="2"
+        HorizontalAlignment="Left"
+        Margin="241,460,0,-32"
+        Click="SaveDish_Click"
+        Width="250"
+        Height="50"
+        Foreground="White"
+        FontSize="16"
+        FontWeight="Bold">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Border Background="#3E2E8F" CornerRadius="15" Padding="10,5">
