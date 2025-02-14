@@ -156,13 +156,18 @@
 
 
         <!-- Кнопка сохранения -->
-        <Button Content="Зберегти страву" Width="200" Height="45"
+        <Button Content="Зберегти страву" 
                 Grid.ColumnSpan="2" HorizontalAlignment="Left"
-                Margin="265,488,0,-32" Click="SaveDish_Click"
-                Foreground="White" FontSize="16" FontWeight="Bold">
+                Margin="243,460,0,-32" Click="SaveDish_Click"
+                Width="250"
+                Height="50"
+                Foreground="White"
+                FontSize="16"
+                FontWeight="Bold">
+            
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="#689F38" CornerRadius="14" Padding="10,5">
+                    <Border Background="#3E2E8F" CornerRadius="15" Padding="10,5">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>

@@ -1,15 +1,22 @@
-﻿using Fitpad.Model.Entities;
+﻿
+using Fitpad.Model.Entities;
 using Fitpad.Services;
 using Fitpad.ViewModel.PagesViewModels;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+
 
 namespace Fitpad.View.Pages
 {
     public partial class AccountRegistrationPage : Page
     {
+        private readonly Random _random = new Random();
         private static AccountRegistrationPage _instance;
         private static readonly object _lock = new object(); // Для потокобезопасности
         private readonly RegistrationService _registrationService;
@@ -98,11 +105,27 @@ namespace Fitpad.View.Pages
             }
         }
 
+        private void StartConfetti(object sender, RoutedEventArgs e)
+        {
+            // Запуск анимации
+            Storyboard sb = FindResource("ConfettiStoryboard") as Storyboard;
+            if (sb != null)
+            {
+                sb.Begin();
+            }
+        }
+
+        private void CloseWelcomeOverlay(object sender, RoutedEventArgs e)
+        {
+            WelcomeOverlay.Visibility = Visibility.Collapsed; // Скрываем окно приветствия
+        }
+
+
         private void SuccessOkButton_Click(object sender, RoutedEventArgs e)
         {
             SuccessMessageOverlay.Visibility = Visibility.Collapsed;
             NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
-        }
+        }   
 
         private void ShowStep(int step)
         {

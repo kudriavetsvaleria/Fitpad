@@ -10,69 +10,109 @@
     </Page.Resources>
 
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-        <StackPanel Width="300" HorizontalAlignment="Center" VerticalAlignment="Center">
 
-            <!-- Шаг 1: Ввод логина -->
+
+
+        <Grid x:Name="WelcomeOverlay" Background="White" Visibility="Visible"
+      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+      Panel.ZIndex="10"> 
+
+            <Border x:Name="WelcomePanel" Background="White" BorderThickness="2"
+            CornerRadius="50" Padding="30" Width="520" Height="565"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <!-- Применяем тень, как в OverlayCanvas -->
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="5" Opacity="0.5"/>
+                </Border.Effect>
+
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
+                    <!-- 🎉 Заголовок -->
+                    <TextBlock Text="🎉 Вітаємо у Fitpad!"
+                       FontSize="24" FontWeight="Bold" Foreground="#007ACC"
+                       TextAlignment="Center" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Fitpad - ваш персональний гід у світі &#x0a; здоров'я і спорту!" 
+                       FontSize="18" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+
+
+                    <TextBlock Text="Наш застосунок допомагає стежити за харчуванням, &#x0a;знаходити корисні та цікаві рецепти, а також дізнаватися свіжі &#x0a; новини зі світу фітнесу та здорового способу життя."
+                       FontSize="14" Foreground="Black" TextAlignment="Center" 
+                       TextWrapping="Wrap" Margin="0,35,0,0"/>
+      
+
+                    <!-- 🔥 Блок преимуществ -->
+
+                    <TextBlock Text="🍽 Конструктор страв" FontSize="16" FontWeight="Bold" Foreground="#E74C3C" Margin="0,30,0,0"/>
+                    <TextBlock Text="Створюйте власні рецепти і розраховуйте їхню калорійність." 
+                       FontSize="13" Foreground="Black" TextWrapping="Wrap" MaxWidth="320"
+                       Margin="0,2,0,10"/>
+
+                    <TextBlock Text="🥗 Харчування" FontSize="16" FontWeight="Bold" Foreground="#27AE60" Margin="0,10,0,0"/>
+                    <TextBlock Text="Стежте за балансом БЖУ і контролюйте свій раціон."
+                       FontSize="13" Foreground="Black" TextWrapping="Wrap" MaxWidth="320"
+                       Margin="0,2,0,10"/>
+
+                    <TextBlock Text="📰 Новини" FontSize="16" FontWeight="Bold" Foreground="#2980B9" Margin="0,10,0,0"/>
+                    <TextBlock Text="Будьте в курсі актуальних подій про здоров'я та харчування." Margin="0,2,0,0"
+                       FontSize="13" Foreground="Black" TextWrapping="Wrap" MaxWidth="320"/>
+
+                    <!-- ✅ КНОПКА ЗАКРЫТИЯ -->
+                    <Button Content="ОК!" Width="130" Height="45" Click="CloseWelcomeOverlay" Margin="0,30,0,0"
+                    Background="#007ACC" Foreground="White" FontSize="16" FontWeight="Bold" BorderThickness="0"
+                    Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+
+        <!-- Оверлей сообщения об успешной регистрации -->
+        <Grid x:Name="SuccessMessageOverlay" Visibility="Collapsed" Background="#80000000"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="10">
+            <Border Background="White" CornerRadius="15" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Effect="{DynamicResource DropShadowEffect}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Width="300">
+                    <TextBlock Text="Реєстрація успішна!" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" 
+                               Foreground="#007ACC" TextAlignment="Center"/>
+                    <Button Content="ОК" Width="130" Height="30" Click="SuccessOkButton_Click"
+                            Background="#007ACC" Foreground="White" FontSize="16" BorderThickness="0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Форма регистрации -->
+        <StackPanel Width="340" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="1">
+            <TextBlock Text="Зареєструйте акаунт:"
+                       FontSize="20" FontWeight="Bold" Foreground="#007ACC"
+                       TextAlignment="Center" Margin="0,20,0,10"/>
+
+            <!-- Шаги регистрации -->
             <StackPanel x:Name="Step1" Visibility="Visible">
                 <Label Content="Логін:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <TextBox x:Name="UsernameTextBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Далі" Width="120" Height="35" Click="NextStep_Click" Tag="2"
-                            Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0"
-                            Cursor="Hand" Margin="0,0,10,0"
-                            IsEnabled="{Binding ElementName=UsernameTextBox, Path=Text.Length, Converter={StaticResource BooleanConverter}}"/>
-                </StackPanel>
+                <TextBox x:Name="UsernameTextBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
+                <Button Content="Далі" Width="300" Height="35" Click="NextStep_Click" Tag="2"
+                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
 
-            <!-- Шаг 2: Ввод почты -->
             <StackPanel x:Name="Step2" Visibility="Collapsed">
                 <Label Content="Пошта:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <TextBox x:Name="EmailTextBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Назад" Width="120" Height="35" Click="PreviousStep_Click" Tag="1"
-                            Background="#D9534F" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"/>
-                    <Button Content="Далі" Width="120" Height="35" Click="NextStep_Click" Tag="3"
-                            Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0"
-                            Cursor="Hand"
-                            IsEnabled="{Binding ElementName=EmailTextBox, Path=Text.Length, Converter={StaticResource BooleanConverter}}"/>
-                </StackPanel>
+                <TextBox x:Name="EmailTextBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
+                <Button Content="Далі" Width="300" Height="35" Click="NextStep_Click" Tag="3"
+                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
 
-            <!-- Шаг 3: Ввод пароля -->
             <StackPanel x:Name="Step3" Visibility="Collapsed">
                 <Label Content="Пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <PasswordBox x:Name="PasswordBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
+                <PasswordBox x:Name="PasswordBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
                 <Label Content="Підтвердіть пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <PasswordBox x:Name="ConfirmPasswordBox" Width="250" Height="30" FontSize="14" Margin="0,0,0,10"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Назад" Width="120" Height="35" Click="PreviousStep_Click" Tag="2"
-                            Background="#D9534F" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"/>
-                    <Button Content="Завершити" Width="120" Height="35" Click="RegisterButton_Click"
-                            Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0"
-                            Cursor="Hand"
-                            IsEnabled="{Binding ElementName=PasswordBox, Path=Password.Length, Converter={StaticResource BooleanConverter}}"/>
-                </StackPanel>
+                <PasswordBox x:Name="ConfirmPasswordBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
+                <Button Content="Завершити" Width="300" Height="35" Click="RegisterButton_Click"
+                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
 
-            <TextBlock x:Name="AccountTextBlock" Text="Є акаунт?" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-            <Button x:Name="LoginButton" Content="Авторизація" Width="250" Height="35" Click="NavigateToLoginPage_Click"
+            <TextBlock Text="Є акаунт?" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+            <Button Content="Авторизація" Width="300" Height="35" Click="NavigateToLoginPage_Click"
                     Background="#5bc0de" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
-
-            <!-- Оверлей сообщения об успешной регистрации -->
-            <Grid x:Name="SuccessMessageOverlay" Visibility="Collapsed" Background="#80000000">
-                <Border Background="White" CornerRadius="15" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                        Effect="{DynamicResource DropShadowEffect}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Width="300">
-                        <TextBlock Text="Реєстрація успішна!" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" 
-                                   Foreground="#007ACC" TextAlignment="Center"/>
-                        <Button Content="ОК" Width="150" Height="40" Click="SuccessOkButton_Click"
-                                Background="#007ACC" Foreground="White" FontSize="16" BorderThickness="0"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <TextBlock x:Name="ErrorTextBlock" Foreground="Red" TextAlignment="Center" Visibility="Collapsed" 
-                       Margin="0,10,0,0" FontSize="12"/>
         </StackPanel>
     </Grid>
 </Page>

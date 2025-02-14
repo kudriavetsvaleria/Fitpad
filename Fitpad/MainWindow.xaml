@@ -59,17 +59,24 @@
                     Margin="5" />
 
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=AccountLogin, Converter={StaticResource ButtonContentConverter}}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Авторизація, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowAccountLoginCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=AccountRegistration, Converter={StaticResource ButtonContentConverter}}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Регістрація, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowAccountRegistrationCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
+
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=dishes, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowDishesCommand}"
+                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                    Height="50"
+                    Margin="5" />
+
         </StackPanel>
 
         <!-- Кнопка для скрытия/развёртывания панели -->

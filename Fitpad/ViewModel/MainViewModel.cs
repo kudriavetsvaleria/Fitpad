@@ -41,6 +41,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowAccountRegistrationCommand { get; }
     public ICommand ToggleNavigationCommand { get; }
     public ICommand ShowCaloriesCommand { get; }
+    public ICommand ShowDishesCommand { get; }
 
     private bool _isNavigationExpanded = true;
     public bool IsNavigationExpanded
@@ -66,6 +67,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
         ShowCaloriesCommand = new RelayCommand(async o => await NavigateToAsync<CaloriesPage>());
+        ShowDishesCommand = new RelayCommand(async o => await NavigateToAsync<DishesPage>());
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 
@@ -85,7 +87,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
             Console.WriteLine("❌ UserSession.CurrentUserId пуст. Загружаем страницу входа...");
-            CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel()); // Загружаем страницу авторизации
+            CurrentPage = AccountRegistrationPage.GetInstance(); // Загружаем страницу авторизации
             return;
         }
 
@@ -102,7 +104,7 @@ public class MainViewModel : INotifyPropertyChanged
         else
         {
             Console.WriteLine("❌ Ошибка загрузки профиля. Перенаправляем на страницу входа.");
-            CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel()); // Загружаем страницу авторизации
+            CurrentPage = AccountRegistrationPage.GetInstance(); // Загружаем страницу регистрации 
         }
     }
 
