@@ -42,6 +42,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ToggleNavigationCommand { get; }
     public ICommand ShowCaloriesCommand { get; }
     public ICommand ShowDishesCommand { get; }
+    public ICommand ShowCalculateNutritionCommand { get; }
 
     private bool _isNavigationExpanded = true;
     public bool IsNavigationExpanded
@@ -68,6 +69,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
         ShowCaloriesCommand = new RelayCommand(async o => await NavigateToAsync<CaloriesPage>());
         ShowDishesCommand = new RelayCommand(async o => await NavigateToAsync<DishesPage>());
+        ShowCalculateNutritionCommand = new RelayCommand(async o => await NavigateToAsync<CalculateNutritionPage>());
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 

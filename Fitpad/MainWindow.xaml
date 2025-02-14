@@ -26,15 +26,14 @@
                     Height="50"
                     Margin="5,20,5,5"/>
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Мої Страви, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowMyDishesCommand}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Харчування, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowNutritionCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
 
-
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Харчування, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowNutritionCommand}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Мої Страви, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowDishesCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
@@ -45,12 +44,6 @@
                     Height="50"
                     Margin="5" />
 
-
-            <!--<Button Content="{Binding IsNavigationExpanded, ConverterParameter=Тренування, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowWorkoutsCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />-->
 
             <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Профіль, Converter={StaticResource ButtonContentConverter}}"
                     Command="{Binding ShowProfileCommand}"
@@ -71,11 +64,12 @@
                     Height="50"
                     Margin="5" />
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=dishes, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowDishesCommand}"
+            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=CalculateNutrition, Converter={StaticResource ButtonContentConverter}}"
+                    Command="{Binding ShowCalculateNutritionCommand}"
                     Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                     Height="50"
                     Margin="5" />
+
 
         </StackPanel>
 

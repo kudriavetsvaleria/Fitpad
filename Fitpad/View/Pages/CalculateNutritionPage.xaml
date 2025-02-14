@@ -1,0 +1,99 @@
+<Page x:Class="Fitpad.View.Pages.CalculateNutritionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Grid Margin="20">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<Border Grid.Row="0" Grid.Column="0"
+                Background="White"
+                BorderBrush="#ccc"
+                BorderThickness="1"
+                Padding="10"
+                Margin="0,10,20,10"
+                Width="700"
+                Height="450">
+			<DataGrid ItemsSource="{Binding SavedProducts}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      HeadersVisibility="Column"
+                      RowHeight="35"
+                      GridLinesVisibility="None"
+                      AlternatingRowBackground="#F0F0F0"
+                      BorderThickness="0" Margin="0,0,156,-1">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Час" Binding="{Binding Time}" Width="60"/>
+					<DataGridTextColumn Header="Назва" Binding="{Binding Title}" Width="130"/>
+					<DataGridTextColumn Header="Вага (г)" Binding="{Binding Weight}" Width="80"/>
+					<DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="60"/>
+					<DataGridTextColumn Header="Білки (г)" Binding="{Binding Protein}" Width="60"/>
+					<DataGridTextColumn Header="Жири (г)" Binding="{Binding Fats}" Width="60"/>
+					<DataGridTextColumn Header="Вуглеводи (г)" Binding="{Binding Carbs}" Width="60"/>
+				</DataGrid.Columns>
+			</DataGrid>
+		</Border>
+
+		<StackPanel Grid.Row="1" Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="0,10,10,0">
+			<Border Background="White"
+                    BorderBrush="#ccc"
+                    BorderThickness="1"
+                    CornerRadius="20"
+                    Padding="5" Height="35">
+				<TextBox x:Name="SearchBox"
+                         Width="289"
+                         Height="35"
+                         FontSize="16"
+                         Padding="5"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Text="Назва продукту..."
+                         Foreground="Gray"
+                         GotFocus="SearchTextBox_GotFocus" Margin="0,-6,0,-6"/>
+			</Border>
+
+			<Border Background="White"
+                    BorderBrush="#ccc"
+                    BorderThickness="1"
+                    CornerRadius="20"
+                    Padding="5"
+                    Margin="10,0" Height="35">
+				<TextBox x:Name="WeightBox"
+                         Width="156"
+                         Height="35"
+                         FontSize="16"
+						 Text="Вага... (г)"
+                         Padding="5"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="Gray" Margin="0,-6,0,-6"/>
+			</Border>
+            <Button Width="35"
+                    Height="35"
+                    Click="SearchButton_Click"
+                    Foreground="White"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Padding="5"
+                    RenderTransformOrigin="0.50,0.50"
+                    Content="🔍">
+                <Button.Template>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="#3E2E8F" CornerRadius="10" Padding="8,4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+		</StackPanel>
+	</Grid>
+</Page>
