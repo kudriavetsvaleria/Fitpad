@@ -211,6 +211,9 @@
     <Compile Include="ViewModel\PagesViewModels\UserInfoFormViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
+    <Compile Include="View\Components\DishDetailPage.xaml.cs">
+      <DependentUpon>DishDetailPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\DishesPage.xaml.cs">
       <DependentUpon>DishesPage.xaml</DependentUpon>
     </Compile>
@@ -241,6 +244,9 @@
     <Compile Include="View\Pages\RecipePage.xaml.cs">
       <DependentUpon>RecipePage.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\Components\DishDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Pages\DishesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

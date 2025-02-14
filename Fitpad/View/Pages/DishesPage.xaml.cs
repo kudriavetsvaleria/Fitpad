@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using Fitpad.ViewModel.PagesViewModels;
 using Google.Cloud.Firestore;
+using Fitpad.Model.Entities; // ✅ Добавляем пространство имен, чтобы видеть DishModel
+using Fitpad.View.Components; // ✅ Добавляем, чтобы видеть DishDetailPage
 
 namespace Fitpad.View.Pages
 {
@@ -15,7 +17,7 @@ namespace Fitpad.View.Pages
             InitializeComponent();
             _viewModel = new DishViewModel(FirestoreDb.Create("fitpad-2025"));
             DataContext = _viewModel;
-            
+
             _viewModel.LoadUserDishesAsync();
 
             CreateDishButton.DataContext = MainViewModel.Instance;
@@ -50,6 +52,15 @@ namespace Fitpad.View.Pages
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
                 SearchBox.Text = "Пошук страв...";
+            }
+        }
+
+        // ✅ Новый обработчик выбора блюда
+        private void DishesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DishesList.SelectedItem is DishModel selectedDish)
+            {
+                NavigationService?.Navigate(new DishDetailPage(selectedDish));
             }
         }
     }

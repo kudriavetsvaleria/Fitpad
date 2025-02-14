@@ -1,0 +1,118 @@
+﻿<Page x:Class="Fitpad.View.Components.DishDetailPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Деталі страви"
+      Background="#F8F8F8">
+
+	<Grid Margin="30">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<!-- Заголовок -->
+			<RowDefinition Height="Auto"/>
+			<!-- Информация -->
+			<RowDefinition Height="*"/>
+			<!-- Рецепт и ингредиенты -->
+			<RowDefinition Height="Auto"/>
+			<!-- Кнопка -->
+		</Grid.RowDefinitions>
+
+		<!-- 🔹 Заголовок с кнопкой редактирования -->
+		<Border Grid.Row="0" Background="#70A93D" CornerRadius="10" Height="60" Padding="15,10">
+			<Grid>
+				<!-- Название (Редактируемое) -->
+				<TextBox x:Name="DishNameBox"
+                         Text="{Binding Name}"
+                         FontSize="24"
+                         FontWeight="Bold"
+                         Foreground="White"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         IsReadOnly="True"
+                         TextAlignment="Center"
+                         HorizontalAlignment="Center"/>
+
+				<!-- Кнопка "Редактировать" в правом верхнем углу -->
+				<Button x:Name="EditButton"
+                        Content="📝"
+                        Width="40"
+                        Height="40"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        FontSize="20"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,0,10,0"
+                        Click="EditButton_Click"/>
+			</Grid>
+		</Border>
+
+		<!-- 📌 Основная информация -->
+		<Border Grid.Row="1" Padding="15" Background="White" CornerRadius="10" Margin="0,10,0,10">
+			<StackPanel>
+				<TextBlock Text="⏳ Час приготування:" FontSize="16" FontWeight="Bold"/>
+				<TextBox x:Name="CookingTimeBox"
+                         Text="{Binding CookingTime}"
+                         FontSize="16"
+                         Foreground="DarkGray"
+                         IsReadOnly="True"
+                         BorderThickness="0"
+                         Background="Transparent"/>
+			</StackPanel>
+		</Border>
+
+		<!-- 📝 Рецепт и Інгредієнти -->
+		<Border Grid.Row="2" Padding="10" Background="White" CornerRadius="10" Margin="0,10,0,10">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel>
+					<TextBlock Text="📝 Рецепт:" FontSize="16" FontWeight="Bold"/>
+					<TextBox x:Name="RecipeBox"
+                             Text="{Binding Recipe}"
+                             FontSize="16"
+                             TextWrapping="Wrap"
+                             Foreground="DarkGray"
+                             Margin="0,5,0,10"
+                             IsReadOnly="True"
+                             BorderThickness="0"
+                             Background="Transparent"/>
+
+					<TextBlock Text="🥦 Інгредієнти:" FontSize="16" FontWeight="Bold"/>
+					<ListBox x:Name="IngredientsList"
+                             ItemsSource="{Binding Ingredients}"
+                             FontSize="16"
+                             BorderThickness="0"
+                             MaxHeight="160"/>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+
+		<!-- 🔙 Кнопки "Назад" / "Готово" -->
+		<Button x:Name="ActionButton"
+                Grid.Row="3"
+                Click="ActionButton_Click"
+                Content="Назад"
+                Background="#3E2E8F"
+                Foreground="White"
+                Width="250"
+                Height="50"
+                HorizontalAlignment="Center"
+                FontSize="16"
+                FontWeight="Bold"
+                Margin="0,20,0,0">
+			<Button.Style>
+				<Style TargetType="Button">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="Button">
+								<Border Background="{TemplateBinding Background}"
+                                        CornerRadius="15"
+                                        Padding="10,5">
+									<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+								</Border>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+			</Button.Style>
+		</Button>
+	</Grid>
+</Page>
