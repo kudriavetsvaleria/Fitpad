@@ -158,7 +158,7 @@
         <!-- Кнопка сохранения -->
         <Button Content="Зберегти страву" 
                 Grid.ColumnSpan="2" HorizontalAlignment="Left"
-                Margin="243,460,0,-32" Click="SaveDish_Click"
+                Margin="241,460,0,-32" Click="SaveDish_Click"
                 Width="250"
                 Height="50"
                 Foreground="White"
