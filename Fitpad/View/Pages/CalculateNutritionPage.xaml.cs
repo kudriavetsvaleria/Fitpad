@@ -40,6 +40,7 @@ namespace Fitpad.View.Pages
 
             _viewModel = new CalculateNutritionViewModel(userInfo);
             DataContext = _viewModel;
+            Console.WriteLine("📊 DataContext установлен!");
 
             // Подписка на обновление данных
             _viewModel.PropertyChanged += (sender, e) =>

@@ -1,6 +1,8 @@
 <Page x:Class="Fitpad.View.Pages.CalculateNutritionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf">
+
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
@@ -171,28 +173,55 @@
         </Border>
 
 
-
-        <!-- Отображение общего БЖУ + воды -->
         <StackPanel Grid.Row="1" Grid.Column="0" 
             Orientation="Vertical" 
             HorizontalAlignment="Left"
-            Margin="524,-78,0,10">
+            Margin="524,-125,0,10">
 
-            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C" 
-               Text="{Binding ProteinDisplayText, StringFormat='Білки: {0:F1} г'}"
-               Margin="0,0,0,10"/>
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C" 
+               Text="{Binding ProteinDisplayText, StringFormat='Білки: {0:F1}'}"
+               Margin="0,0,0,0"/>
 
-            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
-               Text="{Binding FatsDisplayText, StringFormat='Жири: {0:F1} г'}"
-               Margin="0,0,0,10"/>
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding FatsDisplayText, StringFormat='Жири: {0:F1}'}"
+               Margin="0,25,0,0"/>
 
-            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
-               Text="{Binding CarbsDisplayText, StringFormat='Вуглеводи: {0:F1} г'}"
-               Margin="0,0,0,10"/>
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding CarbsDisplayText, StringFormat='Вуглеводи: {0:F1}'}"
+               Margin="0,25,0,0"/>
 
-            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
-               Text="{Binding WaterDisplayText, StringFormat='Вода: {0:F1} г'}"/>
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding WaterDisplayText, StringFormat='Вода: {0:F1}'}"
+               Margin="0,25,0,0"/>
         </StackPanel>
+
+
+
+        <Grid Grid.Row="1" Grid.Column="1"
+      VerticalAlignment="Top"
+      HorizontalAlignment="Right"
+      Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Первая диаграмма (калории) -->
+            <lvc:PieChart Grid.Column="0"
+                  LegendLocation="None"
+                  Series="{Binding CalorieChartSeries}"
+                  Width="200"
+                  Height="200"
+                  Margin="-1300,-170,0,0"/>
+
+            <!-- Вторая диаграмма (вода) -->
+            <lvc:PieChart Grid.Column="1"
+                  LegendLocation="None"
+                  Series="{Binding WaterChartSeries}"
+                  Width="200"
+                  Height="200"
+                  Margin="-820,-170,0,0"/>
+        </Grid>
 
 
 
@@ -222,7 +251,7 @@
 
 
             </Border>
-            
+
 
             <Border Background="White"
                     BorderBrush="#ccc"
@@ -243,8 +272,8 @@
                          LostFocus="WeightBox_LostFocus"
                          Margin="0,-6,0,-6"/>
             </Border>
-            
-            
+
+
             <Button Width="45"
                     Height="45"
                     Click="SearchButton_Click"
@@ -265,14 +294,16 @@
 
             <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Margin="20,10,0,0">
                 <TextBlock x:Name="CalorieIntakeText"
-                           FontSize="18"
+                           FontSize="16"
                            FontWeight="Bold"
                            Foreground="#5C5C5C"
                            Text="{Binding CalorieDisplayText, Mode=OneWay}"/>
+
 
             </StackPanel>
 
 
         </StackPanel>
     </Grid>
+
 </Page>

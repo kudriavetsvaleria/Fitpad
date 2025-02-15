@@ -3,11 +3,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
 using Fitpad.View.Components;
-using System.Windows;
-using Fitpad.View;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
@@ -23,6 +24,14 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public UserInfoModel UserInfo { get; private set; }
         public ObservableCollection<NutritionModel> SavedProducts { get; set; }
+
+        public SeriesCollection CalorieChartSeries { get; set; }
+        public SeriesCollection WaterChartSeries { get; set; }
+
+        public SeriesCollection ConsumedCaloriesSeries { get; set; }
+        public SeriesCollection RemainingCaloriesSeries { get; set; }
+
+
 
         public double CurrentProtein
         {
@@ -71,8 +80,9 @@ namespace Fitpad.ViewModel.PagesViewModels
         public string CarbsDisplayText => $"{CurrentCarbs:F1} / {CarbsNorm:F0} г";
         public string WaterDisplayText => $"{CurrentWater:F1} / {WaterNorm:F0} мл";
 
-        private double _totalWater;
 
+
+        private double _totalWater;
 
 
         public double CurrentCalories
@@ -81,8 +91,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             set
             {
                 _currentCalories = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CalorieDisplayText)); // Обновляем отображение
+                UpdateCalorieText(); // ✅ Обновляем текстовое отображение калорий
             }
         }
 
@@ -92,62 +101,145 @@ namespace Fitpad.ViewModel.PagesViewModels
             set
             {
                 _calorieNorm = value;
-                OnPropertyChanged(nameof(CalorieDisplayText)); // ✅ UI теперь обновляется при изменении
+                CalculateMacroNorms(); // ✅ Пересчитываем нормы БЖУ при изменении нормы калорий
+                OnPropertyChanged(nameof(CalorieDisplayText));
+                OnPropertyChanged(nameof(ProteinDisplayText));
+                OnPropertyChanged(nameof(FatsDisplayText));
+                OnPropertyChanged(nameof(CarbsDisplayText));
             }
         }
 
-        public string CalorieDisplayText => $"Ккал: {CurrentCalories:F1} / {CalorieNorm:F0}";
+        private void CalculateMacroNorms()
+        {
+            if (CalorieNorm > 0) // Проверяем, чтобы не было деления на 0
+            {
+                ProteinNorm = Math.Round((CalorieNorm * 0.2) / 4, 1);
+                FatsNorm = Math.Round((CalorieNorm * 0.25) / 9, 1);
+                CarbsNorm = Math.Round((CalorieNorm * 0.55) / 4, 1);
+                WaterNorm = 2000; // Минимальная суточная норма воды ✅
 
+                OnPropertyChanged(nameof(ProteinNorm));
+                OnPropertyChanged(nameof(FatsNorm));
+                OnPropertyChanged(nameof(CarbsNorm));
+                OnPropertyChanged(nameof(WaterNorm));
+                OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI для воды
+            }
+        }
+
+
+        public string CalorieDisplayText => $"Ккал: {CurrentCalories:F1} / {CalorieNorm:F0}";
 
 
         public CalculateNutritionViewModel(UserInfoModel userInfo)
         {
             UserInfo = userInfo ?? new UserInfoModel();
-            _repository = new CalculateNutritionRepository();
             SavedProducts = new ObservableCollection<NutritionModel>();
-            CalculateDailyNutritionNorms();
-            // ✅ Вызываем метод пересчета нормы калорий
+            _repository = new CalculateNutritionRepository();
+
             CalorieNorm = CalculateDailyCalorieIntake(UserInfo);
+            CalculateMacroNorms();
+
+            Console.WriteLine("🚀 Инициализация диаграммы...");
+
+            WaterChartSeries = new SeriesCollection
+                {
+                    new PieSeries
+                    {
+                        Title = "Випито",
+                        Values = new ChartValues<double> { 0 },
+                        Fill = (Brush)new BrushConverter().ConvertFromString("#7ACEFF"), // Голубой
+                        DataLabels = true
+                    },
+                    new PieSeries
+                    {
+                        Title = "Залишилось",
+                        Values = new ChartValues<double> { Math.Max(1, WaterNorm) },
+                        Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // Серый
+                        DataLabels = true
+                    }
+                };
+
+            if (CalorieChartSeries == null)
+            {
+                CalorieChartSeries = new SeriesCollection
+{
+                new PieSeries
+                {
+                    Title = "З'їли",
+                    Values = new ChartValues<double> { 1 },
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#70A93D"), // Зеленый #70A93D
+                    DataLabels = true
+                },
+                new PieSeries
+                {
+                    Title = "Залишилось",
+                    Values = new ChartValues<double> { Math.Max(1, CalorieNorm) },
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // Серый #BEBEBE
+                    DataLabels = true
+                }
+            };
+
+            }
+
+            Console.WriteLine("✅ Диаграмма инициализирована!");
+            UpdatePieChart();
         }
 
-        private void CalculateDailyNutritionNorms()
+        private void UpdateWaterChart()
         {
-            double calorieNorm = CalculateDailyCalorieIntake(UserInfo);
+            if (WaterChartSeries == null || WaterChartSeries.Count < 2)
+                return;
 
-            // ✅ Белки: 15% от калорийности (1 г = 4 ккал)
-            ProteinNorm = Math.Round((calorieNorm * 0.15) / 4);
+            double consumed = Math.Max(0, CurrentWater);
+            double remaining = Math.Max(0, WaterNorm - CurrentWater);
 
-            // ✅ Жиры: 25% от калорийности (1 г = 9 ккал)
-            FatsNorm = Math.Round((calorieNorm * 0.25) / 9);
+            if (consumed == 0 && remaining == 0) // Если воды нет, показываем пустую диаграмму
+            {
+                remaining = WaterNorm > 0 ? WaterNorm : 1;
+            }
 
-            // ✅ Углеводы: 55% от калорийности (1 г = 4 ккал)
-            CarbsNorm = Math.Round((calorieNorm * 0.55) / 4);
+            WaterChartSeries[0].Values = new ChartValues<double> { consumed };
+            WaterChartSeries[1].Values = new ChartValues<double> { remaining };
 
-            // ✅ Вода: 35 мл на 1 кг веса
-            WaterNorm = Math.Round(UserInfo.Weight * 35);
-
-            // ✅ Обновляем UI
-            OnPropertyChanged(nameof(ProteinDisplayText));
-            OnPropertyChanged(nameof(FatsDisplayText));
-            OnPropertyChanged(nameof(CarbsDisplayText));
-            OnPropertyChanged(nameof(WaterDisplayText));
+            OnPropertyChanged(nameof(WaterChartSeries));
         }
 
+        private void UpdatePieChart()
+        {
+            if (CalorieChartSeries == null || CalorieChartSeries.Count < 2)
+                return;
+
+            double consumed = Math.Max(0, CurrentCalories);
+            double remaining = Math.Max(0, CalorieNorm - CurrentCalories);
+
+            if (consumed == 0 && remaining == 0) // Если продуктов нет, показываем пустую диаграмму
+            {
+                remaining = CalorieNorm > 0 ? CalorieNorm : 1;
+            }
+
+            CalorieChartSeries[0].Values = new ChartValues<double> { consumed };
+            CalorieChartSeries[1].Values = new ChartValues<double> { remaining };
+
+            OnPropertyChanged(nameof(CalorieChartSeries));
+        }
 
         public void AddProduct(NutritionModel product)
         {
             if (product != null)
             {
+                CurrentCalories += product.Calories;
                 CurrentProtein += product.Protein;
                 CurrentFats += product.Fats;
                 CurrentCarbs += product.Carbs;
-                CurrentWater += product.Water; // ✅ Добавляем воду
 
-                // ✅ Обновляем UI
-                OnPropertyChanged(nameof(ProteinDisplayText));
-                OnPropertyChanged(nameof(FatsDisplayText));
-                OnPropertyChanged(nameof(CarbsDisplayText));
-                OnPropertyChanged(nameof(WaterDisplayText));
+                if (product.Title.ToLower() == "вода" || product.Title.ToLower() == "water")
+                {
+                    CurrentWater += product.Weight;
+                    OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI
+                    UpdateWaterChart(); // ✅ Обновляем диаграмму воды
+                }
+
+                UpdatePieChart(); // ✅ Обновляем диаграмму калорий
             }
         }
 
@@ -161,66 +253,62 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             string lowerQuery = query.Trim().ToLower();
 
-            // ✅ Если введена вода, создаем продукт вручную с текущим временем
             if (lowerQuery == "вода" || lowerQuery == "water")
             {
                 var waterProduct = new NutritionModel
                 {
                     Title = "Вода",
                     Weight = weight,
-                    Calories = 0,  // У воды 0 калорий
+                    Calories = 0,
                     Protein = 0,
                     Fats = 0,
                     Carbs = 0,
-                    Water = weight, // ✅ Количество воды равно введенному весу
-                    Time = DateTime.Now.ToString("HH:mm") // ✅ Записываем текущее время в формате ЧЧ:ММ
+                    Water = weight,
+                    Time = DateTime.Now.ToString("HH:mm")
                 };
 
-                // ✅ Добавляем в таблицу и в поле воды
                 SavedProducts.Add(waterProduct);
                 CurrentWater += weight;
+                OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI
+                UpdateWaterChart(); // ✅ Обновляем диаграмму воды
 
-                OnPropertyChanged(nameof(WaterDisplayText));
                 Console.WriteLine($"✅ Добавлена вода: {weight} мл в {waterProduct.Time}");
-
                 return waterProduct;
             }
 
-            // ✅ Запрашиваем продукт из API/БД
             var products = await _repository.GetProductsAsync(query);
-
-            if (products.Count > 0)
+            if (products == null || products.Count == 0)
             {
-                var product = products[0];
-
-                if (string.IsNullOrWhiteSpace(product.Title))
-                {
-                    product.Title = query;
-                }
-
-                double factor = weight / 100.0;
-                product.Calories *= factor;
-                product.Protein *= factor;
-                product.Fats *= factor;
-                product.Carbs *= factor;
-                product.Weight = weight;
-                product.Time = DateTime.Now.ToString("HH:mm"); // ✅ Добавляем текущее время
-
-                SavedProducts.Add(product);
-                CurrentCalories += product.Calories;
-                CurrentProtein += product.Protein;
-                CurrentFats += product.Fats;
-                CurrentCarbs += product.Carbs;
-
-                Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}, Вода: {product.Water}, Время: {product.Time}");
-
-                return product;
+                Console.WriteLine("❌ Продукт не найден.");
+                return ShowManualProductEntryDialog(query, weight);
             }
 
-            // ❌ Если продукт не найден — вызываем окно ручного ввода
-            return ShowManualProductEntryDialog(query, weight);
+            var product = products[0];
+            product.Weight = weight;
+            product.Calories = (product.Calories * weight) / 100;
+            product.Protein = (product.Protein * weight) / 100;
+            product.Fats = (product.Fats * weight) / 100;
+            product.Carbs = (product.Carbs * weight) / 100;
+            product.Time = DateTime.Now.ToString("HH:mm");
+
+            SavedProducts.Add(product);
+            CurrentCalories += product.Calories;
+            CurrentProtein += product.Protein;
+            CurrentFats += product.Fats;
+            CurrentCarbs += product.Carbs;
+
+            Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}, Время: {product.Time}");
+
+            UpdatePieChart();
+            return product;
         }
 
+
+
+        private void UpdateCalorieText()
+        {
+            OnPropertyChanged(nameof(CalorieDisplayText));
+        }
 
 
         private NutritionModel ShowManualProductEntryDialog(string productName, double weight)
