@@ -17,6 +17,9 @@ namespace Fitpad.ViewModel.PagesViewModels
     {
         private readonly CalculateNutritionRepository _repository;
 
+        private readonly UserInfoRepository _userInfoRepository;
+        private readonly string _userId;
+
         private double _currentCalories;
         private double _calorieNorm;
 
@@ -45,6 +48,14 @@ namespace Fitpad.ViewModel.PagesViewModels
                 OnPropertyChanged(nameof(CanSave));
             }
         }
+
+        public CalculateNutritionViewModel(string userId)
+        {
+            _userId = userId;
+            _userInfoRepository = new UserInfoRepository();
+        }
+
+
 
         // Метод для проверки, заполнены ли все поля
         public void CheckFields(string calories, string protein, string fats, string carbs)

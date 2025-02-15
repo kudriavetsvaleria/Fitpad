@@ -83,13 +83,43 @@ namespace Fitpad.View.Pages
         private async Task UpdateUserNutritionData(string userId)
         {
             var userInfo = await GetUserInfoAsync(userId);
+
+            // Проверяем, заполнены ли основные данные пользователя
             if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
             {
-                MessageBox.Show("Ошибка: Данные пользователя некорректны!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                Console.WriteLine("❌ Данные пользователя отсутствуют или некорректны. Открываем форму UserInfoForm...");
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var mainViewModel = MainViewModel.Instance;
+                    if (mainViewModel != null)
+                    {
+                        Console.WriteLine("🔹 Открываем UserInfoForm в основном окне...");
+                        mainViewModel.CurrentPage = new UserInfoForm();
+                    }
+                });
+
+                // Ожидаем, пока данные будут заполнены
+                while (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+                {
+                    await Task.Delay(500); // Ожидание обновления данных
+                    userInfo = await GetUserInfoAsync(userId);
+                }
+
+                Console.WriteLine("✅ Данные успешно заполнены. Открываем калькулятор...");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var mainViewModel = MainViewModel.Instance;
+                    if (mainViewModel != null)
+                    {
+                        mainViewModel.CurrentPage = new CalculateNutritionPage(userInfo);
+                    }
+                });
+
+                return; // Выходим из метода после загрузки калькулятора
             }
 
-            // ✅ Обновляем норму калорий
+            // ✅ Обновляем норму калорий после получения данных пользователя
             _viewModel.CalorieNorm = _viewModel.CalculateDailyCalorieIntake(userInfo);
 
             Application.Current.Dispatcher.Invoke(() =>
@@ -101,7 +131,10 @@ namespace Fitpad.View.Pages
                     CalorieIntakeText.Text = $"Ккал: {currentCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
                 }
             });
+
+            Console.WriteLine("✅ Данные пользователя обновлены, калькулятор готов к работе.");
         }
+
 
         private async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {

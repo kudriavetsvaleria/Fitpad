@@ -13,6 +13,7 @@ using System.Windows.Input;
 using Newtonsoft.Json;
 using System.IO;
 using Fitpad.Services;
+using Fitpad.View.Components;
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -111,6 +112,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
+
     // Метод для загрузки данных пользователя из JSON-файла
     private UserModel LoadCurrentUserFromFile()
     {
@@ -164,6 +166,56 @@ public class MainViewModel : INotifyPropertyChanged
             CurrentPage = page;
         }
     }
+
+    private async Task OpenCalculatorAsync()
+    {
+        var firestoreService = new FirestoreService();
+        var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
+
+        // Проверяем, есть ли данные пользователя
+        if (userInfo == null || string.IsNullOrEmpty(userInfo.Gender) ||
+            userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
+        {
+            Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем форму UserInfoForm...");
+
+            // Создаём форму для заполнения данных
+            var userInfoForm = new UserInfoForm();
+            var window = new Window
+            {
+                Title = "Заповніть особисті дані",
+                Content = userInfoForm,
+                Width = 350,
+                Height = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen
+            };
+
+            // Открываем окно в модальном режиме
+            bool? result = window.ShowDialog();
+
+            // Если данные успешно сохранены, открыть калькулятор
+            if (result == true)
+            {
+                Console.WriteLine("✅ Данные успешно сохранены. Открываем калькулятор...");
+                OpenCalculator();
+            }
+            else
+            {
+                Console.WriteLine("❌ Пользователь закрыл форму, калькулятор не открываем.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("✅ Данные пользователя корректны. Открываем калькулятор...");
+            OpenCalculator();
+        }
+    }
+
+
+    private void OpenCalculator()
+    {
+        CurrentPage = new CalculateNutritionPage();
+    }
+
 
     public async Task NavigateToProfilePageAsync()
     {

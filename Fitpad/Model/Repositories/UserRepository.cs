@@ -31,6 +31,13 @@ namespace Fitpad.Model.Repositories
             }
         }
 
+        public async Task<UserInfoModel> GetUserInfoAsync(string userId)
+        {
+            var firestoreService = new FirestoreService();
+            return await firestoreService.GetUserInfoAsync(userId);
+        }
+
+
         // Добавляем метод для получения пользователя по имени пользователя
         public async Task<UserModel> GetUserAsync(string username)
         {

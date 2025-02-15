@@ -4,6 +4,7 @@ using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
 using System.Threading.Tasks;
 using System;
+using Fitpad.View.Pages;
 
 namespace Fitpad.View.Components
 {
@@ -36,7 +37,7 @@ namespace Fitpad.View.Components
                 string heightText = HeightInput?.Text;
                 string weightText = WeightInput?.Text;
                 string activityLevel = (ActivityLevelInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
-                string purpose = (PurposeInput?.SelectedItem as ComboBoxItem)?.Content?.ToString(); // Новое поле "Цель"
+                string purpose = (PurposeInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
 
                 if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel) || string.IsNullOrWhiteSpace(purpose))
                 {
@@ -50,6 +51,17 @@ namespace Fitpad.View.Components
                     return;
                 }
 
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var mainViewModel = MainViewModel.Instance;
+                    if (mainViewModel != null)
+                    {
+                        Console.WriteLine("✅ Данные сохранены, открываем калькулятор!");
+                        mainViewModel.CurrentPage = new CalculateNutritionPage();
+                    }
+                });
+
                 var userInfo = new UserInfoModel
                 {
                     UserId = _userId,
@@ -58,18 +70,21 @@ namespace Fitpad.View.Components
                     Height = height,
                     Weight = weight,
                     ActivityLevel = activityLevel,
-                    Purpose = purpose // Сохраняем "Цель"
+                    Purpose = purpose
                 };
 
                 await _userInfoRepository.SaveUserInfoAsync(userInfo);
                 MessageBox.Show("Дані успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                Visibility = Visibility.Collapsed;
+
+                // Закрываем окно
+                Window.GetWindow(this).DialogResult = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Помилка під час збереження даних: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
     }
 }
