@@ -16,9 +16,9 @@
         Background="White"
         BorderThickness="0"
         Padding="10"
-        Margin="0,0,0,0"
-        Width="765"
-        Height="500"
+        Margin="-10,-120,0,0"
+        Width="770"
+        Height="350"
         CornerRadius="20">
 
             <DataGrid ItemsSource="{Binding SavedProducts}"
@@ -167,22 +167,48 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                 </DataGrid.Columns>
-
-
             </DataGrid>
         </Border>
- 
+
+
+
+        <!-- Отображение общего БЖУ + воды -->
+        <StackPanel Grid.Row="1" Grid.Column="0" 
+            Orientation="Vertical" 
+            HorizontalAlignment="Left"
+            Margin="524,-78,0,10">
+
+            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C" 
+               Text="{Binding ProteinDisplayText, StringFormat='Білки: {0:F1} г'}"
+               Margin="0,0,0,10"/>
+
+            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding FatsDisplayText, StringFormat='Жири: {0:F1} г'}"
+               Margin="0,0,0,10"/>
+
+            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding CarbsDisplayText, StringFormat='Вуглеводи: {0:F1} г'}"
+               Margin="0,0,0,10"/>
+
+            <TextBlock FontSize="18" FontWeight="Bold" Foreground="#5C5C5C"
+               Text="{Binding WaterDisplayText, StringFormat='Вода: {0:F1} г'}"/>
+        </StackPanel>
+
+
+
+
+
         <StackPanel Grid.Row="1" Grid.Column="0"
                     Orientation="Horizontal"
                     VerticalAlignment="Center"
-                    Margin="0,0,10,0">
+                    Margin="0,50,10,0">
             <Border Background="White"
                     BorderBrush="#ccc"
                     BorderThickness="1"
                     CornerRadius="20"
-                    Padding="5" Height="35">
+                    Padding="5" Height="45">
                 <TextBox x:Name="SearchBox"
-						 Width="289"
+						 Width="260"
 						 Height="35"
 						 FontSize="16"
 						 Padding="5"
@@ -196,13 +222,14 @@
 
 
             </Border>
+            
 
             <Border Background="White"
                     BorderBrush="#ccc"
                     BorderThickness="1"
                     CornerRadius="20"
                     Padding="5"
-                    Margin="10,0" Height="35">
+                    Margin="10,0" Height="45">
                 <TextBox x:Name="WeightBox"
                          Width="156"
                          Height="35"
@@ -210,16 +237,16 @@
                          Padding="5"
                          Background="Transparent"
                          BorderThickness="0"
-                         Foreground="Black"
+                         Foreground="Gray"
                          Text="Вага... (г)"
                          GotFocus="WeightBox_GotFocus"
                          LostFocus="WeightBox_LostFocus"
                          Margin="0,-6,0,-6"/>
-
-
             </Border>
-            <Button Width="35"
-                    Height="35"
+            
+            
+            <Button Width="45"
+                    Height="45"
                     Click="SearchButton_Click"
                     Foreground="White"
                     FontSize="14"
@@ -229,12 +256,23 @@
                     Content="🔍">
                 <Button.Template>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Background="#3E2E8F" CornerRadius="10" Padding="8,4">
+                        <Border Background="#3E2E8F" CornerRadius="14" Padding="8,4">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20"/>
                         </Border>
                     </ControlTemplate>
                 </Button.Template>
             </Button>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Margin="20,10,0,0">
+                <TextBlock x:Name="CalorieIntakeText"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#5C5C5C"
+                           Text="{Binding CalorieDisplayText, Mode=OneWay}"/>
+
+            </StackPanel>
+
+
         </StackPanel>
     </Grid>
 </Page>

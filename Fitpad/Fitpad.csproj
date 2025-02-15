@@ -197,13 +197,10 @@
     <Compile Include="ViewModel\PagesViewModels\CalculateNutritionViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\DishViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="Model\Entities\CaloriesModel.cs" />
-    <Compile Include="Model\Repositories\CaloriesRepository.cs" />
     <Compile Include="ViewModel\BaseViewModel.cs" />
     <Compile Include="Model\Repositories\NewsRepository.cs" />
     <Compile Include="Model\Repositories\NutritionRepository.cs" />
     <Compile Include="Model\Repositories\UserRepository.cs" />
-    <Compile Include="ViewModel\PagesViewModels\CaloriesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\MyDishesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
@@ -213,6 +210,9 @@
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\Components\DishDetailPage.xaml.cs">
       <DependentUpon>DishDetailPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Components\ManualProductEntryDialog.xaml.cs">
+      <DependentUpon>ManualProductEntryDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\CalculateNutritionPage.xaml.cs">
       <DependentUpon>CalculateNutritionPage.xaml</DependentUpon>
@@ -228,9 +228,6 @@
     </Compile>
     <Compile Include="View\Pages\AccountRegistrationPage.xaml.cs">
       <DependentUpon>AccountRegistrationPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Pages\CaloriesPage.xaml.cs">
-      <DependentUpon>CaloriesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\MyDishes.xaml.cs">
       <DependentUpon>MyDishes.xaml</DependentUpon>
@@ -250,6 +247,9 @@
     <Page Include="View\Components\DishDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Components\ManualProductEntryDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Pages\CalculateNutritionPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -264,9 +264,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\Pages\AccountRegistrationPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Pages\CaloriesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\RecipePage.xaml">

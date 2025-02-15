@@ -40,7 +40,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowAccountLoginCommand { get; }
     public ICommand ShowAccountRegistrationCommand { get; }
     public ICommand ToggleNavigationCommand { get; }
-    public ICommand ShowCaloriesCommand { get; }
+
     public ICommand ShowDishesCommand { get; }
     public ICommand ShowCalculateNutritionCommand { get; }
 
@@ -67,7 +67,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
-        ShowCaloriesCommand = new RelayCommand(async o => await NavigateToAsync<CaloriesPage>());
+  
         ShowDishesCommand = new RelayCommand(async o => await NavigateToAsync<DishesPage>());
         ShowCalculateNutritionCommand = new RelayCommand(async o => await NavigateToAsync<CalculateNutritionPage>());
 
@@ -151,18 +151,8 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
-
     public async Task NavigateToAsync<T>() where T : Page
     {
-        var currentUser = await _userRepository.GetCurrentUserAsync();
-
-        // Проверяем, авторизован ли пользователь
-        if (typeof(T) == typeof(CaloriesPage) && currentUser == null)
-        {
-            MessageBox.Show("Увійдіть в акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return; // Прерываем выполнение метода, остаёмся на текущей странице
-        }
-
         var page = await GetPageInstanceAsync<T>();
 
         if (CurrentPage is Page currentPage && currentPage.NavigationService != null)
@@ -189,17 +179,6 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var type = typeof(T);
 
-        if (type == typeof(CaloriesPage))
-        {
-            var currentUser = await _userRepository.GetCurrentUserAsync();
-            if (currentUser == null)
-            {
-                MessageBox.Show("Помилка: Користувач не знайдений.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
-            return CaloriesPage.GetInstance(currentUser);
-        }
-
         if (!_pageCache.TryGetValue(type, out var page))
         {
             if (type == typeof(ProfilePage))
@@ -214,7 +193,7 @@ public class MainViewModel : INotifyPropertyChanged
             }
             else
             {
-                page = (Page)Activator.CreateInstance(type); 
+                page = (Page)Activator.CreateInstance(type);
             }
 
             _pageCache[type] = page;

@@ -6,6 +6,10 @@ using System.Windows.Media;
 using Fitpad.ViewModel.PagesViewModels;
 using Fitpad.Model.Entities;
 using Fitpad.Services;
+using Google.Cloud.Firestore;
+using System.Threading.Tasks;
+using Fitpad.View.Components;
+
 
 namespace Fitpad.View.Pages
 {
@@ -13,13 +17,110 @@ namespace Fitpad.View.Pages
     {
         private readonly CalculateNutritionViewModel _viewModel;
         private readonly TranslatorService _translatorService;
+        private readonly FirestoreDb _firestoreDb;
+        private static string _currentUserId = string.Empty;
 
-        public CalculateNutritionPage()
+
+        public CalculateNutritionPage() : this(new UserInfoModel()) { }
+
+        public CalculateNutritionPage(UserInfoModel userInfo)
         {
             InitializeComponent();
-            _viewModel = new CalculateNutritionViewModel();
-            _translatorService = new TranslatorService();
+            var firestoreService = new FirestoreService();
+            _firestoreDb = firestoreService.GetFirestoreDb();
+
+            // Проверяем пользователя
+            CheckUserAndUpdateData();
+
+            if (userInfo == null)
+            {
+                MessageBox.Show("Ошибка: данные пользователя отсутствуют!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            _viewModel = new CalculateNutritionViewModel(userInfo);
             DataContext = _viewModel;
+
+            // Подписка на обновление данных
+            _viewModel.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(_viewModel.CalorieDisplayText))
+                {
+                    CalorieIntakeText.Text = _viewModel.CalorieDisplayText;
+                }
+            };
+
+            // Устанавливаем изначальное значение нормы калорий
+            double initialCalories = 0;
+            double dailyCalories = _viewModel.CalculateDailyCalorieIntake(_viewModel.UserInfo);
+
+            UpdateCalorieDisplay(initialCalories, dailyCalories);
+
+        }
+
+        private void UpdateCalorieDisplay(double addedCalories, double? dailyCalorieNorm = null)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (CalorieIntakeText != null)
+                {
+                    // Если норма не передана, вычисляем её
+                    dailyCalorieNorm ??= _viewModel.UserInfo != null ? CalculateDailyCalorieIntake(_viewModel.UserInfo) : 0;
+
+                    string[] calorieParts = CalorieIntakeText.Text.Split('/');
+                    double currentCalories = double.TryParse(calorieParts[0].Trim(), out double parsedCurrent) ? parsedCurrent : 0;
+
+                    double newCalories = currentCalories + addedCalories;
+                    CalorieIntakeText.Text = $"Ккал: {newCalories:0.0} / {dailyCalorieNorm:0.0}";
+                }
+            });
+        }
+
+
+
+        private async void CheckUserAndUpdateData()
+        {
+            string newUserId = GetCurrentUserId();
+
+            if (_currentUserId != newUserId)
+            {
+                _currentUserId = newUserId;
+                await UpdateUserNutritionData(newUserId);
+            }
+        }
+
+        private async Task UpdateUserNutritionData(string userId)
+        {
+            var userInfo = await GetUserInfoAsync(userId);
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            {
+                MessageBox.Show("Ошибка: Данные пользователя некорректны!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // ✅ Обновляем норму калорий
+            _viewModel.CalorieNorm = _viewModel.CalculateDailyCalorieIntake(userInfo);
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (CalorieIntakeText != null)
+                {
+                    string[] calorieParts = CalorieIntakeText.Text.Split('/');
+                    double currentCalories = double.TryParse(calorieParts[0].Trim(), out double parsedCurrent) ? parsedCurrent : 0;
+                    CalorieIntakeText.Text = $"Ккал: {currentCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
+                }
+            });
+        }
+
+        private async Task<UserInfoModel> GetUserInfoAsync(string userId)
+        {
+            var userInfoDoc = await _firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
+            return userInfoDoc.Exists ? userInfoDoc.ConvertTo<UserInfoModel>() : null;
+        }
+
+        private string GetCurrentUserId()
+        {
+            return UserSession.CurrentUserId;
         }
 
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -60,6 +161,7 @@ namespace Fitpad.View.Pages
             }
         }
 
+
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             string productName = SearchBox.Text.Trim();
@@ -75,9 +177,6 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            Console.WriteLine($"🔹 Введено користувачем: {productName}, вага: {weight} г");
-
-            // Отправляем запрос в API и добавляем продукт с учетом веса
             var product = await _viewModel.SearchAndAddProductAsync(productName, weight);
 
             if (product != null)
@@ -90,5 +189,48 @@ namespace Fitpad.View.Pages
             }
         }
 
+        public double CalculateDailyCalorieIntake(UserInfoModel userInfo)
+        {
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            {
+                Console.WriteLine("⚠ Ошибка: Некорректные пользовательские данные!");
+                return 2000; // ✅ Возвращаем базовое значение, если данные отсутствуют
+            }
+
+            double bmr;
+            if (userInfo.Gender == "Чоловік" || userInfo.Gender == "Мужчина")
+            {
+                bmr = 88.36 + (13.4 * userInfo.Weight) + (4.8 * userInfo.Height) - (5.7 * userInfo.Age);
+            }
+            else
+            {
+                bmr = 447.6 + (9.2 * userInfo.Weight) + (3.1 * userInfo.Height) - (4.3 * userInfo.Age);
+            }
+
+            double activityMultiplier = userInfo.ActivityLevel switch
+            {
+                "Низька" => 1.2,
+                "Середня" => 1.375,
+                "Висока" => 1.55,
+                "Дуже висока" => 1.725,
+                "Екстремальна" => 1.9,
+                _ => 1.2
+            };
+
+            double tdee = bmr * activityMultiplier;
+
+            tdee = userInfo.Purpose switch
+            {
+                "Схуднення" => tdee * 0.85,
+                "Набір маси" => tdee * 1.15,
+                _ => tdee
+            };
+
+            return Math.Round(tdee, 1);
+        }
+
+
+
     }
 }
+

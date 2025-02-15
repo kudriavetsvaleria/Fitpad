@@ -1,0 +1,44 @@
+<Window x:Class="Fitpad.View.Components.ManualProductEntryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Добавление продукта" Height="274" Width="211">
+
+	<Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions> 
+
+        <TextBlock Text="Продукт не знайдено." FontWeight="Bold" Grid.Row="0" Margin="0,0,0,10"/>
+        <TextBlock Text="Введіть дані вручну:" FontWeight="Bold" Grid.Row="0" Margin="0,20,0,10"/>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Калорії:"/>
+            <TextBox x:Name="CaloriesInput"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Білки (г):"/>
+            <TextBox x:Name="ProteinInput"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3">
+            <TextBlock Text="Жири (г):"/>
+            <TextBox x:Name="FatsInput"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Вуглеводи (г):"/>
+            <TextBox x:Name="CarbsInput"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="OK" Width="80" Click="OnOkClick"/>
+            <Button Content="Скасувати" Width="80" Margin="10,0,0,0" Click="OnCancelClick"/>
+        </StackPanel>
+    </Grid>
+</Window>
