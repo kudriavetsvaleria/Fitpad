@@ -20,13 +20,16 @@ namespace Fitpad.View.Pages
         private readonly FirestoreDb _firestoreDb;
         private static string _currentUserId = string.Empty;
 
+        private static CalculateNutritionPage _instance; // Экземпляр Singleton
+        private static readonly object _lock = new object(); // Объект блокировки
+
         private string _manualEntryProductName;
         private double _manualEntryWeight;
 
 
         public CalculateNutritionPage() : this(new UserInfoModel()) { }
 
-        public CalculateNutritionPage(UserInfoModel userInfo)
+        private CalculateNutritionPage(UserInfoModel userInfo)
         {
             InitializeComponent();
             var firestoreService = new FirestoreService();
@@ -49,6 +52,7 @@ namespace Fitpad.View.Pages
         }
 
 
+
         private void UpdateCalorieDisplay(double addedCalories, double? dailyCalorieNorm = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -65,6 +69,75 @@ namespace Fitpad.View.Pages
                     CalorieIntakeText.Text = $"Ккал: {newCalories:0.0} / {dailyCalorieNorm:0.0}";
                 }
             });
+        }
+
+
+
+        public static CalculateNutritionPage GetInstance(UserInfoModel userInfo)
+        {
+            lock (_lock) // Защищаем от многопоточного доступа
+            {
+                if (_instance == null || _currentUserId != userInfo.UserId)
+                {
+                    _currentUserId = userInfo.UserId;
+                    _instance = new CalculateNutritionPage(userInfo);
+                }
+                return _instance;
+            }
+        }
+
+        // ✅ Метод, который вызывается перед открытием страницы
+        private static bool _isProcessing = false; // 🔒 Защита от повторного вызова
+
+        public static async Task<bool> GetInstanceWithCheck()
+        {
+            if (_isProcessing) return false; // 🔄 Если процесс уже идет — выходим
+
+            _isProcessing = true; // 🛑 Блокируем повторный вызов
+
+            string userId = UserSession.CurrentUserId;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("❌ Ошибка: пользователь не найден.");
+                _isProcessing = false;
+                return false; // ❌ Не открываем калькулятор
+            }
+
+            var userInfo = await GetUserInfoAsync(userId);
+
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            {
+                Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем анкету.");
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MainViewModel.Instance.CurrentPage = new UserInfoForm(); // ✅ Открываем анкету
+                });
+
+                _isProcessing = false;
+                return false; // ❌ НЕ открываем калькулятор
+            }
+
+            // ✅ Данные заполнены, открываем калькулятор
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                MainViewModel.Instance.CurrentPage = GetInstance(userInfo);
+            });
+
+            _isProcessing = false;
+            return true; // ✅ Переход выполнен
+        }
+
+
+        private async void OpenCalculator_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOpened = await CalculateNutritionPage.GetInstanceWithCheck();
+
+            if (!isOpened)
+            {
+                Console.WriteLine("⛔ Открытие калькулятора заблокировано: сначала нужно заполнить анкету!");
+            }
         }
 
 
@@ -136,9 +209,10 @@ namespace Fitpad.View.Pages
         }
 
 
-        private async Task<UserInfoModel> GetUserInfoAsync(string userId)
+        private static async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
-            var userInfoDoc = await _firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
+            var firestoreDb = new FirestoreService().GetFirestoreDb();
+            var userInfoDoc = await firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
             return userInfoDoc.Exists ? userInfoDoc.ConvertTo<UserInfoModel>() : null;
         }
 

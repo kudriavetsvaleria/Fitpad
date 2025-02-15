@@ -202,7 +202,6 @@
     <Compile Include="Model\Repositories\NewsRepository.cs" />
     <Compile Include="Model\Repositories\NutritionRepository.cs" />
     <Compile Include="Model\Repositories\UserRepository.cs" />
-    <Compile Include="ViewModel\PagesViewModels\MyDishesViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
