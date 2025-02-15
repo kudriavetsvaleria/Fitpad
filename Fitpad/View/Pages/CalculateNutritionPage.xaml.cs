@@ -378,7 +378,10 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            // ✅ Проверяем, есть ли уже такой продукт в списке (по названию и весу)
+            // ✅ Сохраняем в Firestore в любом случае
+            await SaveProductToFirestore(product);
+
+            // ✅ Проверяем, есть ли уже такой продукт в UI (по названию и весу)
             if (_viewModel.SavedProducts.Any(p => p.Title == product.Title && p.Weight == product.Weight))
             {
                 Console.WriteLine($"⚠ [UI] Продукт '{product.Title}' ({product.Weight} г) уже добавлен в таблицу. Пропускаем.");
@@ -387,7 +390,7 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine($"🟢 [UI] Добавляем продукт в таблицу: {product.Title} ({product.Weight} г, {product.Calories} ккал)");
 
-            // ✅ Добавляем продукт в UI
+            // ✅ Добавляем в UI
             _viewModel.SavedProducts.Add(product);
             _viewModel.CurrentCalories += product.Calories;
             _viewModel.CurrentProtein += product.Protein;
@@ -395,9 +398,6 @@ namespace Fitpad.View.Pages
             _viewModel.CurrentCarbs += product.Carbs;
 
             _viewModel.UpdatePieChart();
-
-            // ✅ После добавления в UI, сохраняем в Firestore (если ещё не сохранён)
-            await SaveProductToFirestore(product);
         }
 
 
@@ -430,6 +430,7 @@ namespace Fitpad.View.Pages
                 Console.WriteLine($"❌ [Firestore] Ошибка при сохранении продукта: {ex.Message}");
             }
         }
+
 
         public async Task SaveUserProductAsync(string userId, NutritionModel product)
         {
@@ -575,10 +576,8 @@ namespace Fitpad.View.Pages
                 _viewModel.SavedProducts.Add(product);
             }
 
-            // Обновляем графики и показатели
             _viewModel.UpdatePieChart();
         }
-
 
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
