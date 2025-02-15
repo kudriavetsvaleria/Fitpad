@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Fitpad.Model.Entities;
 using Fitpad.Services;
+using Google.Cloud.Firestore;
 
 namespace Fitpad.Model.Repositories
 {
@@ -20,56 +21,105 @@ namespace Fitpad.Model.Repositories
             _translator = new TranslatorService();
         }
 
+        public async Task<List<NutritionModel>> GetUserProductsAsync(string userId)
+        {
+            List<NutritionModel> products = new List<NutritionModel>();
+
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Console.WriteLine("❌ Ошибка: UserID не найден.");
+                    return products;
+                }
+
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
+                CollectionReference userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
+
+                QuerySnapshot snapshot = await userProductsRef.GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        NutritionModel product = doc.ConvertTo<NutritionModel>();
+                        products.Add(product);
+                    }
+                }
+
+                Console.WriteLine($"✅ Загружено {products.Count} продуктов для пользователя {userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при загрузке продуктов: {ex.Message}");
+            }
+
+            return products;
+        }
+
+
         public async Task<List<NutritionModel>> GetProductsAsync(string query)
         {
-            // Переводим запрос на английский перед отправкой
-            string translatedQuery = await _translator.TranslateTextAsync(query, "en");
-            Console.WriteLine($"Переведённый запрос: {translatedQuery}");
-
-            string url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(translatedQuery)}&search_simple=1&action=process&json=1";
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                Console.WriteLine($"Ошибка запроса: {response.StatusCode}");
+                string translatedQuery = await _translator.TranslateTextAsync(query, "en");
+                Console.WriteLine($"Переведённый запрос: {translatedQuery}");
+
+                string url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(translatedQuery)}&search_simple=1&action=process&json=1";
+                var response = await _httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Ошибка запроса: {response.StatusCode}");
+                    return new List<NutritionModel>();
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
+                var result = new List<NutritionModel>();
+
+                if (apiResponse.Products != null && apiResponse.Products.Count > 0)
+                {
+                    var product = apiResponse.Products[0];
+                    string productName = string.IsNullOrEmpty(product.ProductName) ? query : product.ProductName;
+
+                    var savedProduct = new NutritionModel
+                    {
+                        Id = int.TryParse(product.Code, out int id) ? id : 0,
+                        Name = productName,
+                        Title = productName,
+                        Image = product.ImageUrl ?? "",
+                        Calories = (int)(product.Nutriments?.EnergyKcal ?? 0),
+                        Protein = product.Nutriments?.Proteins ?? 0,
+                        Carbs = product.Nutriments?.Carbohydrates ?? 0,
+                        Fats = product.Nutriments?.Fats ?? 0,
+                        Water = product.Nutriments?.Water ?? 0,
+                        Weight = 100,
+                        Time = DateTime.Now.ToString("HH:mm")
+                    };
+
+                    result.Add(savedProduct);
+                }
+                else
+                {
+                    Console.WriteLine("⚠ ВНИМАНИЕ: API не нашел продукты!");
+                }
+
+                return result;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"❌ Ошибка HTTP: {ex.Message}");
                 return new List<NutritionModel>();
             }
-
-            var json = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
-            var result = new List<NutritionModel>();
-
-            if (apiResponse.Products != null && apiResponse.Products.Count > 0)
+            catch (Exception ex)
             {
-                var product = apiResponse.Products[0]; // Берем первый найденный продукт
-
-                // Используем название, если его вернул API, иначе — оригинальный запрос
-                string productName = string.IsNullOrEmpty(product.ProductName) ? query : product.ProductName;
-
-                var savedProduct = new NutritionModel
-                {
-                    Id = int.TryParse(product.Code, out int id) ? id : 0,
-                    Name = productName,
-                    Title = productName,
-                    Image = product.ImageUrl ?? "",
-                    Calories = (int)(product.Nutriments?.EnergyKcal ?? 0),
-                    Protein = product.Nutriments?.Proteins ?? 0,
-                    Carbs = product.Nutriments?.Carbohydrates ?? 0,
-                    Fats = product.Nutriments?.Fats ?? 0,
-                    Water = product.Nutriments?.Water ?? 0,
-                    Weight = 100,
-                    Time = DateTime.Now.ToString("HH:mm")
-                };
-
-                result.Add(savedProduct);
+                Console.WriteLine($"❌ Общая ошибка: {ex.Message}");
+                return new List<NutritionModel>();
             }
-            else
-            {
-                Console.WriteLine("⚠ ВНИМАНИЕ: API не нашел продукты!");
-            }
-
-            return result;
         }
+
+
 
         private class ApiResponse
         {

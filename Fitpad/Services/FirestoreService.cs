@@ -112,53 +112,69 @@ namespace Fitpad.Services
             }
         }
 
-        public async Task<DailyMealModel> GetDailyMealAsync(string userId, string date)
+        public async Task<List<NutritionModel>> GetUserProductsAsync(string userId)
         {
+            List<NutritionModel> products = new List<NutritionModel>();
+
             try
             {
-                string documentId = $"{userId}_{date}";
-                DocumentReference docRef = _firestoreDb.Collection("Meals").Document(documentId);
-                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-                if (snapshot.Exists)
+                if (string.IsNullOrEmpty(userId))
                 {
-                    Console.WriteLine("Данные о питании успешно загружены.");
-                    return snapshot.ConvertTo<DailyMealModel>();
+                    Console.WriteLine("❌ Ошибка: UserID не найден.");
+                    return products;
                 }
 
-                Console.WriteLine("Данные о питании не найдены.");
-                return null;
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
+                CollectionReference userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
+
+                QuerySnapshot snapshot = await userProductsRef.GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        NutritionModel product = doc.ConvertTo<NutritionModel>();
+                        products.Add(product);
+                    }
+                }
+
+                Console.WriteLine($"✅ Загружено {products.Count} продуктов для пользователя {userId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при загрузке данных о питании: {ex.Message}");
-                throw;
+                Console.WriteLine($"❌ Ошибка при загрузке продуктов: {ex.Message}");
             }
+
+            return products;
         }
 
-        public async Task<DailyMealModel> GetDailyMealsAsync(string userId, string date)
+
+        public async Task SaveUserProductAsync(string userId, NutritionModel product)
         {
             try
             {
-                DocumentReference docRef = _firestoreDb.Collection("DailyMeals").Document($"{userId}_{date}");
-                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Console.WriteLine("❌ Ошибка: UserID не найден.");
+                    return;
+                }
 
-                if (snapshot.Exists)
-                {
-                    return snapshot.ConvertTo<DailyMealModel>();
-                }
-                else
-                {
-                    Console.WriteLine("Данные не найдены.");
-                    return null;
-                }
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
+                CollectionReference userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
+
+                // Генерируем уникальный ID для продукта
+                DocumentReference newProductRef = userProductsRef.Document();
+
+                await newProductRef.SetAsync(product);
+
+                Console.WriteLine($"✅ Продукт '{product.Title}' успешно сохранён для пользователя {userId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка получения данных: {ex.Message}");
-                throw;
+                Console.WriteLine($"❌ Ошибка при сохранении продукта: {ex.Message}");
             }
         }
+
 
         public async Task<List<DishModel>> GetFavoriteDishes(string userId)
         {
@@ -288,21 +304,6 @@ namespace Fitpad.Services
 
 
 
-        public async Task SaveDailyMealAsync(DailyMealModel dailyMeal)
-        {
-            try
-            {
-                string documentId = $"{dailyMeal.UserId}_{dailyMeal.Date}";
-                DocumentReference docRef = _firestoreDb.Collection("Meals").Document(documentId);
-                await docRef.SetAsync(dailyMeal);
-                Console.WriteLine("Данные о питании успешно сохранены.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при сохранении данных о питании: {ex.Message}");
-                throw;
-            }
-        }
 
     }
 }

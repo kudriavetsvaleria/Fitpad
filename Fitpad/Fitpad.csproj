@@ -181,7 +181,6 @@
     <Compile Include="Converters\BooleanConverter.cs" />
     <Compile Include="Converters\ButtonColorConverter.cs" />
     <Compile Include="Converters\HalfConverter.cs" />
-    <Compile Include="Model\Entities\DailyMealModel.cs" />
     <Compile Include="Model\Entities\DishModel.cs" />
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />
     <Compile Include="Model\Repositories\DishRepository.cs" />

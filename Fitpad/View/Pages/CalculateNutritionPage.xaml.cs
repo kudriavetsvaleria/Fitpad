@@ -32,8 +32,19 @@ namespace Fitpad.View.Pages
         private CalculateNutritionPage(UserInfoModel userInfo)
         {
             InitializeComponent();
+            _translatorService = new TranslatorService();
             var firestoreService = new FirestoreService();
             _firestoreDb = firestoreService.GetFirestoreDb();
+            if (userInfo == null)
+            {
+                Console.WriteLine("❌ Ошибка: данные пользователя отсутствуют.");
+                userInfo = new UserInfoModel(); // Создаем пустой объект
+            }
+            _viewModel = new CalculateNutritionViewModel(userInfo);
+            DataContext = _viewModel;
+            _viewModel.ShowManualEntryOverlayAction = ShowManualEntryOverlay;
+
+            LoadUserProducts();
 
             // Проверяем пользователя
             CheckUserAndUpdateData();
@@ -50,6 +61,7 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine("📊 DataContext установлен!");
         }
+
 
 
 
@@ -275,9 +287,22 @@ namespace Fitpad.View.Pages
             }
         }
 
-
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_translatorService == null)
+            {
+                Console.WriteLine("❌ Ошибка: _translatorService не инициализирован!");
+                MessageBox.Show("Ошибка: сервис перевода недоступен!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (_viewModel == null)
+            {
+                Console.WriteLine("❌ Ошибка: _viewModel не инициализирован!");
+                MessageBox.Show("Ошибка: не удалось загрузить данные!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             string productName = SearchBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(productName) || productName == "Назва продукту...")
             {
@@ -291,16 +316,39 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            var product = await _viewModel.SearchAndAddProductAsync(productName, weight);
+            Console.WriteLine($"🔹 Введено пользователем: {productName}, Вес: {weight} г");
+
+            // Перевод названия продукта
+            string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
+            if (string.IsNullOrWhiteSpace(translatedName))
+            {
+                MessageBox.Show("Ошибка перевода названия продукта!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            Console.WriteLine($"🔹 Переведено: {translatedName}");
+
+            // Поиск в OpenFoodFacts API
+            var product = await _viewModel.SearchAndAddProductAsync(translatedName, weight);
 
             if (product != null)
             {
-                Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}");
+                Console.WriteLine($"✅ Найден продукт: {product.Title}, Калории на {weight} г: {product.Calories}");
+
+                // Проверяем, есть ли продукт в списке, чтобы не дублировать
+                if (!_viewModel.SavedProducts.Any(p => p.Title == product.Title))
+                {
+                    _viewModel.SavedProducts.Add(product);
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ Продукт уже добавлен в таблицу, повторное добавление предотвращено.");
+                }
             }
 
         }
 
-        private void OnManualEntryConfirm(object sender, RoutedEventArgs e)
+
+        private async void OnManualEntryConfirm(object sender, RoutedEventArgs e)
         {
             if (!double.TryParse(CaloriesInput.Text, out double calories) ||
                 !double.TryParse(ProteinInput.Text, out double protein) ||
@@ -330,9 +378,14 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine($"✅ Вручную добавлен продукт: {manualProduct.Title}, калорії: {manualProduct.Calories}");
 
+            // 🔹 Сохраняем продукт в Firestore
+            var firestoreService = new FirestoreService();
+            await firestoreService.SaveUserProductAsync(UserSession.CurrentUserId, manualProduct);
+
             _viewModel.UpdatePieChart();
             HideManualEntryOverlay();
         }
+
 
 
         private void OnManualEntryCancel(object sender, RoutedEventArgs e)
@@ -406,6 +459,32 @@ namespace Fitpad.View.Pages
                                  !string.IsNullOrWhiteSpace(ProteinInput.Text) &&
                                  !string.IsNullOrWhiteSpace(FatsInput.Text) &&
                                  !string.IsNullOrWhiteSpace(CarbsInput.Text);
+        }
+
+        private async void LoadUserProducts()
+        {
+            if (_viewModel == null)
+            {
+                Console.WriteLine("❌ Ошибка: _viewModel не инициализирован!");
+                return;
+            }
+
+            var firestoreService = new FirestoreService();
+            var products = await firestoreService.GetUserProductsAsync(UserSession.CurrentUserId);
+
+            if (products == null || products.Count == 0)
+            {
+                Console.WriteLine("⚠ Продукты не найдены для пользователя.");
+                return;
+            }
+
+            _viewModel.SavedProducts.Clear();
+            foreach (var product in products)
+            {
+                _viewModel.SavedProducts.Add(product);
+            }
+
+            Console.WriteLine($"✅ Загружено {_viewModel.SavedProducts.Count} продуктов.");
         }
 
 
