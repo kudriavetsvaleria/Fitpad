@@ -22,6 +22,9 @@ namespace Fitpad.ViewModel.PagesViewModels
         private double _currentProtein, _currentFats, _currentCarbs, _currentWater;
         private double _proteinNorm, _fatsNorm, _carbsNorm, _waterNorm;
 
+        public Action<string, double> ShowManualEntryOverlayAction { get; set; }
+        public Action UpdatePieChartAction { get; set; }
+
         public UserInfoModel UserInfo { get; private set; }
         public ObservableCollection<NutritionModel> SavedProducts { get; set; }
 
@@ -31,6 +34,25 @@ namespace Fitpad.ViewModel.PagesViewModels
         public SeriesCollection ConsumedCaloriesSeries { get; set; }
         public SeriesCollection RemainingCaloriesSeries { get; set; }
 
+        private bool _canSave;
+        public bool CanSave
+        {
+            get => _canSave;
+            set
+            {
+                _canSave = value;
+                OnPropertyChanged(nameof(CanSave));
+            }
+        }
+
+        // Метод для проверки, заполнены ли все поля
+        public void CheckFields(string calories, string protein, string fats, string carbs)
+        {
+            CanSave = !string.IsNullOrWhiteSpace(calories) &&
+                      !string.IsNullOrWhiteSpace(protein) &&
+                      !string.IsNullOrWhiteSpace(fats) &&
+                      !string.IsNullOrWhiteSpace(carbs);
+        }
 
 
         public double CurrentProtein
@@ -204,7 +226,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             OnPropertyChanged(nameof(WaterChartSeries));
         }
 
-        private void UpdatePieChart()
+        public void UpdatePieChart()
         {
             if (CalorieChartSeries == null || CalorieChartSeries.Count < 2)
                 return;
@@ -243,7 +265,6 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
         }
 
-
         public async Task<NutritionModel> SearchAndAddProductAsync(string query, double weight)
         {
             if (weight <= 0)
@@ -253,6 +274,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             string lowerQuery = query.Trim().ToLower();
 
+            // ✅ Если пользователь вводит "вода", обрабатываем её отдельно
             if (lowerQuery == "вода" || lowerQuery == "water")
             {
                 var waterProduct = new NutritionModel
@@ -269,19 +291,26 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                 SavedProducts.Add(waterProduct);
                 CurrentWater += weight;
-                OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI
-                UpdateWaterChart(); // ✅ Обновляем диаграмму воды
+                OnPropertyChanged(nameof(WaterDisplayText));
+                UpdateWaterChart();
 
                 Console.WriteLine($"✅ Добавлена вода: {weight} мл в {waterProduct.Time}");
                 return waterProduct;
             }
 
             var products = await _repository.GetProductsAsync(query);
+
             if (products == null || products.Count == 0)
             {
-                Console.WriteLine("❌ Продукт не найден.");
-                return ShowManualProductEntryDialog(query, weight);
+                Console.WriteLine($"❌ Продукт '{query}' не найден. Открываю форму ввода.");
+
+                // ✅ Сразу показываем форму БЕЗ MessageBox
+                ShowManualEntryOverlayAction?.Invoke(query, weight);
+
+                return null;
             }
+
+
 
             var product = products[0];
             product.Weight = weight;
@@ -302,6 +331,8 @@ namespace Fitpad.ViewModel.PagesViewModels
             UpdatePieChart();
             return product;
         }
+
+
 
 
 
@@ -327,6 +358,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                     Console.WriteLine($"✅ Вручную добавлен продукт: {manualProduct.Title}, калорії: {manualProduct.Calories}");
 
+                    UpdatePieChart();
                     return manualProduct;
                 }
             }

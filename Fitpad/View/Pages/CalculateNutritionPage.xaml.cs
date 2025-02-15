@@ -20,6 +20,9 @@ namespace Fitpad.View.Pages
         private readonly FirestoreDb _firestoreDb;
         private static string _currentUserId = string.Empty;
 
+        private string _manualEntryProductName;
+        private double _manualEntryWeight;
+
 
         public CalculateNutritionPage() : this(new UserInfoModel()) { }
 
@@ -35,29 +38,16 @@ namespace Fitpad.View.Pages
             if (userInfo == null)
             {
                 MessageBox.Show("Ошибка: данные пользователя отсутствуют!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                userInfo = new UserInfoModel(); // ✅ Создаем пустой объект, чтобы избежать ошибки
             }
 
             _viewModel = new CalculateNutritionViewModel(userInfo);
             DataContext = _viewModel;
+            _viewModel.ShowManualEntryOverlayAction = ShowManualEntryOverlay;
+
             Console.WriteLine("📊 DataContext установлен!");
-
-            // Подписка на обновление данных
-            _viewModel.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(_viewModel.CalorieDisplayText))
-                {
-                    CalorieIntakeText.Text = _viewModel.CalorieDisplayText;
-                }
-            };
-
-            // Устанавливаем изначальное значение нормы калорий
-            double initialCalories = 0;
-            double dailyCalories = _viewModel.CalculateDailyCalorieIntake(_viewModel.UserInfo);
-
-            UpdateCalorieDisplay(initialCalories, dailyCalories);
-
         }
+
 
         private void UpdateCalorieDisplay(double addedCalories, double? dailyCalorieNorm = null)
         {
@@ -142,6 +132,22 @@ namespace Fitpad.View.Pages
             }
         }
 
+        private void ShowManualEntryOverlay(string productName, double weight)
+        {
+            ManualEntryOverlay.Visibility = Visibility.Visible;
+            CaloriesInput.Text = "";
+            ProteinInput.Text = "";
+            FatsInput.Text = "";
+            CarbsInput.Text = "";
+
+            _manualEntryProductName = productName;
+            _manualEntryWeight = weight;
+        }
+
+        private void HideManualEntryOverlay()
+        {
+            ManualEntryOverlay.Visibility = Visibility.Collapsed;
+        }
 
 
         private void WeightBox_LostFocus(object sender, RoutedEventArgs e)
@@ -184,11 +190,49 @@ namespace Fitpad.View.Pages
             {
                 Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}");
             }
-            else
-            {
-                MessageBox.Show("Продукт не знайдено", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+
         }
+
+        private void OnManualEntryConfirm(object sender, RoutedEventArgs e)
+        {
+            if (!double.TryParse(CaloriesInput.Text, out double calories) ||
+                !double.TryParse(ProteinInput.Text, out double protein) ||
+                !double.TryParse(FatsInput.Text, out double fats) ||
+                !double.TryParse(CarbsInput.Text, out double carbs))
+            {
+                MessageBox.Show("Будь ласка, введіть коректні числові значення!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var manualProduct = new NutritionModel
+            {
+                Title = _manualEntryProductName,
+                Weight = _manualEntryWeight,
+                Calories = calories,
+                Protein = protein,
+                Fats = fats,
+                Carbs = carbs,
+                Time = DateTime.Now.ToString("HH:mm")
+            };
+
+            _viewModel.SavedProducts.Add(manualProduct);
+            _viewModel.CurrentCalories += manualProduct.Calories;
+            _viewModel.CurrentProtein += manualProduct.Protein;
+            _viewModel.CurrentFats += manualProduct.Fats;
+            _viewModel.CurrentCarbs += manualProduct.Carbs;
+
+            Console.WriteLine($"✅ Вручную добавлен продукт: {manualProduct.Title}, калорії: {manualProduct.Calories}");
+
+            _viewModel.UpdatePieChart();
+            HideManualEntryOverlay();
+        }
+
+
+        private void OnManualEntryCancel(object sender, RoutedEventArgs e)
+        {
+            HideManualEntryOverlay();
+        }
+
 
         public double CalculateDailyCalorieIntake(UserInfoModel userInfo)
         {
@@ -230,6 +274,48 @@ namespace Fitpad.View.Pages
             return Math.Round(tdee, 1);
         }
 
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && (textBox.Text == "Введіть калорії..." || textBox.Text == "Введіть білки..." ||
+                                    textBox.Text == "Введіть жири..." || textBox.Text == "Введіть вуглеводи..."))
+            {
+                textBox.Text = "";
+                textBox.Foreground = Brushes.Black;
+            }
+        }
+
+        private void OnInputFieldsChanged(object sender, TextChangedEventArgs e)
+        {
+            // Проверяем, что все элементы существуют, чтобы избежать NullReferenceException
+            if (OkButton == null || CaloriesInput == null || ProteinInput == null ||
+                FatsInput == null || CarbsInput == null)
+            {
+                return;
+            }
+
+            // Активация кнопки, если все поля заполнены
+            OkButton.IsEnabled = !string.IsNullOrWhiteSpace(CaloriesInput.Text) &&
+                                 !string.IsNullOrWhiteSpace(ProteinInput.Text) &&
+                                 !string.IsNullOrWhiteSpace(FatsInput.Text) &&
+                                 !string.IsNullOrWhiteSpace(CarbsInput.Text);
+        }
+
+
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                if (textBox.Name == "CaloriesInput") textBox.Text = "Введіть калорії...";
+                if (textBox.Name == "ProteinInput") textBox.Text = "Введіть білки...";
+                if (textBox.Name == "FatsInput") textBox.Text = "Введіть жири...";
+                if (textBox.Name == "CarbsInput") textBox.Text = "Введіть вуглеводи...";
+
+                textBox.Foreground = Brushes.Gray;
+            }
+        }
 
 
     }
