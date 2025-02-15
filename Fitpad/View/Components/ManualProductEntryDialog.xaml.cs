@@ -1,45 +1,41 @@
-﻿using Fitpad.Model.Entities;
-using System;
-using System.Windows;
+﻿using System.Windows;
+using Fitpad.Model.Entities;
 
-namespace Fitpad.View.Components
+namespace Fitpad.View
+
 {
     public partial class ManualProductEntryDialog : Window
     {
-        public NutritionModel EnteredProduct { get; private set; }
+        public string ProductTitle { get; }
+        public double Weight { get; }
 
-        private readonly string _productName;
-        private readonly double _weight;
+        public double Calories => double.TryParse(CaloriesInput.Text, out double c) ? c : 0;
+        public double Protein => double.TryParse(ProteinInput.Text, out double p) ? p : 0;
+        public double Fats => double.TryParse(FatsInput.Text, out double f) ? f : 0;
+        public double Carbs => double.TryParse(CarbsInput.Text, out double c) ? c : 0;
 
-        public ManualProductEntryDialog(string productName, double weight)
+        public ManualProductEntryDialog(string productTitle, double weight)
         {
-            InitializeComponent();
-            _productName = productName;
-            _weight = weight;
+            InitializeComponent();  // ✅ Это теперь должно работать
+            ProductTitle = productTitle;
+            Weight = weight;
+        }
+
+        public NutritionModel GetEnteredProduct()
+        {
+            return new NutritionModel
+            {
+                Title = ProductTitle,
+                Weight = Weight,
+                Calories = Calories,
+                Protein = Protein,
+                Fats = Fats,
+                Carbs = Carbs
+            };
         }
 
         private void OnOkClick(object sender, RoutedEventArgs e)
         {
-            if (!double.TryParse(CaloriesInput.Text, out double calories) ||
-                !double.TryParse(ProteinInput.Text, out double protein) ||
-                !double.TryParse(FatsInput.Text, out double fats) ||
-                !double.TryParse(CarbsInput.Text, out double carbs))
-            {
-                MessageBox.Show("Будь ласка, введіть коректні числові значення!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            EnteredProduct = new NutritionModel
-            {
-                Title = _productName,
-                Weight = _weight,
-                Calories = calories,
-                Protein = protein,
-                Fats = fats,
-                Carbs = carbs,
-                Time = DateTime.Now.ToString("HH:mm")
-            };
-
             DialogResult = true;
             Close();
         }
@@ -48,13 +44,6 @@ namespace Fitpad.View.Components
         {
             DialogResult = false;
             Close();
-        }
-
-
-
-        public NutritionModel GetEnteredProduct()
-        {
-            return EnteredProduct;
         }
     }
 }

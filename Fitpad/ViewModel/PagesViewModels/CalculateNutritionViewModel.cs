@@ -9,6 +9,7 @@ using Fitpad.Model.Repositories;
 using Fitpad.View.Components;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Fitpad.View;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
@@ -310,8 +311,6 @@ namespace Fitpad.ViewModel.PagesViewModels
                 return null;
             }
 
-
-
             var product = products[0];
             product.Weight = weight;
             product.Calories = (product.Calories * weight) / 100;
@@ -331,9 +330,6 @@ namespace Fitpad.ViewModel.PagesViewModels
             UpdatePieChart();
             return product;
         }
-
-
-
 
 
         private void UpdateCalorieText()
