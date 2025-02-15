@@ -9,6 +9,7 @@ using Fitpad.Services;
 using Google.Cloud.Firestore;
 using System.Threading.Tasks;
 using Fitpad.View.Components;
+using System.Collections.Generic;
 
 
 namespace Fitpad.View.Pages
@@ -296,13 +297,6 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            if (_viewModel == null)
-            {
-                Console.WriteLine("❌ Ошибка: _viewModel не инициализирован!");
-                MessageBox.Show("Ошибка: не удалось загрузить данные!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
             string productName = SearchBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(productName) || productName == "Назва продукту...")
             {
@@ -334,17 +328,14 @@ namespace Fitpad.View.Pages
             {
                 Console.WriteLine($"✅ Найден продукт: {product.Title}, Калории на {weight} г: {product.Calories}");
 
-                // Проверяем, есть ли продукт в списке, чтобы не дублировать
-                if (!_viewModel.SavedProducts.Any(p => p.Title == product.Title))
-                {
-                    _viewModel.SavedProducts.Add(product);
-                }
-                else
-                {
-                    Console.WriteLine("⚠️ Продукт уже добавлен в таблицу, повторное добавление предотвращено.");
-                }
+                // 🔹 Автоматически добавляем в таблицу и сохраняем в Firestore
+                AddProductToTable(product);
             }
-
+            else
+            {
+                Console.WriteLine("❌ Продукт НЕ НАЙДЕН в OpenFoodFacts API!");
+                MessageBox.Show("Продукт не найден!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
 
@@ -370,22 +361,113 @@ namespace Fitpad.View.Pages
                 Time = DateTime.Now.ToString("HH:mm")
             };
 
-            _viewModel.SavedProducts.Add(manualProduct);
-            _viewModel.CurrentCalories += manualProduct.Calories;
-            _viewModel.CurrentProtein += manualProduct.Protein;
-            _viewModel.CurrentFats += manualProduct.Fats;
-            _viewModel.CurrentCarbs += manualProduct.Carbs;
-
             Console.WriteLine($"✅ Вручную добавлен продукт: {manualProduct.Title}, калорії: {manualProduct.Calories}");
 
-            // 🔹 Сохраняем продукт в Firestore
-            var firestoreService = new FirestoreService();
-            await firestoreService.SaveUserProductAsync(UserSession.CurrentUserId, manualProduct);
+            // 🔹 Автоматически добавляем в таблицу и сохраняем в Firestore
+            AddProductToTable(manualProduct);
 
             _viewModel.UpdatePieChart();
             HideManualEntryOverlay();
         }
 
+        private async void AddProductToTable(NutritionModel product)
+        {
+            if (product == null)
+            {
+                Console.WriteLine("❌ [UI] Ошибка: продукт NULL, не могу добавить в таблицу.");
+                return;
+            }
+
+            // ✅ Проверяем, есть ли уже такой продукт в списке (по названию и весу)
+            if (_viewModel.SavedProducts.Any(p => p.Title == product.Title && p.Weight == product.Weight))
+            {
+                Console.WriteLine($"⚠ [UI] Продукт '{product.Title}' ({product.Weight} г) уже добавлен в таблицу. Пропускаем.");
+                return;
+            }
+
+            Console.WriteLine($"🟢 [UI] Добавляем продукт в таблицу: {product.Title} ({product.Weight} г, {product.Calories} ккал)");
+
+            // ✅ Добавляем продукт в UI
+            _viewModel.SavedProducts.Add(product);
+            _viewModel.CurrentCalories += product.Calories;
+            _viewModel.CurrentProtein += product.Protein;
+            _viewModel.CurrentFats += product.Fats;
+            _viewModel.CurrentCarbs += product.Carbs;
+
+            _viewModel.UpdatePieChart();
+
+            // ✅ После добавления в UI, сохраняем в Firestore (если ещё не сохранён)
+            await SaveProductToFirestore(product);
+        }
+
+
+        private async Task SaveProductToFirestore(NutritionModel product)
+        {
+            try
+            {
+                if (product == null)
+                {
+                    Console.WriteLine("❌ [Firestore] Ошибка: продукт NULL, не могу сохранить.");
+                    return;
+                }
+
+                var userId = UserSession.CurrentUserId;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Console.WriteLine("❌ [Firestore] Ошибка: UserID не найден.");
+                    return;
+                }
+
+                Console.WriteLine($"🟢 [Firestore] Сохраняем продукт '{product.Title}' для пользователя {userId}");
+
+                var firestoreService = new FirestoreService();
+                await firestoreService.SaveUserProductAsync(userId, product);
+
+                Console.WriteLine($"✅ [Firestore] Продукт '{product.Title}' успешно сохранён!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ [Firestore] Ошибка при сохранении продукта: {ex.Message}");
+            }
+        }
+
+        public async Task SaveUserProductAsync(string userId, NutritionModel product)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Console.WriteLine("❌ Ошибка: UserID пустой!");
+                    return;
+                }
+
+                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
+                CollectionReference userProductsRef = db.Collection("UserProducts");
+
+                // Генерируем уникальный ID для продукта
+                DocumentReference newProductRef = userProductsRef.Document(Guid.NewGuid().ToString());
+
+                var productData = new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "Title", product.Title },
+            { "Weight", product.Weight },
+            { "Calories", product.Calories },
+            { "Protein", product.Protein },
+            { "Fats", product.Fats },
+            { "Carbs", product.Carbs },
+            { "Time", product.Time }
+        };
+
+                await newProductRef.SetAsync(productData);
+
+                Console.WriteLine($"✅ Продукт '{product.Title}' сохранён в коллекции UserProducts для пользователя {userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при сохранении продукта: {ex.Message}");
+            }
+        }
 
 
         private void OnManualEntryCancel(object sender, RoutedEventArgs e)
@@ -474,17 +556,27 @@ namespace Fitpad.View.Pages
 
             if (products == null || products.Count == 0)
             {
-                Console.WriteLine("⚠ Продукты не найдены для пользователя.");
+                Console.WriteLine($"⚠ Продукты не найдены для пользователя {UserSession.CurrentUserId}");
                 return;
             }
 
+            Console.WriteLine($"✅ Загружено {products.Count} продуктов для пользователя {UserSession.CurrentUserId}");
+
+            // ✅ Удаляем дубликаты (по названию и весу)
+            var distinctProducts = products
+                .GroupBy(p => new { p.Title, p.Weight })
+                .Select(g => g.First())
+                .ToList();
+
             _viewModel.SavedProducts.Clear();
-            foreach (var product in products)
+            foreach (var product in distinctProducts)
             {
+                Console.WriteLine($"📥 {product.Title} ({product.Weight}г, {product.Calories} ккал)");
                 _viewModel.SavedProducts.Add(product);
             }
 
-            Console.WriteLine($"✅ Загружено {_viewModel.SavedProducts.Count} продуктов.");
+            // Обновляем графики и показатели
+            _viewModel.UpdatePieChart();
         }
 
 

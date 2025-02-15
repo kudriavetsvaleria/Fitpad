@@ -133,7 +133,17 @@ namespace Fitpad.Services
                 {
                     if (doc.Exists)
                     {
-                        NutritionModel product = doc.ConvertTo<NutritionModel>();
+                        var productData = doc.ToDictionary();
+                        NutritionModel product = new NutritionModel
+                        {
+                            Title = productData.ContainsKey("Title") ? productData["Title"].ToString() : "",
+                            Weight = productData.ContainsKey("Weight") ? Convert.ToDouble(productData["Weight"]) : 0,
+                            Calories = productData.ContainsKey("Calories") ? Convert.ToDouble(productData["Calories"]) : 0,
+                            Protein = productData.ContainsKey("Protein") ? Convert.ToDouble(productData["Protein"]) : 0,
+                            Fats = productData.ContainsKey("Fats") ? Convert.ToDouble(productData["Fats"]) : 0,
+                            Carbs = productData.ContainsKey("Carbs") ? Convert.ToDouble(productData["Carbs"]) : 0,
+                            Time = productData.ContainsKey("Time") ? productData["Time"].ToString() : DateTime.Now.ToString("HH:mm")
+                        };
                         products.Add(product);
                     }
                 }
@@ -155,23 +165,30 @@ namespace Fitpad.Services
             {
                 if (string.IsNullOrEmpty(userId))
                 {
-                    Console.WriteLine("❌ Ошибка: UserID не найден.");
+                    Console.WriteLine("❌ [Firestore] Ошибка: UserID пустой! Продукт не будет сохранён.");
+                    return;
+                }
+
+                if (product == null)
+                {
+                    Console.WriteLine("❌ [Firestore] Ошибка: Продукт = null! Сохранение отменено.");
                     return;
                 }
 
                 FirestoreDb db = FirestoreDb.Create("fitpad-2025");
                 CollectionReference userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
 
-                // Генерируем уникальный ID для продукта
-                DocumentReference newProductRef = userProductsRef.Document();
+                DocumentReference newProductRef = userProductsRef.Document(Guid.NewGuid().ToString());
+
+                Console.WriteLine($"🟢 [Firestore] Попытка сохранить продукт: {product.Title} ({product.Weight}г, {product.Calories} ккал) для пользователя {userId}");
 
                 await newProductRef.SetAsync(product);
 
-                Console.WriteLine($"✅ Продукт '{product.Title}' успешно сохранён для пользователя {userId}");
+                Console.WriteLine($"✅ [Firestore] Продукт '{product.Title}' успешно сохранён в Firestore!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при сохранении продукта: {ex.Message}");
+                Console.WriteLine($"❌ [Firestore] Ошибка при сохранении продукта в Firestore: {ex.Message}");
             }
         }
 
@@ -301,9 +318,6 @@ namespace Fitpad.Services
                 }
             }
         }
-
-
-
 
     }
 }
