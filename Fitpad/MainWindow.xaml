@@ -3,11 +3,136 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Fitpad.Converters"
         Title="Fitpad" Height="700" Width="1018">
+
     <Window.Resources>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <local:WidthConverter x:Key="WidthConverter" />
-        <local:ButtonWidthConverter x:Key="ButtonWidthConverter" />
-        <local:ButtonContentConverter x:Key="ButtonContentConverter" />
+        <local:WidthConverter x:Key="WidthConverter"/>
+        <local:BooleanToAngleConverter x:Key="BooleanToAngleConverter"/>
+        <local:ButtonWidthConverter x:Key="ButtonWidthConverter"/>
+        <local:ButtonContentConverter x:Key="ButtonContentConverter"/>
+        <local:ButtonVisibilityConverter x:Key="ButtonVisibilityConverter"/>
+
+
+        <Style x:Key="NavButtonCollapsedStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#3E2E8F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                        CornerRadius="5"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="2">
+                            <TextBlock Text="{TemplateBinding Content}" 
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="Black"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <!-- Стиль кнопок навигации -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#3E2E8F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="2"
+                                Padding="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#ECE7FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#C8B6FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль панели навигации (убраны закругления) -->
+        <Style x:Key="NavPanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#3E2E8F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" BlurRadius="10" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль кнопки сворачивания с динамическим поворотом стрелки -->
+        <Style x:Key="ToggleButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Ellipse Fill="White" Stroke="#3E2E8F" StrokeThickness="2"/>
+                            <Path Data="M 15,10 L 30,25 L 15,40"
+                          Stroke="#3E2E8F"
+                          StrokeThickness="3"
+                          StrokeEndLineCap="Round"
+                          StrokeStartLineCap="Round">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="{Binding IsNavigationExpanded, Converter={StaticResource BooleanToAngleConverter}}" 
+                                             CenterX="22" CenterY="25"/>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <!-- Конвертер для поворота стрелки -->
+
     </Window.Resources>
 
     <Grid>
@@ -17,60 +142,64 @@
         </Grid.ColumnDefinitions>
 
         <!-- Панель навигации -->
-        <StackPanel Grid.Column="0" Background="#FFDDDDDD" >
+        <Border Grid.Column="0" Style="{StaticResource NavPanelStyle}">
+            <Grid>
+                <!-- Столбцы для кнопок и кнопки сворачивания -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <!-- Основные кнопки навигации с изменением контента и ширины -->
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Новини, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowNewsCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5,20,5,5"/>
+                <!-- Навигационные кнопки -->
+                <StackPanel Grid.Row="0">
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Новини}"
+        Command="{Binding ShowNewsCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Харчування, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowNutritionCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Харчування}"
+        Command="{Binding ShowNutritionCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Мої Страви, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowDishesCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Мої Страви}"
+        Command="{Binding ShowDishesCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
+        Command="{Binding ShowProfileCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Авторизація}"
+        Command="{Binding ShowAccountLoginCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Регістрація}"
+        Command="{Binding ShowAccountRegistrationCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=CalculateNutrition}"
+        Command="{Binding ShowCalculateNutritionCommand}"
+        Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+        Style="{StaticResource NavButtonStyle}"/>
+
+                </StackPanel>
+
+                <!-- Кнопка сворачивания внизу -->
+                <Button Grid.Row="1"
+                Command="{Binding ToggleNavigationCommand}"
+                Style="{StaticResource ToggleButtonStyle}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,10,0,10"/>
+            </Grid>
+        </Border>
 
 
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Профіль, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowProfileCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
-
-
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Авторизація, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowAccountLoginCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
-
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=Регістрація, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowAccountRegistrationCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
-
-            <Button Content="{Binding IsNavigationExpanded, ConverterParameter=CalculateNutrition, Converter={StaticResource ButtonContentConverter}}"
-                    Command="{Binding ShowCalculateNutritionCommand}"
-                    Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                    Height="50"
-                    Margin="5" />
-
-
-        </StackPanel>
-
-        <!-- Кнопка для скрытия/развёртывания панели -->
-        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter='Toggle'}"
-                    Command="{Binding ToggleNavigationCommand}"
-                    Width="50" Height="50" HorizontalAlignment="Right" Margin="0,600,5,0" />
 
         <!-- Контентная область -->
         <Frame Grid.Column="1" Content="{Binding CurrentPage}" NavigationUIVisibility="Hidden"/>

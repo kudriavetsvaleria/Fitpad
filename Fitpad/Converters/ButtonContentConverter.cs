@@ -8,15 +8,11 @@ namespace Fitpad.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Если это кнопка для сворачивания/разворачивания панели
-            if (parameter?.ToString() == "Toggle")
+            if (value is bool isExpanded && parameter is string fullName)
             {
-                return (bool)value ? ">" : "<";
+                return isExpanded ? fullName : fullName.Substring(0, 1).ToUpper(); // Первая буква, если свернуто
             }
-
-            // Для остальных кнопок навигации
-            string content = parameter as string;
-            return (bool)value ? content : content?.Substring(0, 1);
+            return parameter;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

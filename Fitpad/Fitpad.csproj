@@ -179,7 +179,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanConverter.cs" />
+    <Compile Include="Converters\BooleanToAngleConverter.cs" />
     <Compile Include="Converters\ButtonColorConverter.cs" />
+    <Compile Include="Converters\ButtonVisibilityConverter.cs" />
     <Compile Include="Converters\HalfConverter.cs" />
     <Compile Include="Model\Entities\DishModel.cs" />
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />

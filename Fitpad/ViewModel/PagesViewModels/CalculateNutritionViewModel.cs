@@ -176,49 +176,47 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             Console.WriteLine("🚀 Инициализация диаграммы...");
 
+            // ✅ Создаем новые `SeriesCollection`
+            CalorieChartSeries = new SeriesCollection
+    {
+        new PieSeries
+        {
+            Title = "З'їли",
+            Values = new ChartValues<double> { 0 },
+            Fill = new SolidColorBrush(Colors.Green),
+            DataLabels = true
+        },
+        new PieSeries
+        {
+            Title = "Залишилось",
+            Values = new ChartValues<double> { CalorieNorm },
+            Fill = new SolidColorBrush(Colors.Gray),
+            DataLabels = true
+        }
+    };
+
             WaterChartSeries = new SeriesCollection
-                {
-                    new PieSeries
-                    {
-                        Title = "Випито",
-                        Values = new ChartValues<double> { 0 },
-                        Fill = (Brush)new BrushConverter().ConvertFromString("#7ACEFF"), // Голубой
-                        DataLabels = true
-                    },
-                    new PieSeries
-                    {
-                        Title = "Залишилось",
-                        Values = new ChartValues<double> { Math.Max(1, WaterNorm) },
-                        Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // Серый
-                        DataLabels = true
-                    }
-                };
-
-            if (CalorieChartSeries == null)
-            {
-                CalorieChartSeries = new SeriesCollection
-{
-                new PieSeries
-                {
-                    Title = "З'їли",
-                    Values = new ChartValues<double> { 1 },
-                    Fill = (Brush)new BrushConverter().ConvertFromString("#70A93D"), // Зеленый #70A93D
-                    DataLabels = true
-                },
-                new PieSeries
-                {
-                    Title = "Залишилось",
-                    Values = new ChartValues<double> { Math.Max(1, CalorieNorm) },
-                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // Серый #BEBEBE
-                    DataLabels = true
-                }
-            };
-
-            }
+    {
+        new PieSeries
+        {
+            Title = "Випито",
+            Values = new ChartValues<double> { 0 },
+            Fill = new SolidColorBrush(Color.FromRgb(122, 206, 255)), // Голубой
+            DataLabels = true
+        },
+        new PieSeries
+        {
+            Title = "Залишилось",
+            Values = new ChartValues<double> { WaterNorm },
+            Fill = new SolidColorBrush(Color.FromRgb(190, 190, 190)), // Серый
+            DataLabels = true
+        }
+    };
 
             Console.WriteLine("✅ Диаграмма инициализирована!");
-            UpdatePieChart();
+            UpdatePieChart(); // 🔥 Обновляем диаграмму
         }
+
 
         private void UpdateWaterChart()
         {
@@ -320,7 +318,6 @@ namespace Fitpad.ViewModel.PagesViewModels
                 }
             });
         }
-
 
 
         public void AddProduct(NutritionModel product)
