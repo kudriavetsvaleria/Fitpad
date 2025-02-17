@@ -146,13 +146,19 @@
 
 
             <!-- Цель -->
-            <TextBlock Text="Мета:" FontSize="16" FontWeight="SemiBold" Foreground="#5C5C5C" Margin="0,10,0,0"/>
-            <ComboBox x:Name="PurposeInput" Width="330" Height="40" Margin="0,5,0,0"
-          Style="{StaticResource RoundedComboBox}">
-                <ComboBoxItem Content="Схуднення"/>
-                <ComboBoxItem Content="Збереження маси"/>
-                <ComboBoxItem Content="Набір маси"/>
-            </ComboBox>
+            <Border Background="White" CornerRadius="10" BorderThickness="1" BorderBrush="#D1D1D1">
+                <TextBox Text="{Binding CurrentUserInfo.Age}" FontSize="14" Padding="5" BorderThickness="0" Background="Transparent"/>
+            </Border>
+
+            <Border Background="White" CornerRadius="10" BorderThickness="1" BorderBrush="#D1D1D1">
+                <ComboBox SelectedItem="{Binding CurrentUserInfo.Purpose, Mode=TwoWay}" FontSize="14" Padding="5" BorderThickness="0" Background="Transparent">
+                    <ComboBoxItem Content="Схуднення"/>
+                    <ComboBoxItem Content="Підтримка форми"/>
+                    <ComboBoxItem Content="Набір маси"/>
+                </ComboBox>
+            </Border>
+
+
 
             <!-- Кнопка сохранения -->
             <Button Content="Зберегти"

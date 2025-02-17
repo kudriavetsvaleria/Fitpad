@@ -15,7 +15,7 @@ public class ProfileViewModel : INotifyPropertyChanged
         set
         {
             _currentUser = value;
-            OnPropertyChanged(); // Уведомляем интерфейс об изменении свойства
+            OnPropertyChanged();
         }
     }
 
@@ -25,7 +25,7 @@ public class ProfileViewModel : INotifyPropertyChanged
         set
         {
             _currentUserInfo = value;
-            OnPropertyChanged(); // Уведомляем интерфейс об изменении свойства
+            OnPropertyChanged();
         }
     }
 
@@ -60,12 +60,12 @@ public class ProfileViewModel : INotifyPropertyChanged
         }
     }
 
+
     public void ClearUserData()
     {
         CurrentUser = null;
         CurrentUserInfo = null;
     }
-
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

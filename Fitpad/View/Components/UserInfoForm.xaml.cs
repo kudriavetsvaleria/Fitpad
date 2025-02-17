@@ -96,7 +96,7 @@ namespace Fitpad.View.Components
             string heightText = HeightInput?.Text;
             string weightText = WeightInput?.Text;
             activityLevel = (ActivityLevelInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            purpose = (PurposeInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+
 
             if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel) || string.IsNullOrWhiteSpace(purpose))
             {

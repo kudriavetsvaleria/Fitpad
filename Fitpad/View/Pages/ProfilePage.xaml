@@ -1,70 +1,243 @@
 <Page x:Class="Fitpad.View.Pages.ProfilePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:d="http://schemas.microsoft.com/expression.blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
-      Title="ProfilePage">
+      Title="ProfilePage"
+      Background="#EDEDED">
+    
+    
 
-    <Grid Margin="20">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <!-- Заголовок -->
-            <RowDefinition Height="*" />
-            <!-- Информация о пользователе -->
-            <RowDefinition Height="Auto" />
-            <!-- Кнопка выхода -->
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Заголовок -->
-        <TextBlock Text="Особистий кабінет"
-                   FontSize="30"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,20"
-                   Grid.Row="0"/>
+        <!-- Карточка профиля -->
+        <Border Grid.Row="1" Background="White" CornerRadius="20" Padding="20" Margin="0,20,0,0" VerticalAlignment="Top">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" Opacity="0.3" />
+            </Border.Effect>
+            <StackPanel HorizontalAlignment="Center" Margin="0,0,0,10">
 
-        <!-- Информация о пользователе -->
-        <StackPanel Grid.Row="1" Margin="0,0,0,20">
-            <!-- Данные пользователя -->
-            <TextBlock Text="Ім'я користувача:" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUser.Name}" Margin="0,0,0,10"/>
+                <TextBlock Text="Профіль" FontSize="23" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                <Ellipse Width="80" Height="80" Stroke="#D1D1D1" StrokeThickness="2" Margin="0,0,0,10">
+                    <Ellipse.Fill>
+                        <ImageBrush ImageSource="{Binding CurrentUser.AvatarPath}" Stretch="UniformToFill"/>
+                    </Ellipse.Fill>
+                </Ellipse>
 
-            <TextBlock Text="Пошта:" FontWeight="Bold" />
-            <TextBlock Text="{Binding CurrentUser.Email}" Margin="0,0,0,10" />
+                <!-- Информация о пользователе -->
+                <Border Background="#F8F8F8" Padding="15" CornerRadius="15" Width="320">
+                    <StackPanel>
+                        <TextBlock Text="Інформація" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
 
-            <!-- Отображение данных анкеты -->
-            <TextBlock Text="Стать:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Gender}" FontSize="14"/>
 
-            <TextBlock Text="Вік:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Age}" FontSize="14"/>
+                        <StackPanel>
+                            <TextBlock Text="Стать:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                                <Grid>
+                                    <TextBlock Text="{Binding CurrentUserInfo.Gender}" 
+                                               FontSize="14" Foreground="#333" 
+                                               x:Name="GenderTextBlock"
+                                               VerticalAlignment="Center"
+                                               Margin="3,0,0,0"/>
+                                    <ComboBox x:Name="GenderInput"
+                                              FontSize="14"
+                                              Height="35"
+                                              SelectedValue="{Binding CurrentUserInfo.Gender, Mode=TwoWay}"
+                                              SelectedValuePath="Content"
+                                              Opacity="0"
+                                              IsHitTestVisible="False">
+                                        <ComboBoxItem Content="Чоловік"/>
+                                        <ComboBoxItem Content="Жінка"/>
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
 
-            <TextBlock Text="Зріст:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Height}" FontSize="14"/>
 
-            <TextBlock Text="Вага:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Weight}" FontSize="14"/>
+                        <!-- Поле Вік -->
+                        <TextBlock Text="Вік:" FontSize="14" FontWeight="Bold"/>
+                        <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                            <TextBox x:Name="AgeInput" Text="{Binding CurrentUserInfo.Age, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" FontSize="14" Height="27" Background="White" BorderThickness="0" IsReadOnly="True"/>
+                        </Border>
 
-            <TextBlock Text="Рівень активності:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" FontSize="14"/>
+                        <!-- Поле Зріст -->
+                        <TextBlock Text="Зріст:" FontSize="14" FontWeight="Bold"/>
+                        <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                            <TextBox x:Name="HeightInput" 
+                                     Text="{Binding CurrentUserInfo.Height, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=\{0\} см}" 
+                                     FontSize="14" Height="27" Background="White" BorderThickness="0" IsReadOnly="True">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Validation.ErrorTemplate">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <!-- Пустой шаблон, убирающий красную рамку -->
+                                                    <Border BorderBrush="Transparent" BorderThickness="0"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="Validation.HasError" Value="True">
+                                                <Setter Property="BorderBrush" Value="#D1D1D1"/>
+                                                <!-- Обычный стиль рамки -->
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Border>
 
-            <TextBlock Text="Мета:" FontSize="14" FontWeight="Bold"/>
-            <TextBlock Text="{Binding CurrentUserInfo.Purpose}" FontSize="14"/>
 
+                        <!-- Поле Вага -->
+                        <TextBlock Text="Вага:" FontSize="14" FontWeight="Bold"/>
+                        <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5">
+                            <TextBox x:Name="WeightInput" 
+                                     Text="{Binding CurrentUserInfo.Weight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0} кг}"
+                                     FontSize="14" Height="26" Background="White" BorderThickness="0" IsReadOnly="True">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Validation.ErrorTemplate">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <Border BorderBrush="Transparent" BorderThickness="0"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Border>
+
+
+                        <!-- Поле Рівень активності -->
+                        <StackPanel>
+                            <TextBlock Text="Рівень активності:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                                <Grid>
+                                    <TextBlock Text="{Binding CurrentUserInfo.ActivityLevel}" 
+                                               FontSize="14" Foreground="#333"
+                                               x:Name="ActivityTextBlock"
+                                               VerticalAlignment="Center"
+                                               Margin="3,0,0,0"/>
+                                    <ComboBox x:Name="ActivityLevelInput"
+                                              FontSize="14"
+                                              Height="35"
+                                              SelectedValue="{Binding CurrentUserInfo.ActivityLevel, Mode=TwoWay}"
+                                              SelectedValuePath="Content"
+                                              Opacity="0"
+                                      IsHitTestVisible="False">
+                                        <ComboBoxItem Content="Низький"/>
+                                        <ComboBoxItem Content="Середній"/>
+                                        <ComboBoxItem Content="Високий"/>
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Поле Мета -->
+                        <StackPanel>
+                            <TextBlock Text="Мета:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                                <Grid>
+                                    <TextBlock Text="{Binding CurrentUserInfo.Purpose}" 
+                                               FontSize="14" Foreground="#333"
+                                               x:Name="PurposeTextBlock"
+                                               VerticalAlignment="Center"
+                                               Margin="3,0,0,0"/>
+                                    <ComboBox x:Name="PurposeInput"
+                                              FontSize="14"
+                                              Height="35"
+                                              SelectedValue="{Binding CurrentUserInfo.Purpose, Mode=TwoWay}"
+                                              SelectedValuePath="Content"
+                                              Opacity="0"
+                                              IsHitTestVisible="False">
+                                        <ComboBoxItem Content="Схуднення"/>
+                                        <ComboBoxItem Content="Набір маси"/>
+                                        <ComboBoxItem Content="Підтримка форми"/>
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding CurrentUser.Name}" FontSize="22" FontWeight="Bold" Foreground="#444" Margin="10,10,10,5" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentUser.Email}" FontSize="14" Foreground="#777" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,20">
+            <Button x:Name="EditButton" Content="Редагувати" Foreground="White" Background="#5CB85C" FontSize="16" BorderThickness="0" Padding="10,5" Width="130" Cursor="Hand" Margin="0,0,10,0" Click="EditProfile_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="10,5" Width="130" HorizontalAlignment="Center">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4CAE4C"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button x:Name="SaveButton" Content="Зберегти" Foreground="White" Background="#007BFF" 
+        FontSize="16" BorderThickness="0" Padding="10,5" Width="130" Cursor="Hand" 
+        Click="SaveProfile_Click" Visibility="Collapsed">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="10,5" Width="130" HorizontalAlignment="Center">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#0056b3"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button x:Name="LogoutButton"  Content="Вийти" Foreground="White" Background="#D9534F" FontSize="16" BorderThickness="0" Padding="10,5" Width="130" Cursor="Hand" Click="LogoutButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="10,5" Width="130" HorizontalAlignment="Center">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#C9302C"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </StackPanel>
-
-        <!-- Кнопка выхода -->
-        <Button Content="Вийти"
-                Foreground="White"
-                Background="#D9534F"
-                FontSize="16"
-                BorderThickness="0"
-                HorizontalAlignment="Center"
-                Cursor="Hand"
-                Width="120"
-                Margin="0,10,0,0"
-                Click="LogoutButton_Click"
-                Grid.Row="2"/>
     </Grid>
 </Page>
