@@ -3,36 +3,36 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Мої страви">
 
-	<Grid Margin="20">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<!-- Заголовок -->
-			<RowDefinition Height="Auto"/>
-			<!-- Поиск -->
-			<RowDefinition Height="*"/>
-			<!-- Список блюд -->
-			<RowDefinition Height="Auto"/>
-			<!-- Кнопка -->
-		</Grid.RowDefinitions>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Заголовок -->
+            <RowDefinition Height="Auto"/>
+            <!-- Поиск -->
+            <RowDefinition Height="*"/>
+            <!-- Список блюд -->
+            <RowDefinition Height="Auto"/>
+            <!-- Кнопка -->
+        </Grid.RowDefinitions>
 
-		<!-- 🏷 Заголовок "Мої страви" -->
-		<TextBlock Grid.Row="0"
+        <!-- 🏷 Заголовок "Мої страви" -->
+        <TextBlock Grid.Row="0"
                    Text="Мої страви"
                    FontSize="22"
                    FontWeight="Bold"
                    Foreground="Black"
                    Margin="10,0,0,10"/>
 
-		<!-- 🔎 Поле поиска (с закругленными углами) -->
-		<Border Grid.Row="1"
+        <!-- 🔎 Поле поиска (с закругленными углами) -->
+        <Border Grid.Row="1"
                 CornerRadius="20"
                 Background="White"
                 BorderBrush="#ccc"
                 BorderThickness="1"
                 Padding="5"
                 Margin="0,10,10,0">
-			<StackPanel Orientation="Horizontal">
-				<TextBox x:Name="SearchBox"
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="SearchBox"
                          Width="640"
                          Height="35"
                          FontSize="16"
@@ -44,21 +44,20 @@
                          GotFocus="SearchBox_GotFocus"
                          LostFocus="SearchBox_LostFocus"
                          VerticalContentAlignment="Center"/>
-				<Button Width="35" Height="35" Click="SearchButton_Click" Background="Transparent" BorderThickness="0" Margin="30,0,0,0">
-					<Image Source="pack://application:,,,/Images/search-icon.png" Width="25" Height="25"/>
-				</Button>
-			</StackPanel>
-		</Border>
+                <Button Width="35" Height="35" Click="SearchButton_Click" Background="Transparent" BorderThickness="0" Margin="30,0,0,0">
+                    <Image Source="pack://application:,,,/Images/search-icon.png" Width="25" Height="25"/>
+                </Button>
+            </StackPanel>
+        </Border>
 
-		<!-- 📜 Список блюд с серыми разделителями (ширина 670px) -->
-		<Border Grid.Row="2"
-                Width="720"
+        <!-- 📜 Список блюд с серыми разделителями (ширина 670px) -->
+        <Border Grid.Row="2"
                 Height="350"
                 CornerRadius="20"
                 BorderBrush="#ccc"
                 BorderThickness="1"
                 Padding="10"
-                Margin="0,10,0,10">
+                Margin="4,10,10,10">
             <ListView x:Name="DishesList"
           ItemsSource="{Binding Dishes}"
           SelectionChanged="DishesList_SelectionChanged"
@@ -81,8 +80,8 @@
 
         </Border>
 
-		<!-- ✅ Кнопка "Створити блюдо" с закругленными углами -->
-		<Button Grid.Row="3"
+        <!-- ✅ Кнопка "Створити блюдо" с закругленными углами -->
+        <Button Grid.Row="3"
                 x:Name="CreateDishButton"
                 Content="Створити блюдо"
                 Width="250"
@@ -94,13 +93,13 @@
                 HorizontalAlignment="Center"
                 Command="{Binding ShowMyDishesCommand}"
                 Margin="0,10,0,40">
-			<Button.Template>
-				<ControlTemplate TargetType="Button">
-					<Border Background="#3E2E8F" CornerRadius="15" Padding="10,5">
-						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-					</Border>
-				</ControlTemplate>
-			</Button.Template>
-		</Button>
-	</Grid>
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="#3E2E8F" CornerRadius="15" Padding="10,5">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
 </Page>

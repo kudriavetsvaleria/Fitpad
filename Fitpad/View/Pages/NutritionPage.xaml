@@ -4,31 +4,96 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
+      Background="White"
       Title="Nutrition Page">
 
-    <Grid>
-        <Grid Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <!-- Поиск -->
-            <StackPanel Orientation="Horizontal" Margin="10,0,0,10">
-                <TextBox x:Name="SearchTextBox" Width="200" Margin="0,0,10,0" Text="Введіть запит" 
-                         GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" />
-                <Button Content="Пошук" Width="75" Click="OnSearchButtonClick" />
-            </StackPanel>
+        <!-- Поисковая строка -->
+        <StackPanel Orientation="Horizontal" Margin="10,0,0,20">
+            <Border CornerRadius="20" BorderBrush="#3E2E8F" BorderThickness="1">
+                <TextBox x:Name="SearchTextBox" Width="250" Height="45" 
+                 FontSize="16"
+                 Background="Transparent" <!-- Сделали фон прозрачным -->
+                    Foreground="Black"
+                 Padding="10"
+                 BorderThickness="0"
+                    <!-- Убрали стандартную рамку -->
+                    Text="Введіть запит"
+                 GotFocus="SearchTextBox_GotFocus"
+                 LostFocus="SearchTextBox_LostFocus"/>
+            </Border>
 
-            <Button Content="⟳" Width="50" Height="50" 
-                    HorizontalAlignment="Left" VerticalAlignment="Center" 
-                    Background="LightGray" BorderBrush="Gray" 
-                    Click="RefreshButton_Click" Margin="692,0,0,0" />
+            <Button Content="🔍" Width="50" Height="50"
+                    Margin="10,0,0,0"
+                    FontSize="16"
+                    Background="White"
+                    Foreground="Black"
+                    BorderBrush="#3E2E8F"
+                    BorderThickness="1"
+                    Cursor="Hand"
+                    Click="OnSearchButtonClick">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="25"
+                                Padding="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#ECE7FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#C8B6FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
 
-            <!-- Основной контейнер для списка и надписи -->
-            <Grid Grid.Row="1">
-                <!-- Список рецептов -->
-                <ListView x:Name="MyListView" ItemsSource="{Binding NutritionCards}" Margin="10">
+            <Button Content="⟳" Width="50" Height="50"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="White"
+                    BorderBrush="#3E2E8F"
+                    BorderThickness="1"
+                    FontSize="20"
+                    Cursor="Hand"
+                    Click="RefreshButton_Click"
+                    Margin="320,0,0,0">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="25"
+                                Padding="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#ECE7FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#C8B6FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+
+        <!-- Основной контейнер для списка и надписи -->
+        <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ListView x:Name="MyListView" ItemsSource="{Binding NutritionCards}" Margin="-12,0,0,0">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Columns="4" />
@@ -36,35 +101,43 @@
                     </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="10" MouseDown="Card_MouseDown">
-                                <StackPanel Orientation="Vertical" Width="150" Height="220">
-                                    <Image Source="{Binding Image}" Height="100" Width="150" Stretch="UniformToFill" Margin="0,0,0,10" />
+                            <Border BorderBrush="#ccc"
+                                    BorderThickness="2"
+                                    CornerRadius="15"
+                                    Margin="5"
+                                    Background="White">
+                                <StackPanel Orientation="Vertical" Width="157" Height="240">
+                                    <Image Source="{Binding Image}" Height="100" Width="180"
+                                           Stretch="UniformToFill" Margin="0,0,0,5" 
+                                           ClipToBounds="True"/>
 
                                     <TextBlock Text="{Binding Title}" 
-                                       FontSize="14" 
-                                       FontWeight="Bold" 
-                                       TextAlignment="Center" 
-                                       Margin="5,0" 
-                                       TextTrimming="CharacterEllipsis" 
-                                       TextWrapping="NoWrap" />
+                                               FontSize="14" 
+                                               FontWeight="Bold"
+                                               Foreground="Black"
+                                               TextAlignment="Center"
+                                               Margin="5,0"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextWrapping="Wrap" />
 
-                                    <TextBlock Text="{Binding FormattedTime}" FontSize="12" TextAlignment="Center" Margin="5,0" />
-                                    <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Carbs, StringFormat=Вуглеводи: {0} г}" FontSize="12" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding Fats, StringFormat=Жири: {0} г}" FontSize="12" TextAlignment="Center" />
+                                    <StackPanel Orientation="Vertical" Margin="5">
+                                        <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center"/>
+                                        <TextBlock Text="{Binding Protein, StringFormat=Білки: {0} г}" FontSize="12" TextAlignment="Center"/>
+                                        <TextBlock Text="{Binding Carbs, StringFormat=Вуглеводи: {0} г}" FontSize="12" TextAlignment="Center"/>
+                                        <TextBlock Text="{Binding Fats, StringFormat=Жири: {0} г}" FontSize="12" TextAlignment="Center"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+            </ScrollViewer>
 
-                <!-- Надпись "Рецептів не знайдено" -->
-                <TextBlock Text="Рецептів не знайдено" 
-                           Visibility="{Binding IsSearchEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" 
-                           FontSize="20" FontWeight="Bold" Foreground="Black" />
-            </Grid>
+            <!-- Надпись "Рецептів не знайдено" -->
+            <TextBlock Text="Рецептів не знайдено" 
+                       Visibility="{Binding IsSearchEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       FontSize="20" FontWeight="Bold" Foreground="Black" />
         </Grid>
     </Grid>
 </Page>
