@@ -10,6 +10,7 @@ using Fitpad.View.Components;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Fitpad.View;
+using System.Windows;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
@@ -240,22 +241,87 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public void UpdatePieChart()
         {
-            if (CalorieChartSeries == null || CalorieChartSeries.Count < 2)
-                return;
-
-            double consumed = Math.Max(0, CurrentCalories);
-            double remaining = Math.Max(0, CalorieNorm - CurrentCalories);
-
-            if (consumed == 0 && remaining == 0) // Если продуктов нет, показываем пустую диаграмму
+            if (CalorieChartSeries == null)
             {
-                remaining = CalorieNorm > 0 ? CalorieNorm : 1;
+                Console.WriteLine("❌ Ошибка: `CalorieChartSeries` = null! Повторная инициализация...");
+                CalorieChartSeries = new SeriesCollection();
             }
 
-            CalorieChartSeries[0].Values = new ChartValues<double> { consumed };
-            CalorieChartSeries[1].Values = new ChartValues<double> { remaining };
+            if (WaterChartSeries == null)
+            {
+                Console.WriteLine("❌ Ошибка: `WaterChartSeries` = null! Повторная инициализация...");
+                WaterChartSeries = new SeriesCollection();
+            }
 
-            OnPropertyChanged(nameof(CalorieChartSeries));
+            double caloriePercentage = (CurrentCalories / CalorieNorm) * 100;
+            double waterPercentage = (CurrentWater / WaterNorm) * 100; // Используем `WaterNorm`
+
+            // Ограничиваем значения, чтобы не было больше 100%
+            caloriePercentage = Math.Min(caloriePercentage, 100);
+            waterPercentage = Math.Min(waterPercentage, 100);
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    // 🔥 Обновляем диаграмму калорий с правильными цветами
+                    var newCalorieSeries = new SeriesCollection
+            {
+                new PieSeries
+                {
+                    Title = "Съедено",
+                    Values = new ChartValues<double> { Math.Round(caloriePercentage, 2) },
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#70A93D"), // ✅ Оригинальный зеленый
+                    DataLabels = true,
+                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
+                },
+                new PieSeries
+                {
+                    Title = "Осталось",
+                    Values = new ChartValues<double> { Math.Round(100 - caloriePercentage, 2) },
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
+                    DataLabels = true,
+                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
+                }
+            };
+
+                    CalorieChartSeries = newCalorieSeries;
+                    OnPropertyChanged(nameof(CalorieChartSeries));
+
+                    // 🔥 Обновляем диаграмму воды (оставил без изменений)
+                    var newWaterSeries = new SeriesCollection
+            {
+                new PieSeries
+                {
+                    Title = "Выпито",
+                    Values = new ChartValues<double> { Math.Round(waterPercentage, 2) },
+                    Fill = new SolidColorBrush(Color.FromRgb(122, 206, 255)), // Голубой
+                    DataLabels = true,
+                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
+                },
+                new PieSeries
+                {
+                    Title = "Осталось",
+                    Values = new ChartValues<double> { Math.Round(100 - waterPercentage, 2) },
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
+                    DataLabels = true,
+                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
+                }
+            };
+
+                    WaterChartSeries = newWaterSeries;
+                    OnPropertyChanged(nameof(WaterChartSeries));
+
+                    Console.WriteLine($"📊 Обновлены диаграммы: Калории {caloriePercentage:F2}%, Вода {waterPercentage:F2}%");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Ошибка обновления диаграмм: {ex.Message}");
+                }
+            });
         }
+
+
 
         public void AddProduct(NutritionModel product)
         {

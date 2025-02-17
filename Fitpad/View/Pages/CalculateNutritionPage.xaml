@@ -266,19 +266,19 @@
             HorizontalAlignment="Left"
             Margin="524,-125,0,10">
 
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C" 
+            <TextBlock x:Name="ProteinDisplayText" FontSize="16" FontWeight="Bold" Foreground="#5C5C5C" 
                Text="{Binding ProteinDisplayText, StringFormat='Білки: {0:F1}'}"
                Margin="0,0,0,0"/>
 
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+            <TextBlock x:Name="FatsDisplayText" FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
                Text="{Binding FatsDisplayText, StringFormat='Жири: {0:F1}'}"
                Margin="0,25,0,0"/>
 
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+            <TextBlock x:Name="CarbsDisplayText" FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
                Text="{Binding CarbsDisplayText, StringFormat='Вуглеводи: {0:F1}'}"
                Margin="0,25,0,0"/>
 
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
+            <TextBlock x:Name="WaterDisplayText" FontSize="16" FontWeight="Bold" Foreground="#5C5C5C"
                Text="{Binding WaterDisplayText, StringFormat='Вода: {0:F1}'}"
                Margin="0,25,0,0"/>
         </StackPanel>

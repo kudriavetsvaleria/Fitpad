@@ -63,27 +63,27 @@ namespace Fitpad.View.Pages
             Console.WriteLine("📊 DataContext установлен!");
         }
 
-
-
-
-        private void UpdateCalorieDisplay(double addedCalories, double? dailyCalorieNorm = null)
+        private void UpdateCalorieDisplay(double? customCalories = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
                 if (CalorieIntakeText != null)
                 {
-                    // Если норма не передана, вычисляем её
-                    dailyCalorieNorm ??= _viewModel.UserInfo != null ? CalculateDailyCalorieIntake(_viewModel.UserInfo) : 0;
+                    double newCalories = customCalories ?? _viewModel.CurrentCalories;
+                    double dailyCalorieNorm = _viewModel.CalorieNorm;
+                    Console.WriteLine($"🔍 Перед обновлением: CurrentCalories = {_viewModel.CurrentCalories}");
 
-                    string[] calorieParts = CalorieIntakeText.Text.Split('/');
-                    double currentCalories = double.TryParse(calorieParts[0].Trim(), out double parsedCurrent) ? parsedCurrent : 0;
-
-                    double newCalories = currentCalories + addedCalories;
                     CalorieIntakeText.Text = $"Ккал: {newCalories:0.0} / {dailyCalorieNorm:0.0}";
+
+                    ProteinDisplayText.Text = $"Білки: {_viewModel.CurrentProtein:0.0} / 80 г";
+                    FatsDisplayText.Text = $"Жири: {_viewModel.CurrentFats:0.0} / 45 г";
+                    CarbsDisplayText.Text = $"Вуглеводи: {_viewModel.CurrentCarbs:0.0} / 220 г";
+                    WaterDisplayText.Text = $"Вода: {_viewModel.CurrentWater:0.0} / 2000 мл";
+
+                    Console.WriteLine($"🔹 Обновлены данные: Калории {newCalories}, БЖУ {ProteinDisplayText.Text}, {FatsDisplayText.Text}, {CarbsDisplayText.Text}");
                 }
             });
         }
-
 
 
         public static CalculateNutritionPage GetInstance(UserInfoModel userInfo)
@@ -214,7 +214,8 @@ namespace Fitpad.View.Pages
                 {
                     string[] calorieParts = CalorieIntakeText.Text.Split('/');
                     double currentCalories = double.TryParse(calorieParts[0].Trim(), out double parsedCurrent) ? parsedCurrent : 0;
-                    CalorieIntakeText.Text = $"Ккал: {currentCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
+                    CalorieIntakeText.Text = $"Ккал: {_viewModel.CurrentCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
+                    Console.WriteLine($"🔥 Обновлён UI: {CalorieIntakeText.Text}");
                 }
             });
 
@@ -563,21 +564,38 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine($"✅ Загружено {products.Count} продуктов для пользователя {UserSession.CurrentUserId}");
 
-            // ✅ Удаляем дубликаты (по названию и весу)
-            var distinctProducts = products
-                .GroupBy(p => new { p.Title, p.Weight })
-                .Select(g => g.First())
-                .ToList();
-
             _viewModel.SavedProducts.Clear();
-            foreach (var product in distinctProducts)
+            _viewModel.CurrentCalories = 0;
+            _viewModel.CurrentProtein = 0;
+            _viewModel.CurrentFats = 0;
+            _viewModel.CurrentCarbs = 0;
+            _viewModel.CurrentWater = 0;
+
+            foreach (var product in products)
             {
-                Console.WriteLine($"📥 {product.Title} ({product.Weight}г, {product.Calories} ккал)");
                 _viewModel.SavedProducts.Add(product);
+
+                _viewModel.CurrentCalories += product.Calories;
+                _viewModel.CurrentProtein += product.Protein;
+                _viewModel.CurrentFats += product.Fats;
+                _viewModel.CurrentCarbs += product.Carbs;
+
+                if (product.Title.ToLower().Contains("вода"))
+                {
+                    _viewModel.CurrentWater += product.Weight;
+                }
+
+                Console.WriteLine($"🟢 {product.Title}: {product.Calories} ккал добавлено");
             }
 
+            // 🔥 Теперь обновляем диаграммы после загрузки
             _viewModel.UpdatePieChart();
+
+            // ✅ Исправленный вызов обновления калорий
+            Console.WriteLine($"⚡ Перед обновлением: CurrentCalories = {_viewModel.CurrentCalories}");
+            UpdateCalorieDisplay(_viewModel.CurrentCalories);
         }
+
 
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
