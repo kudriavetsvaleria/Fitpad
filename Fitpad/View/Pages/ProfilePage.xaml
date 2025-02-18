@@ -23,22 +23,21 @@
             </Border.Effect>
             <StackPanel HorizontalAlignment="Center" Margin="0,0,0,10">
 
-                <TextBlock Text="Профіль" FontSize="23" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <Ellipse Width="80" Height="80" Stroke="#D1D1D1" StrokeThickness="2" Margin="0,0,0,10">
+                <TextBlock Text="Профіль" FontSize="23" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0,-5,0,10"/>
+                <Ellipse Width="100" Height="100" Stroke="#D1D1D1" StrokeThickness="2">
                     <Ellipse.Fill>
-                        <ImageBrush ImageSource="{Binding CurrentUser.AvatarPath}" Stretch="UniformToFill"/>
+                        <ImageBrush ImageSource="pack://application:,,,/Images/profile.png" Stretch="UniformToFill"/>
                     </Ellipse.Fill>
                 </Ellipse>
 
+
+
                 <!-- Информация о пользователе -->
-                <Border Background="#F7F7FC" Padding="15" CornerRadius="15" Width="320">
+                <Border Background="#F7F7FC" Padding="15" CornerRadius="15" Width="320" Margin="0,5,0,5">
                     <StackPanel>
-                        <TextBlock Text="Інформація" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
-
-
                         <StackPanel>
-                            <TextBlock Text="Стать:" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <Border Background="White" CornerRadius="10" BorderBrush="#D1D1D1" BorderThickness="1" Padding="5" Height="35">
+                            <TextBlock Text="Стать:" FontSize="14" FontWeight="Bold" Margin="0,5,0,5"/>
+                            <Border Background="White" CornerRadius="10" BorderBrush="#F7F7FC" BorderThickness="1" Padding="5" Height="35">
                                 <Grid>
                                     <TextBlock Text="{Binding CurrentUserInfo.Gender}" 
                                                FontSize="14" Foreground="#333" 
@@ -175,13 +174,13 @@
 
         <!-- Кнопки -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,20">
-            <Button x:Name="EditButton" Content="Редагувати" Foreground="White" Background="#5CB85C" FontSize="16" BorderThickness="0" Padding="10,5" Width="130" Cursor="Hand" Margin="0,0,10,0" Click="EditProfile_Click">
+            <Button x:Name="EditButton" Content="Редагувати" Foreground="White" Background="#5CB85C" FontSize="16" BorderThickness="0" Padding="10,5" Height="40" Width="130" Cursor="Hand" Margin="0,0,20,0" Click="EditProfile_Click">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="10,5" Width="130" HorizontalAlignment="Center">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="10,5" Width="130"  HorizontalAlignment="Center">
                                         <ContentPresenter HorizontalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>

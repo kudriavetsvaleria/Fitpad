@@ -110,6 +110,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 if (snapshot.Exists)
                 {
                     var lastUpdated = snapshot.GetValue<DateTime>("LastUpdated");
+
                     if ((DateTime.UtcNow - lastUpdated).TotalMinutes < CacheLifetimeMinutes)
                     {
                         Console.WriteLine("✅ Загружаем новости из кэша...");
@@ -117,12 +118,23 @@ namespace Fitpad.ViewModel.PagesViewModels
                         if (snapshot.ContainsField("News"))
                         {
                             var newsArray = snapshot.GetValue<List<Dictionary<string, object>>>("News");
+
+                            // ✅ Проверяем, что newsArray не null
+                            if (newsArray == null || newsArray.Count == 0)
+                            {
+                                Console.WriteLine("⚠️ Кэшированные новости пусты или отсутствуют.");
+                                return new ObservableCollection<NewsModel>();
+                            }
+
+                            // ✅ Фильтруем null-значения перед обработкой
+                            var validNews = newsArray.Where(n => n != null).ToList();
+
                             var cachedNews = new ObservableCollection<NewsModel>(
-                                newsArray.Select(n => new NewsModel
+                                validNews.Select(n => new NewsModel
                                 {
-                                    Title = n.ContainsKey("Title") ? n["Title"].ToString() : string.Empty,
-                                    Description = n.ContainsKey("Description") ? n["Description"].ToString() : string.Empty,
-                                    UrlToImage = n.ContainsKey("UrlToImage") ? n["UrlToImage"].ToString() : string.Empty
+                                    Title = n.ContainsKey("Title") && n["Title"] != null ? n["Title"].ToString() : "Без заголовка",
+                                    Description = n.ContainsKey("Description") && n["Description"] != null ? n["Description"].ToString() : "Опис відсутній",
+                                    UrlToImage = n.ContainsKey("UrlToImage") && n["UrlToImage"] != null ? n["UrlToImage"].ToString() : string.Empty
                                 }).ToList());
 
                             return cachedNews;
@@ -137,5 +149,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             return new ObservableCollection<NewsModel>();
         }
+
+
     }
 }

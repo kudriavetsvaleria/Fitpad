@@ -10,5 +10,6 @@ namespace Fitpad
             DataContext = new MainViewModel();
         }
 
+
     }
 }

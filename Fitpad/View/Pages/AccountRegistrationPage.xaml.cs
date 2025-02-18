@@ -76,9 +76,7 @@ namespace Fitpad.View.Pages
                 await _registrationService.RegisterUserAsync(newUser);
                 await _userRepository.SaveUserAsync(newUser);
 
-                // ✅ Показываем сообщение об успешной регистрации
-                MessageBox.Show("Реєстрація успішна! Будь ласка, увійдіть у систему.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-
+         
                 // ✅ Перенаправление на страницу авторизации
                 Application.Current.Dispatcher.Invoke(() =>
                 {

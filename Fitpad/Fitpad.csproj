@@ -382,11 +382,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\app_icon.ico" />
     <Content Include="Images\camera.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Images\search-icon.png" />
     <Resource Include="Images\delete.png" />
+    <Resource Include="Images\profile.png" />
     <Content Include="Images\star_grey.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

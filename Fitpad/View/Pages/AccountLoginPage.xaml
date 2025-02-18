@@ -12,10 +12,10 @@
                        TextAlignment="Center" Margin="0,-60,0,10"/>
 
             <Label Content="Логін:" FontSize="14" Foreground="Black" Margin="0,-20,0,3"/>
-            <TextBox x:Name="UsernameTextBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
+            <TextBox x:Name="UsernameTextBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
 
             <Label Content="Пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-            <PasswordBox x:Name="PasswordBox" Width="300" Height="30" FontSize="14" Margin="0,0,0,10"/>
+            <PasswordBox x:Name="PasswordBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
 
             <Button Content="Увійти" Width="300" Height="40" Click="LoginButton_Click"
                     Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0"

@@ -6,6 +6,7 @@
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
         SizeToContent="Manual"
+        Icon="Images/app_icon.ico"
         Title="Fitpad" Height="700" Width="1018">
 
     <Window.Resources>
@@ -120,33 +121,33 @@
                 <!-- Навигационные кнопки -->
                 <StackPanel Grid.Row="0">
                     <StackPanel Visibility="{Binding IsFullNavigationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Новини}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Новини}"
                             Command="{Binding ShowNewsCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Харчування}"
-                            Command="{Binding ShowNutritionCommand}"
-                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                            Style="{StaticResource NavButtonStyle}"/>
-
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Калькулятор калорий}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Калькулятор калорий}"
                             Command="{Binding ShowCalculateNutritionCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
-                   
-
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Конструктор блюд}"
-                            Command="{Binding ShowConstructorPageCommand}"
-                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                            Style="{StaticResource NavButtonStyle}"/>
+                  
 
                     <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Мої Страви}"
                             Command="{Binding ShowDishesCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Конструктор блюд}"
+                            Command="{Binding ShowConstructorPageCommand}"
+                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Харчування}"
+                            Command="{Binding ShowNutritionCommand}"
+                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
                             Command="{Binding ShowProfileCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
