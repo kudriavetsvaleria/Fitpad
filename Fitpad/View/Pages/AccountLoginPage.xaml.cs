@@ -7,6 +7,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.IO;
+using Fitpad.View.Components;
 
 namespace Fitpad.View.Pages
 {
@@ -15,6 +16,7 @@ namespace Fitpad.View.Pages
         private static AccountLoginPage _instance;
         private static readonly object _lock = new object();
         private readonly UserRepository _userRepository;
+
 
         // Сделать конструктор публичным
         public AccountLoginPage(ProfileViewModel profileViewModel)
@@ -68,8 +70,6 @@ namespace Fitpad.View.Pages
         }
 
 
-
-
         public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
         {
             lock (_lock)
@@ -112,13 +112,20 @@ namespace Fitpad.View.Pages
 
                 Console.WriteLine($"✅ Користувач {user.Name} успішно авторизований.");
 
-                // 🔹 Сохраняем UserID в файл и устанавливаем в сессию
+                // 🔹 Сохраняем UserID в сессию
                 UserSession.SaveUserIdToFile(user.Id);
-                Console.WriteLine($"📌 Установлен UserID после авторизации: {UserSession.CurrentUserId}");
+
+                // ✅ Проверяем, есть ли заполненные данные
+                bool isUserInfoComplete = await userRepository.IsUserInfoComplete(user.Id);
+                if (!isUserInfoComplete)
+                {
+                    Console.WriteLine("⚠️ Дані користувача не заповнені. Перенаправляємо на форму введення.");
+                    NavigationService.Navigate(new UserInfoForm(user));
+                    return;
+                }
 
                 // ✅ Обновляем MainViewModel, чтобы отображались все кнопки
                 await MainViewModel.Instance.UpdateNavigationStateAsync();
-
 
                 // ✅ Переход на страницу профиля
                 NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
@@ -126,7 +133,8 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка авторизации: {ex.Message}");
+                Console.WriteLine($"❌ Помилка авторизації: {ex.Message}");
+                MessageBox.Show($"❌ Помилка авторизації: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -174,4 +182,4 @@ namespace Fitpad.View.Pages
             ErrorTextBlock.Visibility = Visibility.Visible;
         }
     }
-}
+        }

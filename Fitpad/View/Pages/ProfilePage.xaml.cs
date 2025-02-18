@@ -218,12 +218,7 @@ namespace Fitpad.View.Pages
             string heightText = HeightInput?.Text.Replace(" см", "").Trim();
             string weightText = WeightInput?.Text.Replace(" кг", "").Trim();
 
-            // Проверка на пустые строки
-            if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel) || string.IsNullOrWhiteSpace(purpose))
-            {
-                MessageBox.Show("Будь ласка, виберіть усі необхідні параметри.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
+
 
             // Проверка возраста
             if (!int.TryParse(ageText, out age) || age <= 0 || age > 120)

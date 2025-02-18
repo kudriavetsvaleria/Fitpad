@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Fitpad.Model.Repositories;
 using Newtonsoft.Json;
 
 public static class UserSession
@@ -7,7 +8,8 @@ public static class UserSession
     private static string _currentUserId;
 
     // ✅ Унифицированный путь к файлу
-    private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "current_user.json");
+    private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+
 
     public static string CurrentUserId
     {
@@ -73,11 +75,14 @@ public static class UserSession
             Console.WriteLine($"❌ Ошибка загрузки файла current_user.json: {ex.Message}");
             _currentUserId = null;
         }
+        UserSession.CurrentUserId = UserRepository.CurrentUserId;
+
     }
 
     // ✅ Сохранение UserID в файл
     public static void SaveUserIdToFile(string userId)
     {
+        CurrentUserId = userId;
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)); // Создаём папку, если её нет

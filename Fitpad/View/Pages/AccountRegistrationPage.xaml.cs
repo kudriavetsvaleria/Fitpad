@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Fitpad.Model.Repositories;
 
 
 
@@ -40,6 +41,8 @@ namespace Fitpad.View.Pages
             }
         }
 
+        private readonly UserRepository _userRepository = new UserRepository();
+
         private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string name = UsernameTextBox.Text.Trim();
@@ -69,7 +72,19 @@ namespace Fitpad.View.Pages
                     Password = HashPassword(password)
                 };
 
+
                 await _registrationService.RegisterUserAsync(newUser);
+                await _userRepository.SaveUserAsync(newUser);
+
+                // ✅ Показываем сообщение об успешной регистрации
+                MessageBox.Show("Реєстрація успішна! Будь ласка, увійдіть у систему.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // ✅ Перенаправление на страницу авторизации
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
+
+                });
 
                 MessageBox.Show("Реєстрація завершена!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
         

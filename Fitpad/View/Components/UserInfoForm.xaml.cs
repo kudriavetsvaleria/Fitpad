@@ -6,18 +6,22 @@ using Fitpad.Model.Repositories;
 using System.Threading.Tasks;
 using Fitpad.View.Pages;
 using System.IO;
+using System.Windows.Navigation;
 
 namespace Fitpad.View.Components
 {
     public partial class UserInfoForm : UserControl
     {
         private readonly UserInfoRepository _userInfoRepository;
-        private readonly string _userId;
+        private string _userId;
+
 
         public UserInfoForm()
         {
             InitializeComponent();
             _userInfoRepository = new UserInfoRepository();
+            LoadUserIdFromSession();
+
         }
 
         public UserInfoForm(UserModel user) : this()
@@ -30,6 +34,19 @@ namespace Fitpad.View.Components
 
             _userId = user.Id;
             Console.WriteLine($"Инициализация формы UserInfoForm для пользователя с ID: {_userId}");
+        }
+
+
+        public void SetUserId(string userId)
+        {
+            _userId = userId;
+            Console.WriteLine($"📌 UserID установлен в UserInfoForm: {_userId}");
+        }
+
+        public void LoadUserIdFromSession()
+        {
+            _userId = UserSession.CurrentUserId;
+            Console.WriteLine($"📌 UserID загружен из UserSession: {_userId}");
         }
 
         public static void Logout()
@@ -46,7 +63,6 @@ namespace Fitpad.View.Components
 
             Console.WriteLine("🔹 UserSession очищен. Пользователь вышел.");
         }
-
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -75,21 +91,30 @@ namespace Fitpad.View.Components
                     Purpose = purpose
                 };
 
-                // ✅ Сохранение данных с обработкой возможных ошибок
+                // ✅ Сохранение данных анкеты
                 await SaveUserInfoAsync(userInfo);
 
-                // ✅ Обновление UI после успешного сохранения
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainViewModel = MainViewModel.Instance;
-                    if (mainViewModel != null)
-                    {
-                        Console.WriteLine("✅ Данные сохранены, открываем калькулятор!");
-                        mainViewModel.CurrentPage = new CalculateNutritionPage();
-                    }
-                });
+                // ✅ Получаем текущего пользователя из базы
+                var userRepository = new UserRepository();
+                var user = await userRepository.GetCurrentUserAsync();
 
-                MessageBox.Show("Дані успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (user == null)
+                {
+                    MessageBox.Show("❌ Помилка: Не вдалося завантажити профіль користувача.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // ✅ Обновляем UI после успешного сохранения
+                Application.Current.Dispatcher.Invoke(async () =>
+                {
+                    MessageBox.Show("Дані успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // 🔹 Обновляем панель навигации
+                    await MainViewModel.Instance.UpdateNavigationStateAsync();
+
+                    // 🔹 Переключаемся на страницу профиля
+                    NavigationService.GetNavigationService(this)?.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
+                });
 
             }
             catch (Exception ex)
@@ -97,6 +122,8 @@ namespace Fitpad.View.Components
                 MessageBox.Show($"Помилка під час збереження даних: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
 
         private bool ValidateInputs(out string gender, out int age, out int height, out double weight, out string activityLevel, out string purpose)
         {
@@ -114,12 +141,6 @@ namespace Fitpad.View.Components
             string weightText = WeightInput?.Text;
             activityLevel = (ActivityLevelInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
 
-
-            if (string.IsNullOrWhiteSpace(gender) || string.IsNullOrWhiteSpace(activityLevel) || string.IsNullOrWhiteSpace(purpose))
-            {
-                MessageBox.Show("Будь ласка, виберіть усі необхідні параметри.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
 
             if (!int.TryParse(ageText, out age) || age <= 0 || age > 120)
             {
