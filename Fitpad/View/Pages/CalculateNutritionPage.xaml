@@ -257,7 +257,7 @@
                     </DataGridTextColumn>
 
                     <!-- Кнопка удаления -->
-                    <DataGridTemplateColumn Width="35">
+                    <DataGridTemplateColumn Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Click="DeleteProduct_Click" Margin="8,0,0,0"

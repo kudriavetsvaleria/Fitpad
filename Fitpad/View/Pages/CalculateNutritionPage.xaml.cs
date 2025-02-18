@@ -24,6 +24,8 @@ namespace Fitpad.View.Pages
         private static CalculateNutritionPage _instance; // Экземпляр Singleton
         private static readonly object _lock = new object(); // Объект блокировки
 
+        private bool _isCalculatorEnabled = false;
+
         private string _manualEntryProductName;
         private double _manualEntryWeight;
 
@@ -111,32 +113,27 @@ namespace Fitpad.View.Pages
 
         public static async Task<bool> GetInstanceWithCheck()
         {
-            if (_isProcessing) return false; // 🔄 Если процесс уже идет — выходим
+            if (_isProcessing) return false;
 
-            _isProcessing = true; // 🛑 Блокируем повторный вызов
-
+            _isProcessing = true;
             string userId = UserSession.CurrentUserId;
 
             if (string.IsNullOrEmpty(userId))
             {
                 Console.WriteLine("❌ Ошибка: пользователь не найден.");
+                MessageBox.Show("Вийдіть в акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 _isProcessing = false;
-                return false; // ❌ Не открываем калькулятор
+                return false;
             }
 
             var userInfo = await GetUserInfoAsync(userId);
 
             if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
             {
-                Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем анкету.");
-
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    MainViewModel.Instance.CurrentPage = new UserInfoForm(); // ✅ Открываем анкету
-                });
-
+                Console.WriteLine("❌ Ошибка: данные пользователя отсутствуют.");
+                MessageBox.Show("Вийдіть в акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 _isProcessing = false;
-                return false; // ❌ НЕ открываем калькулятор
+                return false;
             }
 
             // ✅ Данные заполнены, открываем калькулятор
@@ -146,7 +143,7 @@ namespace Fitpad.View.Pages
             });
 
             _isProcessing = false;
-            return true; // ✅ Переход выполнен
+            return true;
         }
 
 
@@ -175,52 +172,37 @@ namespace Fitpad.View.Pages
 
         private async Task UpdateUserNutritionData(string userId)
         {
-            var userInfo = await GetUserInfoAsync(userId);
-
-            // Проверяем, заполнены ли основные данные пользователя
-            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            if (string.IsNullOrEmpty(userId))
             {
-                Console.WriteLine("❌ Данные пользователя отсутствуют или некорректны. Открываем форму UserInfoForm...");
-
+                Console.WriteLine("❌ Ошибка: UserId пустой!");
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var mainViewModel = MainViewModel.Instance;
-                    if (mainViewModel != null)
-                    {
-                        Console.WriteLine("🔹 Открываем UserInfoForm в основном окне...");
-                        mainViewModel.CurrentPage = new UserInfoForm();
-                    }
+                    MessageBox.Show("Вийдіть у свій акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
-
-                // Ожидаем, пока данные будут заполнены
-                while (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
-                {
-                    await Task.Delay(500); // Ожидание обновления данных
-                    userInfo = await GetUserInfoAsync(userId);
-                }
-
-                Console.WriteLine("✅ Данные успешно заполнены. Открываем калькулятор...");
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var mainViewModel = MainViewModel.Instance;
-                    if (mainViewModel != null)
-                    {
-                        mainViewModel.CurrentPage = new CalculateNutritionPage(userInfo);
-                    }
-                });
-
-                return; // Выходим из метода после загрузки калькулятора
+                return;
             }
 
-            // ✅ Обновляем норму калорий после получения данных пользователя
+            var userInfo = await GetUserInfoAsync(userId);
+
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            {
+                Console.WriteLine("❌ Данные пользователя отсутствуют или некорректны.");
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show("Увійдіть у свій акаунт", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+
+                return; // Остановить выполнение, если данные некорректны
+            }
+
+            // ✅ Данные корректны, продолжаем обновление информации
             _viewModel.CalorieNorm = _viewModel.CalculateDailyCalorieIntake(userInfo);
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 if (CalorieIntakeText != null)
                 {
-                    string[] calorieParts = CalorieIntakeText.Text.Split('/');
-                    double currentCalories = double.TryParse(calorieParts[0].Trim(), out double parsedCurrent) ? parsedCurrent : 0;
                     CalorieIntakeText.Text = $"Ккал: {_viewModel.CurrentCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
                     Console.WriteLine($"🔥 Обновлён UI: {CalorieIntakeText.Text}");
                 }
@@ -232,10 +214,32 @@ namespace Fitpad.View.Pages
 
         private static async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
-            var firestoreDb = new FirestoreService().GetFirestoreDb();
-            var userInfoDoc = await firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
-            return userInfoDoc.Exists ? userInfoDoc.ConvertTo<UserInfoModel>() : null;
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("❌ Ошибка: UserId пустой или неопределённый!");
+                return null;
+            }
+
+            try
+            {
+                var firestoreDb = new FirestoreService().GetFirestoreDb();
+                var userInfoDoc = await firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
+
+                if (!userInfoDoc.Exists)
+                {
+                    Console.WriteLine("❌ Ошибка: Данные пользователя не найдены в Firestore!");
+                    return null;
+                }
+
+                return userInfoDoc.ConvertTo<UserInfoModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка при получении данных пользователя: {ex.Message}");
+                return null;
+            }
         }
+
 
         private string GetCurrentUserId()
         {

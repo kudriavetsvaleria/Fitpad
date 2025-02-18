@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using System.IO;
 using System.Windows.Media;
+using Fitpad.View.Components;
 
 namespace Fitpad.View.Pages
 {
@@ -23,7 +24,7 @@ namespace Fitpad.View.Pages
             InitializeComponent();
             _firestoreService = new FirestoreService();
             _profileViewModel = profileViewModel;
-            DataContext = profileViewModel; ;
+            DataContext = profileViewModel;
 
             if (_profileViewModel.CurrentUser != null)
             {
@@ -35,7 +36,9 @@ namespace Fitpad.View.Pages
                 Console.WriteLine("❌ Нет текущего пользователя!");
             }
 
+            CheckUserInfoAndShowForm(); // Проверяем данные и при необходимости открываем анкету
         }
+
 
 
         public static ProfilePage GetInstance(ProfileViewModel profileViewModel = null)
@@ -336,6 +339,30 @@ namespace Fitpad.View.Pages
 
             NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
         }
+
+        private async void CheckUserInfoAndShowForm()
+        {
+            string userId = UserSession.CurrentUserId;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("❌ Ошибка: пользователь не найден.");
+                return;
+            }
+
+            var userInfo = await _firestoreService.GetUserInfoAsync(userId);
+
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
+            {
+                Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем анкету.");
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MainViewModel.Instance.CurrentPage = new UserInfoForm(); // ✅ Открываем анкету
+                });
+            }
+        }
+
 
 
         private void ClearCurrentUserFile()
