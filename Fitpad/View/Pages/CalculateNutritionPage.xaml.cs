@@ -67,10 +67,18 @@ namespace Fitpad.View.Pages
             Console.WriteLine("📊 DataContext установлен!");
 
             // 🔥 Вызываем обновление диаграмм после загрузки данных
-            _viewModel.UpdatePieChart();
-            UpdateCalorieDisplay();
+            DelayAndUpdateUI();
         }
 
+        private async void DelayAndUpdateUI()
+        {
+            await Task.Delay(300); // Задержка 100 мс
+            Console.WriteLine("⏳ 100 мс прошло, обновляем диаграммы...");
+
+            _viewModel.UpdatePieChart();
+            UpdateCalorieDisplay();
+
+        }
 
         private void UpdateCalorieDisplay(double? customCalories = null)
         {
