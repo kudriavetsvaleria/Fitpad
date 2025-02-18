@@ -1,26 +1,33 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using Fitpad.Model.Entities;
+using Fitpad.Services;
+using Fitpad.View.Components;
 using Fitpad.ViewModel.PagesViewModels;
 using Google.Cloud.Firestore;
-using Fitpad.Model.Entities; // ✅ Добавляем пространство имен, чтобы видеть DishModel
-using Fitpad.View.Components; // ✅ Добавляем, чтобы видеть DishDetailPage
 
 namespace Fitpad.View.Pages
 {
     public partial class DishesPage : Page
     {
         private readonly DishViewModel _viewModel;
+        private readonly FirestoreService _firestoreService;
 
         public DishesPage()
         {
             InitializeComponent();
+            _firestoreService = new FirestoreService();
             _viewModel = new DishViewModel(FirestoreDb.Create("fitpad-2025"));
             DataContext = _viewModel;
 
             _viewModel.LoadUserDishesAsync();
-
             CreateDishButton.DataContext = MainViewModel.Instance;
+
+            DeleteDishButton.IsEnabled = false; // Отключаем кнопку удаления по умолчанию
         }
 
         // 🔍 Обработчик поиска
@@ -29,11 +36,13 @@ namespace Fitpad.View.Pages
             string query = SearchBox.Text.ToLower();
             if (string.IsNullOrWhiteSpace(query))
             {
-                DishesList.ItemsSource = _viewModel.Dishes; // Вернуть весь список
+                DishesList.ItemsSource = _viewModel.Dishes;
             }
             else
             {
-                var filteredDishes = _viewModel.Dishes.Where(d => d.Name.ToLower().Contains(query)).ToList();
+                var filteredDishes = _viewModel.Dishes
+                    .Where(d => d.Name.ToLower().Contains(query))
+                    .ToList();
                 DishesList.ItemsSource = filteredDishes;
             }
         }
@@ -55,12 +64,78 @@ namespace Fitpad.View.Pages
             }
         }
 
-        // ✅ Новый обработчик выбора блюда
+        // ✅ Обработчик выбора блюда (включает кнопку удаления)
         private void DishesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DishesList.SelectedItem is DishModel selectedDish)
             {
-                NavigationService?.Navigate(new DishDetailPage(selectedDish));
+                Console.WriteLine($"📌 Выбрано блюдо: {selectedDish.Name}");
+
+                if (NavigationService != null)
+                {
+                    NavigationService.Navigate(new DishDetailPage(selectedDish));
+                }
+                else
+                {
+                    Console.WriteLine("❌ Ошибка: NavigationService = null");
+                }
+            }
+        }
+
+
+        // ⭐ Обработчик избранного
+        private async void ToggleFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is DishModel dish)
+            {
+                Console.WriteLine($"🔹 Попытка изменить избранное для блюда ID: {dish.Id}");
+
+                dish.IsFavorite = !dish.IsFavorite;
+
+                try
+                {
+                    await _firestoreService.UpdateFavoriteStatus(dish.Id, dish.IsFavorite);
+                    DishesList.Items.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Ошибка обновления избранного: {ex.Message}");
+                }
+            }
+        }
+
+
+        // 🗑 Удаление блюда
+        private async void DeleteDish_Click(object sender, RoutedEventArgs e)
+        {
+            if (DishesList.SelectedItem is DishModel selectedDish)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "Ви впевнені, що хочете видалити цю страву?",
+                    "Підтвердження", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Console.WriteLine($"❌ Удаление блюда с ID: {selectedDish.Id}");
+
+                    try
+                    {
+                        await _firestoreService.DeleteDishFromFirebase(selectedDish.Id);
+
+                        // Удаляем из списка
+                        _viewModel.Dishes.Remove(selectedDish);
+                        DishesList.Items.Refresh();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Ошибка удаления блюда: {ex.Message}");
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Будь ласка, спочатку оберіть страву для видалення.",
+                    "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

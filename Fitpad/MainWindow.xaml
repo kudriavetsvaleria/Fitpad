@@ -145,7 +145,7 @@
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=CalculateNutrition}"
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Калькулятор калорий}"
                             Command="{Binding ShowCalculateNutritionCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>

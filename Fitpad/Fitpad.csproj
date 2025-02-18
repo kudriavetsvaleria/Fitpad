@@ -182,6 +182,7 @@
     <Compile Include="Converters\BooleanToAngleConverter.cs" />
     <Compile Include="Converters\ButtonColorConverter.cs" />
     <Compile Include="Converters\ButtonVisibilityConverter.cs" />
+    <Compile Include="Converters\FavoriteIconConverter.cs" />
     <Compile Include="Converters\HalfConverter.cs" />
     <Compile Include="Model\Entities\DishModel.cs" />
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />
@@ -385,6 +386,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Images\search-icon.png" />
+    <Resource Include="Images\delete.png" />
     <Content Include="Images\star_grey.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
