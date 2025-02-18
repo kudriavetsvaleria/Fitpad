@@ -107,6 +107,12 @@ public class MainViewModel : INotifyPropertyChanged
         LogoutCommand = new RelayCommand(o => Logout());
 
         InitializeCurrentPageAsync();
+        InitializeNavigationState();
+    }
+
+    private async void InitializeNavigationState()
+    {
+        await UpdateNavigationStateAsync();
     }
 
     private void Logout()
@@ -173,6 +179,9 @@ public class MainViewModel : INotifyPropertyChanged
     {
         Console.WriteLine("🔄 Обновление состояния навигации...");
 
+        // Загружаем сохранённый UserID из файла
+        UserSession.LoadUserIdFromFile();
+
         if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
             IsUserAuthenticated = false;
@@ -197,7 +206,9 @@ public class MainViewModel : INotifyPropertyChanged
             Console.WriteLine("⚠ Пользователь авторизован, но профиль не заполнен.");
         }
 
-        // Обновляем интерфейс
+        // 🔄 Обновляем UI
+        OnPropertyChanged(nameof(IsUserAuthenticated));
+        OnPropertyChanged(nameof(IsProfileComplete));
         OnPropertyChanged(nameof(IsFullNavigationVisible));
         OnPropertyChanged(nameof(IsLimitedNavigationVisible));
     }

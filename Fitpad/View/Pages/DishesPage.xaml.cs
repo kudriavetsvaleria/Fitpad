@@ -27,7 +27,7 @@ namespace Fitpad.View.Pages
             _viewModel.LoadUserDishesAsync();
             CreateDishButton.DataContext = MainViewModel.Instance;
 
-            DeleteDishButton.IsEnabled = false; // Отключаем кнопку удаления по умолчанию
+       
         }
 
         // 🔍 Обработчик поиска
@@ -108,35 +108,33 @@ namespace Fitpad.View.Pages
         // 🗑 Удаление блюда
         private async void DeleteDish_Click(object sender, RoutedEventArgs e)
         {
-            if (DishesList.SelectedItem is DishModel selectedDish)
+            if (sender is Button button && button.Tag is DishModel dish)
             {
                 MessageBoxResult result = MessageBox.Show(
-                    "Ви впевнені, що хочете видалити цю страву?",
+                    $"Ви впевнені, що хочете видалити '{dish.Name}'?",
                     "Підтвердження", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    Console.WriteLine($"❌ Удаление блюда с ID: {selectedDish.Id}");
+                    Console.WriteLine($"❌ Видалення блюда: {dish.Name}");
 
                     try
                     {
-                        await _firestoreService.DeleteDishFromFirebase(selectedDish.Id);
+                        await _firestoreService.DeleteDishFromFirebase(dish.Id);
 
                         // Удаляем из списка
-                        _viewModel.Dishes.Remove(selectedDish);
+                        _viewModel.Dishes.Remove(dish);
                         DishesList.Items.Refresh();
+
+                        Console.WriteLine($"✅ Блюдо '{dish.Name}' видалено.");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"❌ Ошибка удаления блюда: {ex.Message}");
+                        Console.WriteLine($"❌ Помилка видалення: {ex.Message}");
                     }
                 }
             }
-            else
-            {
-                MessageBox.Show("Будь ласка, спочатку оберіть страву для видалення.",
-                    "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
+
     }
 }

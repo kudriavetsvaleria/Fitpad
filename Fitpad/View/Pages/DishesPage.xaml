@@ -75,6 +75,8 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <!-- Для кнопки удаления -->
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Название блюда -->
@@ -83,7 +85,7 @@
                            Padding="10"
                            Grid.Column="0"/>
 
-                                <!-- Кнопка избранного (справа от блюда) -->
+                                <!-- Кнопка избранного -->
                                 <Button Grid.Column="1"
                         Click="ToggleFavorite_Click"
                         Background="Transparent"
@@ -91,6 +93,19 @@
                         Tag="{Binding}">
                                     <Image Source="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"
                            Width="25" Height="25"/>
+                                </Button>
+
+                                <!-- Кнопка удаления (крестик) -->
+                                <Button Grid.Column="2"
+                        Click="DeleteDish_Click"
+                        Background="Transparent"
+                        Foreground="Red"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Tag="{Binding}"
+                        ToolTip="Видалити страву">
+                                    ✖
                                 </Button>
                             </Grid>
 
@@ -103,47 +118,8 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
 
-
             </ListView>
         </Border>
-
-        <!-- Кнопка "Удалить" в правом нижнем углу -->
-        <Button x:Name="DeleteDishButton"
-        Grid.Row="3"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Margin="0,0,10,30"
-        Click="DeleteDish_Click"
-        Background="#FF4444"
-        Foreground="White"
-        Width="60"
-        Height="60"
-        BorderThickness="0"
-        ToolTip="Видалити страву"
-        Cursor="Hand">
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
-                    CornerRadius="15"
-                    Width="60"
-                    Height="60"
-                    Padding="10"
-                    BorderBrush="Transparent">
-                        <Grid>
-                            <Image Source="pack://application:,,,/Images/delete.png"
-                           Width="30"
-                           Height="30"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-
-
-
-
 
         <!-- Кнопка создания блюда -->
         <Button Grid.Row="3"
