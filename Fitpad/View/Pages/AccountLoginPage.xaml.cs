@@ -116,7 +116,11 @@ namespace Fitpad.View.Pages
                 UserSession.SaveUserIdToFile(user.Id);
                 Console.WriteLine($"📌 Установлен UserID после авторизации: {UserSession.CurrentUserId}");
 
-                // Переход на страницу профиля
+                // ✅ Обновляем MainViewModel, чтобы отображались все кнопки
+                await MainViewModel.Instance.UpdateNavigationStateAsync();
+
+
+                // ✅ Переход на страницу профиля
                 NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
 
             }
@@ -125,6 +129,7 @@ namespace Fitpad.View.Pages
                 Console.WriteLine($"❌ Ошибка авторизации: {ex.Message}");
             }
         }
+
 
 
         // Метод для сохранения данных пользователя в JSON-файл

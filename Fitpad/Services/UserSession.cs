@@ -19,6 +19,20 @@ public static class UserSession
         }
     }
 
+    public static void Logout()
+    {
+        CurrentUserId = string.Empty;
+        string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+
+        Console.WriteLine("🔹 UserSession очищен. Пользователь вышел.");
+    }
+
+
     // ✅ Загрузка UserID из файла
     static UserSession()
     {

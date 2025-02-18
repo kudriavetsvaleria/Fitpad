@@ -5,6 +5,7 @@ using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
 using System.Threading.Tasks;
 using Fitpad.View.Pages;
+using System.IO;
 
 namespace Fitpad.View.Components
 {
@@ -30,6 +31,22 @@ namespace Fitpad.View.Components
             _userId = user.Id;
             Console.WriteLine($"Инициализация формы UserInfoForm для пользователя с ID: {_userId}");
         }
+
+        public static void Logout()
+        {
+            // ✅ Используем `UserSession.CurrentUserId` вместо `CurrentUserId`
+            UserSession.CurrentUserId = string.Empty;
+
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            Console.WriteLine("🔹 UserSession очищен. Пользователь вышел.");
+        }
+
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {

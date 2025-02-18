@@ -17,6 +17,8 @@ using Fitpad.View.Components;
 
 public class MainViewModel : INotifyPropertyChanged
 {
+    public bool IsFullNavigationVisible => IsUserAuthenticated && IsProfileComplete;
+    public bool IsLimitedNavigationVisible => !IsFullNavigationVisible;
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
     private readonly ProfileViewModel _profileViewModel;
     private readonly UserRepository _userRepository;
@@ -33,6 +35,31 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isUserAuthenticated;
+    public bool IsUserAuthenticated
+    {
+        get => _isUserAuthenticated;
+        set
+        {
+            _isUserAuthenticated = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsFullNavigationVisible));
+            OnPropertyChanged(nameof(IsLimitedNavigationVisible));
+        }
+    }
+
+    private bool _isProfileComplete;
+    public bool IsProfileComplete
+    {
+        get => _isProfileComplete;
+        set
+        {
+            _isProfileComplete = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsFullNavigationVisible));
+        }
+    }
+
     public ICommand ShowNewsCommand { get; }
     public ICommand ShowNutritionCommand { get; }
     public ICommand ShowWorkoutsCommand { get; }
@@ -44,6 +71,8 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowDishesCommand { get; }
     public ICommand ShowCalculateNutritionCommand { get; }
     public ICommand ShowConstructorPageCommand { get; }
+
+    public ICommand LogoutCommand { get; }
 
     private bool _isNavigationExpanded = true;
     public bool IsNavigationExpanded
@@ -67,48 +96,110 @@ public class MainViewModel : INotifyPropertyChanged
         ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
-  
+
         ShowDishesCommand = new RelayCommand(async o => await NavigateToAsync<DishesPage>());
         ShowCalculateNutritionCommand = new RelayCommand(async o => await NavigateToAsync<CalculateNutritionPage>());
         ShowConstructorPageCommand = new RelayCommand(async o => await NavigateToAsync<ConstructorPage>());
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 
-        // Проверяем, выполнен ли вход пользователя
+        // ✅ Добавляем команду выхода
+        LogoutCommand = new RelayCommand(o => Logout());
+
         InitializeCurrentPageAsync();
     }
+
+    private void Logout()
+    {
+        Console.WriteLine("🚪 Выход из аккаунта...");
+
+        // ✅ Удаляем сохраненный UserID
+        UserSession.Logout();
+
+        // ✅ Сбрасываем состояние пользователя
+        IsUserAuthenticated = false;
+        IsProfileComplete = false;
+
+
+        // ✅ Обновляем навигацию
+        OnPropertyChanged(nameof(IsUserAuthenticated));
+        OnPropertyChanged(nameof(IsProfileComplete));
+        OnPropertyChanged(nameof(IsFullNavigationVisible));
+        OnPropertyChanged(nameof(IsLimitedNavigationVisible));
+
+        // ✅ Перенаправляем на страницу входа
+        CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
+
+        Console.WriteLine("✅ Выход выполнен. Отображаются только кнопки 'Регистрация', 'Авторизация' и 'Профиль'.");
+    }
+
 
     private async void InitializeCurrentPageAsync()
     {
         Console.WriteLine("🏁 Инициализация стартовой страницы...");
 
-        // 🔹 Загружаем UserID из файла перед работой с ним
         UserSession.LoadUserIdFromFile();
-
-        Console.WriteLine($"🔹 После загрузки файла, UserSession.CurrentUserId = {UserSession.CurrentUserId}");
+        Console.WriteLine($"🔹 UserSession.CurrentUserId = {UserSession.CurrentUserId}");
 
         if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
-            Console.WriteLine("❌ UserSession.CurrentUserId пуст. Загружаем страницу входа...");
-            CurrentPage = AccountRegistrationPage.GetInstance(); // Загружаем страницу авторизации
+            Console.WriteLine("❌ Пользователь не авторизован. Показываем ограниченное меню.");
+            IsUserAuthenticated = false;
+            IsProfileComplete = false;
+            CurrentPage = AccountRegistrationPage.GetInstance();
             return;
         }
 
         var firestoreService = new FirestoreService();
         var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
 
-        if (userInfo != null)
+        if (userInfo != null && userInfo.Weight > 0 && userInfo.Height > 0 && userInfo.Age > 0)
         {
-            Console.WriteLine($"✅ Данные профиля загружены: {userInfo.Weight}, {userInfo.Age}");
-
-            // 🔹 Устанавливаем страницу новостей, если вход выполнен
+            Console.WriteLine("✅ Профиль заполнен. Полное меню доступно.");
+            IsUserAuthenticated = true;
+            IsProfileComplete = true;
             CurrentPage = NewsPage.GetInstance();
         }
         else
         {
-            Console.WriteLine("❌ Ошибка загрузки профиля. Перенаправляем на страницу входа.");
-            CurrentPage = AccountRegistrationPage.GetInstance(); // Загружаем страницу регистрации 
+            Console.WriteLine("⚠ Пользователь авторизован, но профиль не заполнен. Ограниченное меню.");
+            IsUserAuthenticated = true;
+            IsProfileComplete = false;
+            CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(new UserModel { Id = UserSession.CurrentUserId }));
         }
+    }
+
+    public async Task UpdateNavigationStateAsync()
+    {
+        Console.WriteLine("🔄 Обновление состояния навигации...");
+
+        if (string.IsNullOrEmpty(UserSession.CurrentUserId))
+        {
+            IsUserAuthenticated = false;
+            IsProfileComplete = false;
+            Console.WriteLine("❌ Пользователь не авторизован.");
+            return;
+        }
+
+        var firestoreService = new FirestoreService();
+        var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
+
+        if (userInfo != null && userInfo.Weight > 0 && userInfo.Height > 0 && userInfo.Age > 0)
+        {
+            IsUserAuthenticated = true;
+            IsProfileComplete = true;
+            Console.WriteLine("✅ Профиль заполнен. Все кнопки доступны.");
+        }
+        else
+        {
+            IsUserAuthenticated = true;
+            IsProfileComplete = false;
+            Console.WriteLine("⚠ Пользователь авторизован, но профиль не заполнен.");
+        }
+
+        // Обновляем интерфейс
+        OnPropertyChanged(nameof(IsFullNavigationVisible));
+        OnPropertyChanged(nameof(IsLimitedNavigationVisible));
     }
 
 

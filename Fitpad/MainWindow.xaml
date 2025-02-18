@@ -115,6 +115,7 @@
 
                 <!-- Навигационные кнопки -->
                 <StackPanel Grid.Row="0">
+                    <StackPanel Visibility="{Binding IsFullNavigationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Новини}"
                             Command="{Binding ShowNewsCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
@@ -145,6 +146,9 @@
                             Command="{Binding ShowProfileCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsLimitedNavigationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
                     <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Авторизація}"
                             Command="{Binding ShowAccountLoginCommand}"
@@ -155,6 +159,12 @@
                             Command="{Binding ShowAccountRegistrationCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
+
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
+                            Command="{Binding ShowProfileCommand}"
+                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+                    </StackPanel>
 
                 </StackPanel>
 
