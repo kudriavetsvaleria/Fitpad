@@ -380,8 +380,30 @@ namespace Fitpad.View.Pages
 
             // ✅ Сбрасываем все поля после успешного сохранения
             ResetForm();
+
+            // ✅ Переход на страницу DishesPage
+            NavigateToDishesPage();
         }
 
+
+        /// <summary>
+        /// Метод для перехода на страницу DishesPage и обновления списка блюд
+        /// </summary>
+        private void NavigateToDishesPage()
+        {
+            if (NavigationService != null)
+            {
+                var dishesPage = new DishesPage(); // Создаем новый экземпляр страницы
+                NavigationService.Navigate(dishesPage); // Навигация
+
+                // 🔄 Обновляем данные (чтобы блюдо сразу появилось в списке)
+                dishesPage.RefreshDishesList();
+            }
+            else
+            {
+                Console.WriteLine("❌ Ошибка: NavigationService = null");
+            }
+        }
 
         private void ResetForm()
         {

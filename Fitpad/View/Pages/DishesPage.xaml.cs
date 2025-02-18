@@ -104,6 +104,13 @@ namespace Fitpad.View.Pages
             }
         }
 
+        public void RefreshDishesList()
+        {
+            _viewModel.LoadUserDishesAsync();
+            DishesList.ItemsSource = null;
+            DishesList.ItemsSource = _viewModel.Dishes;
+            Console.WriteLine("🔄 Список страв оновлено!");
+        }
 
         // 🗑 Удаление блюда
         private async void DeleteDish_Click(object sender, RoutedEventArgs e)

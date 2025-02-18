@@ -5,7 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       Title="ProfilePage"
-      Background="#EDEDED">
+      Background="White">
     
     
 
@@ -31,7 +31,7 @@
                 </Ellipse>
 
                 <!-- Информация о пользователе -->
-                <Border Background="#F8F8F8" Padding="15" CornerRadius="15" Width="320">
+                <Border Background="#F7F7FC" Padding="15" CornerRadius="15" Width="320">
                     <StackPanel>
                         <TextBlock Text="Інформація" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
 
