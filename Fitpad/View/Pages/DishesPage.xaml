@@ -91,11 +91,11 @@
                 FontSize="16"
                 FontWeight="Bold"
                 HorizontalAlignment="Center"
-                Command="{Binding ShowMyDishesCommand}"
+                Command="{Binding ShowConstructorPageCommand}"
                 Margin="0,10,0,40">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="#3E2E8F" CornerRadius="15" Padding="10,5">
+                    <Border Background="#3E2E8F" CornerRadius="20" Padding="10,5">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>

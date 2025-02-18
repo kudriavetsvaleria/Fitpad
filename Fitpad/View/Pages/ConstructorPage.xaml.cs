@@ -19,13 +19,13 @@ using System.Windows.Data;
 using static Fitpad.Services.FirestoreService;
 using Fitpad.Model.Repositories;
 using Newtonsoft.Json;
-using static Fitpad.View.Pages.MyDishesPage;
+using static Fitpad.View.Pages.ConstructorPage;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Fitpad.View.Pages
 {
-    public partial class MyDishesPage : Page, INotifyPropertyChanged
+    public partial class ConstructorPage : Page, INotifyPropertyChanged
     {
         private List<NutritionModel> _products = new List<NutritionModel>();
         private TranslatorService _translatorService = new TranslatorService();
@@ -50,11 +50,30 @@ namespace Fitpad.View.Pages
                 OnPropertyChanged();
             }
         }
+        private void UpdateTotalKBJU()
+        {
+            double totalCalories = _products.Sum(p => p.Calories);
+            double totalProtein = _products.Sum(p => p.Protein);
+            double totalFats = _products.Sum(p => p.Fats);
+            double totalCarbs = _products.Sum(p => p.Carbs);
+            double totalSugar = _products.Sum(p => p.Sugar);
 
-        public MyDishesPage()
+            TotalCaloriesText.Text = $"Калорії: {totalCalories:F1} ккал";
+            TotalProteinText.Text = $"Білки: {totalProtein:F1} г";
+            TotalFatsText.Text = $"Жири: {totalFats:F1} г";
+            TotalCarbsText.Text = $"Вуглеводи: {totalCarbs:F1} г";
+            TotalSugarText.Text = $"Цукор: {totalSugar:F1} г";
+        }
+
+
+        public ConstructorPage()
         {
             InitializeComponent();
             ProductListBox.ItemsSource = _products;
+
+            // ✅ Обновляем КБЖУ при загрузке
+            UpdateTotalKBJU();
+
             _macroSeries = new SeriesCollection
             {
                 new PieSeries { Title = "Білки", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Blue },
@@ -62,13 +81,10 @@ namespace Fitpad.View.Pages
                 new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Green },
                 new PieSeries { Title = "Цукор", Values = new ChartValues<double> { 0 }, DataLabels = true, Fill = Brushes.Orange }
             };
-            this.DataContext = this;
 
             MacroChart.Series = _macroSeries;
-            DataContext = this; // Привязываем DataContext к странице
-            ValidateInputs();
-            SetDefaultChart();
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -80,6 +96,22 @@ namespace Fitpad.View.Pages
         private void InputFields_TextChanged(object sender, TextChangedEventArgs e)
         {
             ValidateInputs();
+        }
+
+        private void ProductSearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductSearchBox.Text == "")
+            {
+                PlaceholderText.Visibility = Visibility.Collapsed; // Скрываем placeholder
+            }
+        }
+
+        private void ProductSearchBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductSearchBox.Text))
+            {
+                PlaceholderText.Visibility = Visibility.Visible; // Показываем placeholder снова
+            }
         }
 
 
@@ -150,11 +182,14 @@ namespace Fitpad.View.Pages
                 return;
             }
 
+            // 🔹 Пересчитываем в граммы для расчётов
+            double quantityInGrams = ConvertToGrams(quantity, unit);
+
             // 🔹 Пересчитываем КБЖУ с учетом введенного количества
-            double factor = quantity / 100.0;
+            double factor = quantityInGrams / 100.0;
             double calories = _pendingCalories * factor;
             double protein = _pendingProtein * factor;
-            double Fats = _pendingFats * factor;
+            double fats = _pendingFats * factor;
             double carbs = _pendingCarbs * factor;
             double sugar = _pendingSugar * factor;
 
@@ -163,10 +198,11 @@ namespace Fitpad.View.Pages
             {
                 Name = _pendingProductName,
                 Quantity = quantity,
-                Unit = unit,
+                Unit = unit, // Отображаемая единица измерения
+                QuantityInGrams = quantityInGrams, // Для расчётов
                 Calories = calories,
                 Protein = protein,
-                Fats = Fats,
+                Fats = fats,
                 Carbs = carbs,
                 Sugar = sugar
             };
@@ -177,12 +213,32 @@ namespace Fitpad.View.Pages
             ProductListBox.ItemsSource = null;
             ProductListBox.ItemsSource = _products;
 
+            // ✅ Обновляем КБЖУ
+            UpdateTotalKBJU();
+
             // ✅ Обновляем диаграмму КБЖУ
             UpdatePieChart();
 
             // ✅ Закрываем окно
             OverlayCanvas.Visibility = Visibility.Collapsed;
             QuantityInputPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private double ConvertToGrams(double quantity, string unit)
+        {
+            switch (unit)
+            {
+                case "г":
+                    return quantity; // Уже в граммах
+                case "кг":
+                    return quantity * 1000; // 1 кг = 1000 г
+                case "шт":
+                    return quantity * 200; // Средний вес 1 штуки (пример, можно сделать API-запрос)
+                case "л":
+                    return quantity * 1000; // 1 литр = 1000 г (упрощение для воды)
+                default:
+                    return quantity; // По умолчанию, если неизвестная единица
+            }
         }
 
 
@@ -217,6 +273,26 @@ namespace Fitpad.View.Pages
             OverlayCanvas.Visibility = Visibility.Collapsed;
             QuantityInputPanel.Visibility = Visibility.Collapsed;
         }
+
+
+        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.Text == "Введіть назву продукту...")
+            {
+                textBox.Text = string.Empty;
+                textBox.Foreground = Brushes.Black;
+            }
+        }
+
+        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                textBox.Text = "Введіть назву продукту...";
+                textBox.Foreground = Brushes.Gray;
+            }
+        }
+
 
         private async void SearchProduct_Click(object sender, RoutedEventArgs e)
         {
@@ -327,15 +403,19 @@ namespace Fitpad.View.Pages
             string newImage = "pack://siteoforigin:,,,/Images/star_grey.png";
             FavoriteIcon.Source = new BitmapImage(new Uri(newImage, UriKind.RelativeOrAbsolute));
 
-            // Удаление загруженной картинки (если была)
-            DishImage.Source = null;
-            DishImage.Visibility = Visibility.Collapsed;
+            // ✅ Обнуление информации КБЖУ
+            TotalCaloriesText.Text = "Калорії: 0.0 ккал";
+            TotalProteinText.Text = "Білки: 0.0 г";
+            TotalFatsText.Text = "Жири: 0.0 г";
+            TotalCarbsText.Text = "Вуглеводи: 0.0 г";
+            TotalSugarText.Text = "Цукор: 0.0 г";
 
-            // Сброс диаграммы КБЖУ
+            // ✅ Сброс диаграммы КБЖУ
             SetDefaultChart();
 
             Console.WriteLine("✅ Форма сброшена!");
         }
+
 
         private void RemoveProduct_Click(object sender, RoutedEventArgs e)
         {
@@ -343,10 +423,17 @@ namespace Fitpad.View.Pages
             {
                 _products.Remove(product);
                 ProductListBox.Items.Refresh();
-                UpdatePieChart(); // Обновляем диаграмму после удаления
+
+                // ✅ Обновляем КБЖУ после удаления
+                UpdateTotalKBJU();
+
+                // ✅ Обновляем диаграмму после удаления
+                UpdatePieChart();
+
                 Console.WriteLine($"❌ Продукт {product.Name} удалён.");
             }
         }
+
 
         private void EditProduct_Click(object sender, RoutedEventArgs e)
         {
@@ -374,6 +461,38 @@ namespace Fitpad.View.Pages
                 ProductListBox.Items.Refresh();
             }
         }
+
+        private void UnitComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (QuantityBox == null || UnitComboBox.SelectedItem == null)
+                return;
+
+            string selectedUnit = (UnitComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+            double quantity;
+
+            if (!double.TryParse(QuantityBox.Text, out quantity))
+            {
+                QuantityBox.Text = "0"; // Если пользователь ввел неверные данные
+                return;
+            }
+
+            double quantityInGrams = ConvertToGrams(quantity, selectedUnit);
+
+            // Сохранение данных
+            QuantityBox.Text = quantityInGrams.ToString("0.##"); // Округляем до 2 знаков
+        }
+
+
+        // 🔹 Вызови `UpdateTotalKBJU()` после сохранения изменений
+        private void SaveEditedProduct()
+        {
+            // ✅ После сохранения обновляем КБЖУ
+            UpdateTotalKBJU();
+
+            // ✅ Обновляем диаграмму после редактирования
+            UpdatePieChart();
+        }
+
 
 
         private void ProductListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -528,37 +647,6 @@ namespace Fitpad.View.Pages
             });
 
             MacroChart.Series = _macroSeries;
-        }
-
-
-        private void DisplayImage(string filePath)
-        {
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = new Uri(filePath);
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
-
-            DishImage.Source = bitmap;
-            DishImage.Visibility = Visibility.Visible; // Делаем изображение видимым
-        }
-
-        private void AddPhoto_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
-            };
-
-            bool? result = dlg.ShowDialog();
-            if (result == true)
-            {
-                DishImage.Source = new BitmapImage(new Uri(dlg.FileName));
-                DishImage.Visibility = Visibility.Visible;
-
-                // Обновляем разметку, чтобы элементы съехали вниз
-                DishImage.UpdateLayout();
-            }
         }
 
 

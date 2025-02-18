@@ -17,7 +17,7 @@
 		</Grid.RowDefinitions>
 
 		<!-- 🔹 Заголовок с кнопкой редактирования -->
-		<Border Grid.Row="0" Background="#70A93D" CornerRadius="10" Height="60" Padding="15,10">
+		<Border Grid.Row="0" Background="#70A93D" CornerRadius="20" Height="60" Padding="15,10">
 			<Grid>
 				<!-- Название (Редактируемое) -->
 				<TextBox x:Name="DishNameBox"
@@ -104,7 +104,7 @@
 						<Setter.Value>
 							<ControlTemplate TargetType="Button">
 								<Border Background="{TemplateBinding Background}"
-                                        CornerRadius="15"
+                                        CornerRadius="20"
                                         Padding="10,5">
 									<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
 								</Border>

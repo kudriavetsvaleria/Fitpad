@@ -20,7 +20,7 @@
             <Setter Property="BorderBrush" Value="#3E2E8F"/>
             <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Height" Value="50"/>
+            <Setter Property="Height" Value="48"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -147,6 +147,11 @@
 
                     <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=CalculateNutrition}"
                             Command="{Binding ShowCalculateNutritionCommand}"
+                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Конструктор блюд}"
+                            Command="{Binding ShowConstructorPageCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
                 </StackPanel>

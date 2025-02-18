@@ -43,7 +43,10 @@ namespace Fitpad.Model.Entities
         public string RecipeDetails { get; set; } // Инструкции рецепта
         [FirestoreProperty]
         public List<string> Ingredients { get; set; }
+        [FirestoreProperty]
+        public double QuantityInGrams { get; set; } // Для хранения пересчитанного количества в граммах
 
+        public string DisplayQuantity => $"Кількість: {Quantity} {Unit}";
 
         public override string ToString()
         {

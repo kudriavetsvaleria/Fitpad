@@ -34,7 +34,6 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public ICommand ShowNewsCommand { get; }
-    public ICommand ShowMyDishesCommand { get; }
     public ICommand ShowNutritionCommand { get; }
     public ICommand ShowWorkoutsCommand { get; }
     public ICommand ShowProfileCommand { get; }
@@ -44,6 +43,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public ICommand ShowDishesCommand { get; }
     public ICommand ShowCalculateNutritionCommand { get; }
+    public ICommand ShowConstructorPageCommand { get; }
 
     private bool _isNavigationExpanded = true;
     public bool IsNavigationExpanded
@@ -63,7 +63,6 @@ public class MainViewModel : INotifyPropertyChanged
         _profileViewModel = new ProfileViewModel();
 
         ShowNewsCommand = new RelayCommand(async o => await NavigateToAsync<NewsPage>());
-        ShowMyDishesCommand = new RelayCommand(async o => await NavigateToAsync<MyDishesPage>());
         ShowNutritionCommand = new RelayCommand(async o => await NavigateToAsync<NutritionPage>());
         ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
@@ -71,6 +70,7 @@ public class MainViewModel : INotifyPropertyChanged
   
         ShowDishesCommand = new RelayCommand(async o => await NavigateToAsync<DishesPage>());
         ShowCalculateNutritionCommand = new RelayCommand(async o => await NavigateToAsync<CalculateNutritionPage>());
+        ShowConstructorPageCommand = new RelayCommand(async o => await NavigateToAsync<ConstructorPage>());
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 

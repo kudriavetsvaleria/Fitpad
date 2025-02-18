@@ -218,6 +218,9 @@
     <Compile Include="View\Pages\CalculateNutritionPage.xaml.cs">
       <DependentUpon>CalculateNutritionPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Pages\ConstructorPage.xaml.cs">
+      <DependentUpon>ConstructorPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\DishesPage.xaml.cs">
       <DependentUpon>DishesPage.xaml</DependentUpon>
     </Compile>
@@ -229,9 +232,6 @@
     </Compile>
     <Compile Include="View\Pages\AccountRegistrationPage.xaml.cs">
       <DependentUpon>AccountRegistrationPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Pages\MyDishes.xaml.cs">
-      <DependentUpon>MyDishes.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\NewsPage.xaml.cs">
       <DependentUpon>NewsPage.xaml</DependentUpon>
@@ -252,6 +252,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\CalculateNutritionPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pages\ConstructorPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\DishesPage.xaml">
@@ -285,10 +288,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="View\Pages\MyDishes.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="View\Pages\NewsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

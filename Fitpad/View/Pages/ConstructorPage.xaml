@@ -1,0 +1,528 @@
+<Page x:Class="Fitpad.View.Pages.ConstructorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+      xmlns:local="clr-namespace:Fitpad.View.Converters"
+      Title="Мої страви"
+      Background="White">
+
+	<Page.Resources>
+		<local:HalfConverter x:Key="HalfConverter"/>
+
+
+		<!-- Стиль для текстовых полей -->
+		<Style x:Key="RoundedTextBoxStyle" TargetType="TextBox">
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="Padding" Value="8"/>
+			<Setter Property="Foreground" Value="#333333"/>
+			<Setter Property="BorderBrush" Value="#CCCCCC"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="TextBox">
+						<Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="20"
+                        Effect="{TemplateBinding Effect}">
+							<ScrollViewer Margin="5" x:Name="PART_ContentHost"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+
+
+		<Style x:Key="FavoriteButton" TargetType="Button">
+			<Setter Property="Width" Value="45"/>
+			<Setter Property="Height" Value="45"/>
+			<Setter Property="Padding" Value="5"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+                        CornerRadius="12">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter Property="Background" Value="#F0F0F0"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+
+
+		<!-- Стиль для кнопок -->
+		<Style x:Key="PrimaryButton" TargetType="Button">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontWeight" Value="Normal"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Padding" Value="12"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Background">
+				<Setter.Value>
+					<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+						<GradientStop Color="#4CAF50" Offset="0"/>
+						<GradientStop Color="#388E3C" Offset="1"/>
+					</LinearGradientBrush>
+				</Setter.Value>
+			</Setter>
+
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+                        CornerRadius="15"
+                        BorderThickness="0"
+                        Effect="{TemplateBinding Effect}">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter Property="Background">
+						<Setter.Value>
+							<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+								<GradientStop Color="#66BB6A" Offset="0"/>
+								<GradientStop Color="#43A047" Offset="1"/>
+							</LinearGradientBrush>
+						</Setter.Value>
+					</Setter>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+
+
+		<Style x:Key="TransparentSearchButton" TargetType="Button">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Padding" Value="5"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+                        CornerRadius="20">
+							<ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter Property="Background" Value="#E0E0E0"/>
+					<!-- Серый при наведении -->
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+
+		<Style x:Key="CardStyle" TargetType="Border">
+			<Setter Property="BorderBrush" Value="#CCCCCC"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="CornerRadius" Value="12"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="Padding" Value="10"/>
+		</Style>
+
+
+		<!-- Стиль для кнопки "Скасувати" -->
+		<Style x:Key="CancelButton" TargetType="Button">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontWeight" Value="Normal"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Padding" Value="12"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Background">
+				<Setter.Value>
+					<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+						<GradientStop Color="#e93131" Offset="0"/>
+						<GradientStop Color="#c62828" Offset="1"/>
+					</LinearGradientBrush>
+				</Setter.Value>
+			</Setter>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                BorderThickness="0">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter Property="Background">
+						<Setter.Value>
+							<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+								<GradientStop Color="#d32f2f" Offset="0"/>
+								<GradientStop Color="#b71c1c" Offset="1"/>
+							</LinearGradientBrush>
+						</Setter.Value>
+					</Setter>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+	</Page.Resources>
+	
+	
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		
+		<Grid>
+			<!-- Основной контейнер карточки -->
+			<Border Background="White" CornerRadius="15" Padding="20" Width="720" HorizontalAlignment="Center" VerticalAlignment="Center"
+					BorderBrush="#DDDDDD" BorderThickness="1" Effect="{DynamicResource ShadowEffect}">
+				<StackPanel>
+					<!-- Заголовок -->
+					<TextBlock Text="Конструктор страв" FontSize="18" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center"/>
+
+					<!-- Поля ввода -->
+					<TextBlock Text="Назва страви:" FontSize="14" FontWeight="Normal" Margin="10,10,0,5"/>
+					<TextBox x:Name="DishNameBox" Width="660" Height="45" Margin="0,0,0,0" Style="{StaticResource RoundedTextBoxStyle}" TextChanged="InputFields_TextChanged"/>
+
+				
+					<!-- Поиск продукта -->
+					<TextBlock Text="Додати продукт:" FontSize="14" FontWeight="Normal" Margin="10,10,0,0"/>
+					<Grid Width="660" Height="45" Margin="0,10,0,5">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="50"/>
+						</Grid.ColumnDefinitions>
+
+						<!-- Оформление TextBox с тенью -->
+						<Border CornerRadius="20"
+								Background="White"
+								BorderBrush="#CCCCCC"
+								BorderThickness="1"
+								Grid.Column="0">
+							<!-- Сам TextBox -->
+							<TextBox x:Name="ProductSearchBox"
+									 Style="{StaticResource RoundedTextBoxStyle}"
+									 Height="45"
+									 Width="Auto"
+									 VerticalContentAlignment="Center"
+									 Padding="15,0,50,0"
+									 Background="Transparent"
+									 BorderThickness="0"
+									 Foreground="Black"
+									 GotFocus="ProductSearchBox_GotFocus"
+									 LostFocus="ProductSearchBox_LostFocus"/>
+						</Border>
+
+						<!-- Текст-подсказка -->
+						<TextBlock x:Name="PlaceholderText"
+								   Text="Введіть назву продукту..."
+								   Foreground="Gray"
+								   FontSize="14"
+								   VerticalAlignment="Center"
+								   Margin="20,0,0,0"
+								   IsHitTestVisible="False"/>
+
+						<!-- Кнопка поиска -->
+						<Button Width="45"
+								Height="45"
+								Grid.Column="1"
+								Click="SearchProduct_Click"
+								ToolTip="Пошук"
+								Style="{StaticResource TransparentSearchButton}">
+							<TextBlock Text="🔍"
+									   FontSize="22"
+									   HorizontalAlignment="Center"
+									   VerticalAlignment="Center"/>
+						</Button>
+					</Grid>
+
+
+
+					<!-- Диаграма -->
+					<Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="20" Style="{StaticResource CardStyle}"
+							Background="White" Padding="8" Margin="-420,30,0,0"
+							Width="240" Height="240">
+						<Viewbox Stretch="Uniform">
+							<lvc:PieChart x:Name="MacroChart" Width="180" Height="180" InnerRadius="50"/>
+						</Viewbox>
+					</Border>
+
+					<StackPanel Margin="40,0,0,0" HorizontalAlignment="Center" >
+						<Border BorderBrush="#B0BEC5" BorderThickness="1" Style="{StaticResource CardStyle}"
+								CornerRadius="20" Background="White"
+								Padding="15" Width="370" Height="240" Margin="240,-240,0,0">
+
+							<StackPanel>
+								<!-- Заголовок с фоном -->
+								<Border Background="#CFD8DC" Padding="10"
+										CornerRadius="8" Margin="0,0,0,10">
+									<TextBlock Text="Загальна кількість КБЖУ"
+											   FontSize="17"
+											   FontWeight="Bold"
+											   Foreground="#263238"
+											   HorizontalAlignment="Center"/>
+								</Border>
+
+								<!-- Данные КБЖУ -->
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+									</Grid.RowDefinitions>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+
+									<!-- Білки -->
+									<TextBlock Grid.Row="0" Grid.Column="0" Text="Білки:"
+								   FontSize="14" FontWeight="Bold"
+								   Foreground="#37474F" Margin="5,5,0,0"/>
+									<TextBlock Grid.Row="0" Grid.Column="1" x:Name="TotalProteinText"
+								   Text="0 г" FontSize="17" Foreground="Blue"
+								   Margin="5,5,0,0"/>
+
+									<!-- Жири -->
+									<TextBlock Grid.Row="1" Grid.Column="0" Text="Жири:"
+								   FontSize="14" FontWeight="Bold"
+								   Foreground="#37474F" Margin="5,5,0,0"/>
+									<TextBlock Grid.Row="1" Grid.Column="1" x:Name="TotalFatsText"
+								   Text="0 г" FontSize="17" Foreground="Red"
+								   Margin="5,5,0,0"/>
+
+									<!-- Вуглеводи -->
+									<TextBlock Grid.Row="2" Grid.Column="0" Text="Вуглеводи:"
+								   FontSize="14" FontWeight="Bold"
+								   Foreground="#37474F" Margin="5,5,0,0"/>
+									<TextBlock Grid.Row="2" Grid.Column="1" x:Name="TotalCarbsText"
+								   Text="0 г" FontSize="17" Foreground="Green"
+								   Margin="5,5,0,0"/>
+
+									<!-- Цукор -->
+									<TextBlock Grid.Row="3" Grid.Column="0" Text="Цукор:"
+								   FontSize="14" FontWeight="Bold"
+								   Foreground="#37474F" Margin="5,5,0,0"/>
+									<TextBlock Grid.Row="3" Grid.Column="1" x:Name="TotalSugarText"
+								   Text="0 г" FontSize="17" Foreground="Orange"
+								   Margin="5,5,0,0"/>
+
+									<!-- Калорії -->
+									<TextBlock Grid.Row="4" Grid.Column="0" Text="Калорії:"
+								   FontSize="14" FontWeight="Bold"
+								   Foreground="#212121" Margin="5,10,0,0"/>
+									<TextBlock Grid.Row="4" Grid.Column="1" x:Name="TotalCaloriesText"
+								   Text="0 ккал" FontSize="17" Foreground="Black"
+								   Margin="5,10,0,0"/>
+								</Grid>
+							</StackPanel>
+						</Border>
+					</StackPanel>
+
+					<!-- Список добавленных продуктов -->
+					<StackPanel Margin="0,10,0,0">
+						<TextBlock Text="Додані продукти:" FontSize="14" FontWeight="Normal" Margin="10,0,0,5"/>
+
+						<Border Style="{StaticResource CardStyle}" Width="660" Margin="0,5,0,5">
+							<ListBox x:Name="ProductListBox"
+									 Height="200"
+									 Width="Auto"
+									 Background="White"
+									 BorderThickness="0"
+									 ScrollViewer.VerticalScrollBarVisibility="Auto">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Border BorderBrush="#D3D3D3"
+												BorderThickness="1"
+												CornerRadius="20"
+												Background="#F9F9F9"
+												Padding="10"
+												Margin="5">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="1*"/>
+													<!-- Для выравнивания -->
+													<ColumnDefinition Width="Auto"/>
+													<!-- Фиксированное количество -->
+													<ColumnDefinition Width="Auto"/>
+													<!-- Кнопки справа -->
+												</Grid.ColumnDefinitions>
+
+												<!-- Название продукта -->
+												<TextBlock Text="{Binding Name}"
+														   FontSize="16"
+														   FontWeight="Bold"
+														   Foreground="#333333"
+														   VerticalAlignment="Center"
+														   Margin="10,0,0,0"
+														   TextWrapping="NoWrap"
+														   TextTrimming="CharacterEllipsis"
+														   Width="404"
+												Grid.Column="0"/>
+
+												
+												<TextBlock Text="{Binding DisplayQuantity, StringFormat='Кількість: {0} {Binding Unit}'}"
+														   FontSize="14"
+														   Foreground="#666666"
+														   VerticalAlignment="Center"
+														   HorizontalAlignment="Center"
+														   Width="120" 
+												Grid.Column="1"/>
+
+												<!-- Кнопки управления -->
+												<StackPanel Orientation="Horizontal"
+															Grid.Column="2"
+															VerticalAlignment="Center"
+															HorizontalAlignment="Right">
+													<Button Content="✏️"
+															Width="25" Height="25"
+															Style="{StaticResource PrimaryButton}"
+															Click="EditProduct_Click"
+															Margin="0,0,0,0"/>
+													<Button Content="🗑️"
+															Width="25" Height="25"
+															Style="{StaticResource CancelButton}"
+															Click="RemoveProduct_Click"
+															Margin="10,0,0,0"/>
+												</StackPanel>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</Border>
+					</StackPanel>
+
+
+
+
+					<!-- Время приготовления -->
+					<TextBlock Text="Час приготування (хв):" FontSize="14" FontWeight="Normal" Margin="10,10,0,5"/>
+					<TextBox x:Name="CookingTimeBox" Width="580" Height="45" Margin="-80,5,0,5" Style="{StaticResource RoundedTextBoxStyle}"  TextChanged="InputFields_TextChanged"/>
+
+					<Button Style="{StaticResource FavoriteButton}"
+						   ToolTip="Позначити як улюблене"
+						   Click="MarkFavorite_Click"
+						   Margin="590,-55,0,0">
+						<Image x:Name="FavoriteIcon"
+							  Source="pack://siteoforigin:,,,/Images/star_grey.png"
+							  Width="40" Height="40"/>
+					</Button>
+
+					<TextBlock Text="Рецепт:" FontSize="14" FontWeight="Normal" Margin="10,10,0,5"/>
+					<TextBox x:Name="RecipeBox" Width="660" Height="180" Margin="0,5,0,0" Style="{StaticResource RoundedTextBoxStyle}" TextChanged="InputFields_TextChanged" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+					<!-- Кнопка сохранения -->
+					<Button x:Name="SaveDishButton" Content="Зберегти страву" Width="320" Height="50" Style="{StaticResource PrimaryButton}" Click="SaveDish_Click" Margin="0,20,0,0"/>
+
+
+					<!-- Оверлей -->
+					<Border x:Name="OverlayCanvas"
+							Visibility="Collapsed"
+						Opacity="1"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Panel.ZIndex="99"
+						IsHitTestVisible="True">
+
+						<!-- Всплывающее окно -->
+						<Border x:Name="QuantityInputPanel" Margin="0,-1520,0,0"
+								Background="White"
+								BorderBrush="#E0E0E0"
+								BorderThickness="1"
+								CornerRadius="15"
+								Padding="20"
+								Width="320"
+								Height="290"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Opacity="1">
+							<!-- Убираем полупрозрачность -->
+
+							<!-- Чёткая тень -->
+							<Border.Effect>
+								<DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.2"/>
+							</Border.Effect>
+
+							<StackPanel>
+								<!-- Заголовок -->
+								<TextBlock Text="Додавання продукту"
+										   FontSize="16"
+										   FontWeight="Bold"
+										   Foreground="#333333"
+										   HorizontalAlignment="Center"
+										   Margin="0,0,0,10"/>
+
+								<!-- Ввод количества -->
+								<TextBlock Text="Введіть кількість:"
+										   FontSize="14"
+										   FontWeight="Normal"
+										   Margin="0,0,0,5"/>
+								<TextBox x:Name="QuantityBox"
+										 Width="240"
+										 Height="35"
+										 Margin="0,5"
+										 Background="White"
+										 BorderBrush="#CCCCCC"/>
+
+								<!-- Выбор единицы измерения -->
+								<TextBlock Text="Оберіть одиницю виміру:"
+										   FontSize="14"
+										   FontWeight="Normal"
+										   Margin="0,5"/>
+								<ComboBox x:Name="UnitComboBox"
+										  Width="240"
+										  Height="35"
+										  Margin="0,5"
+										  Background="White"
+										  BorderBrush="#CCCCCC">
+									<ComboBoxItem Content="г" IsSelected="True"/>
+									<ComboBoxItem Content="кг"/>
+									<ComboBoxItem Content="л"/>
+								</ComboBox>
+
+								<!-- Кнопки -->
+								<StackPanel Orientation="Horizontal"
+											HorizontalAlignment="Center"
+											Margin="0,15,0,0">
+									<Button Content="OK"
+											Width="110"
+											Height="35"
+											Click="ConfirmQuantity_Click"
+											Margin="5,0"
+											Style="{StaticResource PrimaryButton}"/>
+									<Button Content="Скасувати"
+											Width="110"
+											Height="35"
+											Click="CancelQuantity_Click"
+											Margin="5,0"
+											Style="{StaticResource CancelButton}"/>
+								</StackPanel>
+							</StackPanel>
+						</Border>
+					</Border>
+
+
+
+
+
+				</StackPanel>
+			</Border>
+		</Grid>
+	</ScrollViewer>
+</Page>
