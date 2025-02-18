@@ -267,7 +267,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             {
                 new PieSeries
                 {
-                    Title = "Съедено",
+                    Title = "З'їли",
                     Values = new ChartValues<double> { Math.Round(caloriePercentage, 2) },
                     Fill = (Brush)new BrushConverter().ConvertFromString("#70A93D"), // ✅ Оригинальный зеленый
                     DataLabels = true,
@@ -275,7 +275,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 },
                 new PieSeries
                 {
-                    Title = "Осталось",
+                    Title = "Залишилось",
                     Values = new ChartValues<double> { Math.Round(100 - caloriePercentage, 2) },
                     Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
                     DataLabels = true,
@@ -291,7 +291,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             {
                 new PieSeries
                 {
-                    Title = "Выпито",
+                    Title = "Випито",
                     Values = new ChartValues<double> { Math.Round(waterPercentage, 2) },
                     Fill = new SolidColorBrush(Color.FromRgb(122, 206, 255)), // Голубой
                     DataLabels = true,
@@ -299,7 +299,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 },
                 new PieSeries
                 {
-                    Title = "Осталось",
+                    Title = "Залишилось",
                     Values = new ChartValues<double> { Math.Round(100 - waterPercentage, 2) },
                     Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
                     DataLabels = true,

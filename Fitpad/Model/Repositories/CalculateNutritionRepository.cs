@@ -29,7 +29,7 @@ namespace Fitpad.Model.Repositories
             {
                 if (string.IsNullOrEmpty(userId))
                 {
-                    Console.WriteLine("❌ Ошибка: UserID не найден.");
+                    Console.WriteLine("❌ Помилка: UserID не знайдено.");
                     return products;
                 }
 
@@ -47,11 +47,11 @@ namespace Fitpad.Model.Repositories
                     }
                 }
 
-                Console.WriteLine($"✅ Загружено {products.Count} продуктов для пользователя {userId}");
+                Console.WriteLine($"✅ Завантажено {products.Count} продуктів для користувача {userId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при загрузке продуктов: {ex.Message}");
+                Console.WriteLine($"❌ Помилка під час завантаження продуктів: {ex.Message}");
             }
 
             return products;
@@ -63,14 +63,14 @@ namespace Fitpad.Model.Repositories
             try
             {
                 string translatedQuery = await _translator.TranslateTextAsync(query, "en");
-                Console.WriteLine($"Переведённый запрос: {translatedQuery}");
+                Console.WriteLine($"Перекладений запит: {translatedQuery}");
 
                 string url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(translatedQuery)}&search_simple=1&action=process&json=1";
                 var response = await _httpClient.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"Ошибка запроса: {response.StatusCode}");
+                    Console.WriteLine($"Помилка запиту: {response.StatusCode}");
                     return new List<NutritionModel>();
                 }
 
@@ -102,19 +102,19 @@ namespace Fitpad.Model.Repositories
                 }
                 else
                 {
-                    Console.WriteLine("⚠ ВНИМАНИЕ: API не нашел продукты!");
+                    Console.WriteLine("⚠ УВАГА: API не знайшов продукти!");
                 }
 
                 return result;
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"❌ Ошибка HTTP: {ex.Message}");
+                Console.WriteLine($"❌ Помилка HTTP: {ex.Message}");
                 return new List<NutritionModel>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Общая ошибка: {ex.Message}");
+                Console.WriteLine($"❌ Загальна помилка: {ex.Message}");
                 return new List<NutritionModel>();
             }
         }

@@ -33,11 +33,11 @@ namespace Fitpad.Model.Repositories
                     }
                 }
 
-                Console.WriteLine($"✅ Загружено {dishes.Count} блюд для пользователя {userId}");
+                Console.WriteLine($"✅ Завантажено {dishes.Count} страв для користувача {userId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при загрузке блюд: {ex.Message}");
+                Console.WriteLine($"❌ Помилка під час завантаження страв: {ex.Message}");
             }
 
             return dishes;

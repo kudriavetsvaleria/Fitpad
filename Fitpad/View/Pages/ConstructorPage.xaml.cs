@@ -372,7 +372,7 @@ namespace Fitpad.View.Pages
                 IsFavorite = isFavorite
             };
 
-            Console.WriteLine($"📌 Данные перед сохранением: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
+            Console.WriteLine($"📌 Дані перед збереженням: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
 
             await firestoreService.SaveDishToFirebase(dish);
 

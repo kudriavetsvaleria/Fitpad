@@ -36,24 +36,26 @@ namespace Fitpad.View.Pages
             _translatorService = new TranslatorService();
             var firestoreService = new FirestoreService();
             _firestoreDb = firestoreService.GetFirestoreDb();
+
             if (userInfo == null)
             {
                 Console.WriteLine("❌ Ошибка: данные пользователя отсутствуют.");
-                userInfo = new UserInfoModel(); // Создаем пустой объект
+                userInfo = new UserInfoModel();
             }
+
             _viewModel = new CalculateNutritionViewModel(userInfo);
             DataContext = _viewModel;
             _viewModel.ShowManualEntryOverlayAction = ShowManualEntryOverlay;
 
-            LoadUserProducts();
+            LoadUserProducts(); // Загружаем сохраненные продукты
 
             // Проверяем пользователя
             CheckUserAndUpdateData();
 
             if (userInfo == null)
             {
-                MessageBox.Show("Ошибка: данные пользователя отсутствуют!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                userInfo = new UserInfoModel(); // ✅ Создаем пустой объект, чтобы избежать ошибки
+                MessageBox.Show("Помилка: дані користувача відсутні!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                userInfo = new UserInfoModel();
             }
 
             _viewModel = new CalculateNutritionViewModel(userInfo);
@@ -61,7 +63,12 @@ namespace Fitpad.View.Pages
             _viewModel.ShowManualEntryOverlayAction = ShowManualEntryOverlay;
 
             Console.WriteLine("📊 DataContext установлен!");
+
+            // 🔥 Вызываем обновление диаграмм после загрузки данных
+            _viewModel.UpdatePieChart();
+            UpdateCalorieDisplay();
         }
+
 
         private void UpdateCalorieDisplay(double? customCalories = null)
         {
@@ -294,7 +301,7 @@ namespace Fitpad.View.Pages
             if (_translatorService == null)
             {
                 Console.WriteLine("❌ Ошибка: _translatorService не инициализирован!");
-                MessageBox.Show("Ошибка: сервис перевода недоступен!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Помилка: сервіс перекладу недоступний!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -596,7 +603,62 @@ namespace Fitpad.View.Pages
             UpdateCalorieDisplay(_viewModel.CurrentCalories);
         }
 
+        private async void DeleteProduct_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is NutritionModel product)
+            {
+                // Подтверждение удаления
+                MessageBoxResult result = MessageBox.Show($"Видалити '{product.Title}'?", "Підтвердження",
+                                                          MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Удаляем из UI
+                    _viewModel.SavedProducts.Remove(product);
+                    Console.WriteLine($"🗑 Видалено з UI: {product.Title}");
+
+                    // Удаляем из Firestore
+                    await DeleteProductFromFirestore(product);
+
+                    // Обновляем графики и калории
+                    _viewModel.UpdatePieChart();
+                    UpdateCalorieDisplay();
+                }
+            }
+        }
+
+        private async Task DeleteProductFromFirestore(NutritionModel product)
+        {
+            try
+            {
+                string userId = UserSession.CurrentUserId;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Console.WriteLine("❌ [Firestore] Помилка: UserID не знайдено.");
+                    return;
+                }
+
+                var db = FirestoreDb.Create("fitpad-2025");
+                var userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
+
+                // Поиск продукта в Firestore
+                var query = await userProductsRef
+                             .WhereEqualTo("Title", product.Title)
+                             .WhereEqualTo("Weight", product.Weight)
+                             .WhereEqualTo("Calories", product.Calories)
+                             .GetSnapshotAsync();
+
+                foreach (var doc in query.Documents)
+                {
+                    await doc.Reference.DeleteAsync();
+                    Console.WriteLine($"✅ [Firestore] Видалено продукт: {product.Title}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ [Firestore] Помилка при видаленні продукту: {ex.Message}");
+            }
+        }
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {

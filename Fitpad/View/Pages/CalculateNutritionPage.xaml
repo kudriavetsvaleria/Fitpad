@@ -122,7 +122,7 @@
                       HorizontalGridLinesBrush="Transparent"
                       VerticalGridLinesBrush="Transparent"
                       ScrollViewer.CanContentScroll="True"
-                      Height="340" 
+                      Height="340"
                       VerticalAlignment="Top"
                       Margin="0,-40,21,0">
 
@@ -196,7 +196,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Вага" Binding="{Binding Weight}" Width="90">
+                    <DataGridTextColumn Header="Вага" Binding="{Binding Weight}" Width="80">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -208,7 +208,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="100">
+                    <DataGridTextColumn Header="Калорії" Binding="{Binding Calories}" Width="95">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -220,7 +220,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Білки" Binding="{Binding Protein}" Width="90">
+                    <DataGridTextColumn Header="Білки" Binding="{Binding Protein}" Width="85">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -232,7 +232,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Жири" Binding="{Binding Fats}" Width="90">
+                    <DataGridTextColumn Header="Жири" Binding="{Binding Fats}" Width="85">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -244,7 +244,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Вуглеводи" Binding="{Binding Carbs}" Width="115">
+                    <DataGridTextColumn Header="Вуглеводи" Binding="{Binding Carbs}" Width="110">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -255,6 +255,21 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
+
+                    <!-- Кнопка удаления -->
+                    <DataGridTemplateColumn Width="35">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Click="DeleteProduct_Click" Margin="8,0,0,0"
+                                        Tag="{Binding}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ToolTip="Видалити">
+                                    <TextBlock Text="❌" FontSize="20" Foreground="Red"/>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
