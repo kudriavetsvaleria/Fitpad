@@ -32,7 +32,10 @@ namespace Fitpad.View.Pages
         {
             try
             {
-                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+                // Путь к файлу в папке проекта (Resources)
+                string projectPath = Directory.GetCurrentDirectory();
+                string filePath = Path.Combine(projectPath, "Resources", "current_user.json");
+
                 Console.WriteLine($"📂 Ищем файл: {filePath}");
 
                 if (File.Exists(filePath))
@@ -139,18 +142,26 @@ namespace Fitpad.View.Pages
         }
 
 
-
-        // Метод для сохранения данных пользователя в JSON-файл
         private void SaveCurrentUserToFile(UserModel user)
         {
             try
             {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "current_user.json");
+                // Путь к файлу внутри папки проекта (Resources)
+                string projectPath = Directory.GetCurrentDirectory();
+                string resourcesPath = Path.Combine(projectPath, "Resources");
+                string filePath = Path.Combine(resourcesPath, "current_user.json");
 
+                // Убедимся, что папка Resources существует
+                if (!Directory.Exists(resourcesPath))
+                {
+                    Directory.CreateDirectory(resourcesPath);
+                }
+
+                // Сохраняем данные в JSON
                 string json = JsonConvert.SerializeObject(user, Formatting.Indented);
                 File.WriteAllText(filePath, json);
 
-                Console.WriteLine("✅ Данные пользователя сохранены.");
+                Console.WriteLine($"✅ Данные пользователя сохранены в {filePath}");
             }
             catch (Exception ex)
             {

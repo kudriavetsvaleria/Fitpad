@@ -18,21 +18,23 @@ namespace Fitpad.Services
         // Конструктор, инициализирующий соединение с Firestore
         public FirestoreService()
         {
+
             // Абсолютный путь к файлу с учетными данными
             string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json");
-            Console.WriteLine($"Path to key file: {pathToKeyFile}");
+
+
+            Console.WriteLine($"🔍 Ожидаемый путь к файлу учетных данных: {pathToKeyFile}");
+
             if (!File.Exists(pathToKeyFile))
             {
+                Console.WriteLine($"❌ Файл НЕ найден: {pathToKeyFile}");
                 throw new FileNotFoundException($"Файл учетных данных не найден по пути: {pathToKeyFile}");
             }
 
-            if (!File.Exists(pathToKeyFile))
-            {
-                throw new FileNotFoundException($"Файл ключа не найден: {pathToKeyFile}");
-            }
-
-            // Устанавливаем переменную среды для Google Cloud SDK
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKeyFile);
+            Console.WriteLine($"✅ GOOGLE_APPLICATION_CREDENTIALS установлен в: {Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")}");
+
+
             Console.WriteLine($"GOOGLE_APPLICATION_CREDENTIALS set to: {Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")}");
             // Создаем учетные данные Google и инициализируем Firestore
             GoogleCredential credential = GoogleCredential.FromFile(pathToKeyFile);

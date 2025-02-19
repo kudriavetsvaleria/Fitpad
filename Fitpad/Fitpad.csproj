@@ -376,7 +376,9 @@
     <None Include="protos\google\type\postal_address.proto" />
     <None Include="protos\google\type\quaternion.proto" />
     <None Include="protos\google\type\timeofday.proto" />
-    <None Include="Resources\fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json" />
+    <None Include="Resources\fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

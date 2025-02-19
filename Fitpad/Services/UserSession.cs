@@ -43,41 +43,55 @@ public static class UserSession
 
     public static void LoadUserIdFromFile()
     {
-        Console.WriteLine($"?? Ищем файл: {FilePath}");
-
-        if (!File.Exists(FilePath))
-        {
-            Console.WriteLine("⚠️ Файл `current_user.json` не найден.");
-            _currentUserId = null;
-            return;
-        }
-
         try
         {
-            string json = File.ReadAllText(FilePath);
-            Console.WriteLine($"📜 Загруженные данные из current_user.json: {json}");
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+            Console.WriteLine($"📂 Ищем файл: {filePath}");
 
-            var data = JsonConvert.DeserializeObject<dynamic>(json);
-            if (data != null && data.UserId != null)
+            if (File.Exists(filePath))
             {
-                Console.WriteLine($"✅ UserID найден в файле: {data.UserId}");
-                _currentUserId = data.UserId.ToString();
-                Console.WriteLine($"🔹 Установлен UserSession.CurrentUserId: {_currentUserId}");
+                string json = File.ReadAllText(filePath);
+                Console.WriteLine($"📜 Загруженные данные из current_user.json: {json}");
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    Console.WriteLine("❌ Файл `current_user.json` пустой!");
+                    return;
+                }
+
+                var data = JsonConvert.DeserializeObject<dynamic>(json);
+
+                if (data != null && data.UserId != null)
+                {
+                    Console.WriteLine($"✅ UserID найден в файле: {data.UserId}");
+
+                    // ✅ Перед установкой проверяем, что значение не пустое
+                    if (!string.IsNullOrEmpty(data.UserId.ToString()))
+                    {
+                        UserSession.CurrentUserId = data.UserId.ToString();
+                        Console.WriteLine($"✅ Установлен UserSession.CurrentUserId: {UserSession.CurrentUserId}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("❌ Ошибка: UserID пустой после десериализации!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
+                }
             }
             else
             {
-                Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
-                _currentUserId = null;
+                Console.WriteLine("❌ Файл `current_user.json` не найден.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка загрузки файла current_user.json: {ex.Message}");
-            _currentUserId = null;
+            Console.WriteLine($"❌ Ошибка при загрузке UserID: {ex.Message}");
         }
-        UserSession.CurrentUserId = UserRepository.CurrentUserId;
-
     }
+
 
     // ✅ Сохранение UserID в файл
     public static void SaveUserIdToFile(string userId)

@@ -20,7 +20,9 @@ namespace Fitpad.Model.Repositories
         {
             try
             {
-                _firestoreDb = FirestoreDb.Create("fitpad-2025"); // Укажите ваш идентификатор проекта Firebase
+                var firestoreService = new FirestoreService();
+                _firestoreDb = firestoreService.GetFirestoreDb();
+
                 Console.WriteLine("Підключення до Firestore успішно встановлено.");
             }
             catch (Exception ex)
@@ -80,10 +82,10 @@ namespace Fitpad.Model.Repositories
 
         public async Task<UserModel> GetCurrentUserAsync()
         {
-            // 🔹 Принудительно загружаем UserID, если он ещё пуст
+            // 🚀 Проверяем UserSession.CurrentUserId перед запросом
             if (string.IsNullOrEmpty(UserSession.CurrentUserId))
             {
-                Console.WriteLine("⚠️ UserSession.CurrentUserId порожній. Пробуємо завантажити з файлу...");
+                Console.WriteLine("⚠️ UserSession.CurrentUserId пустой. Пробуем загрузить из файла...");
                 UserSession.LoadUserIdFromFile();
             }
 
@@ -95,6 +97,7 @@ namespace Fitpad.Model.Repositories
 
             try
             {
+                Console.WriteLine($"🔍 Загружаем пользователя с ID: {UserSession.CurrentUserId}");
                 var docRef = _firestoreDb.Collection("Users").Document(UserSession.CurrentUserId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
