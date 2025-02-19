@@ -387,7 +387,8 @@ namespace Fitpad.View.Pages
             // 🔹 Автоматически добавляем в таблицу и сохраняем в Firestore
             AddProductToTable(manualProduct);
 
-            _viewModel.UpdatePieChart();
+            ForceUpdateCharts();
+     
             HideManualEntryOverlay();
         }
 
@@ -584,6 +585,7 @@ namespace Fitpad.View.Pages
             if (products == null || products.Count == 0)
             {
                 Console.WriteLine($"⚠ Продукты не найдены для пользователя {UserSession.CurrentUserId}");
+                ForceUpdateCharts();
                 return;
             }
 
@@ -611,16 +613,26 @@ namespace Fitpad.View.Pages
                 }
 
                 Console.WriteLine($"🟢 {product.Title}: {product.Calories} ккал добавлено");
+
             }
 
-            // 🔥 Теперь обновляем диаграммы после загрузки
-            _viewModel.UpdatePieChart();
-
-            // ✅ Исправленный вызов обновления калорий
-            Console.WriteLine($"⚡ Перед обновлением: CurrentCalories = {_viewModel.CurrentCalories}");
-            UpdateCalorieDisplay(_viewModel.CurrentCalories);
-            UpdateCalorieDisplay();
+            await Task.Delay(200);
+            ForceUpdateCharts();
         }
+
+        private void ForceUpdateCharts()
+        {
+            Console.WriteLine("🔄 Принудительное обновление диаграмм и UI...");
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                _viewModel.UpdatePieChart();
+                UpdateCalorieDisplay();
+            });
+
+            Console.WriteLine("✅ Диаграммы и UI обновлены!");
+        }
+
 
         private async void DeleteProduct_Click(object sender, RoutedEventArgs e)
         {
@@ -649,10 +661,8 @@ namespace Fitpad.View.Pages
                     {
                         _viewModel.CurrentWater -= product.Weight;
                     }
-
-                    // Обновляем графики и UI
-                    _viewModel.UpdatePieChart();
-                    UpdateCalorieDisplay();
+                    Console.WriteLine($"🗑 Продукт '{product.Title}' удален.");
+                    ForceUpdateCharts();
                 }
             }
         }

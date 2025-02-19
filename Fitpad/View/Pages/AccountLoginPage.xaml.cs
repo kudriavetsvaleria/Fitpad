@@ -28,6 +28,7 @@ namespace Fitpad.View.Pages
             LoadCurrentUserFromFile();
         }
 
+
         private void LoadCurrentUserFromFile()
         {
             try
@@ -73,17 +74,17 @@ namespace Fitpad.View.Pages
         }
 
 
-        public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
+    public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
+    {
+        lock (_lock)
         {
-            lock (_lock)
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new AccountLoginPage(profileViewModel);
-                }
-                return _instance;
+                _instance = new AccountLoginPage(profileViewModel);
             }
+            return _instance;
         }
+    }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
