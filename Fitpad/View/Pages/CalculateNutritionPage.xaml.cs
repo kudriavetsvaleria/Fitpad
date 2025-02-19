@@ -356,6 +356,7 @@ namespace Fitpad.View.Pages
                 Console.WriteLine("❌ Продукт НЕ НАЙДЕН в OpenFoodFacts API!");
                 MessageBox.Show("Продукт не найден!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+            UpdateCalorieDisplay();
         }
 
 
@@ -398,10 +399,8 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            // ✅ Сохраняем в Firestore в любом случае
             await SaveProductToFirestore(product);
 
-            // ✅ Проверяем, есть ли уже такой продукт в UI (по названию и весу)
             if (_viewModel.SavedProducts.Any(p => p.Title == product.Title && p.Weight == product.Weight))
             {
                 Console.WriteLine($"⚠ [UI] Продукт '{product.Title}' ({product.Weight} г) уже добавлен в таблицу. Пропускаем.");
@@ -410,7 +409,6 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine($"🟢 [UI] Добавляем продукт в таблицу: {product.Title} ({product.Weight} г, {product.Calories} ккал)");
 
-            // ✅ Добавляем в UI
             _viewModel.SavedProducts.Add(product);
             _viewModel.CurrentCalories += product.Calories;
             _viewModel.CurrentProtein += product.Protein;
@@ -418,7 +416,9 @@ namespace Fitpad.View.Pages
             _viewModel.CurrentCarbs += product.Carbs;
 
             _viewModel.UpdatePieChart();
+            UpdateCalorieDisplay(); // ✅ Добавляем вызов обновления UI
         }
+
 
 
         private async Task SaveProductToFirestore(NutritionModel product)
@@ -465,7 +465,6 @@ namespace Fitpad.View.Pages
                 FirestoreDb db = FirestoreDb.Create("fitpad-2025");
                 CollectionReference userProductsRef = db.Collection("UserProducts");
 
-                // Генерируем уникальный ID для продукта
                 DocumentReference newProductRef = userProductsRef.Document(Guid.NewGuid().ToString());
 
                 var productData = new Dictionary<string, object>
@@ -480,15 +479,22 @@ namespace Fitpad.View.Pages
             { "Time", product.Time }
         };
 
-                await newProductRef.SetAsync(productData);
+                if (product.Title.ToLower().Contains("вода") || product.Title.ToLower().Contains("water"))
+                {
+                    productData["Water"] = product.Weight;
+                    Console.WriteLine($"💧 Добавлен параметр Water: {product.Weight} мл");
+                }
 
-                Console.WriteLine($"✅ Продукт '{product.Title}' сохранён в коллекции UserProducts для пользователя {userId}");
+                Console.WriteLine($"🟢 Сохранение продукта {product.Title} в Firestore...");
+                await newProductRef.SetAsync(productData);
+                Console.WriteLine($"✅ Продукт {product.Title} сохранён в Firestore!");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Ошибка при сохранении продукта: {ex.Message}");
             }
         }
+
 
 
         private void OnManualEntryCancel(object sender, RoutedEventArgs e)
@@ -613,6 +619,7 @@ namespace Fitpad.View.Pages
             // ✅ Исправленный вызов обновления калорий
             Console.WriteLine($"⚡ Перед обновлением: CurrentCalories = {_viewModel.CurrentCalories}");
             UpdateCalorieDisplay(_viewModel.CurrentCalories);
+            UpdateCalorieDisplay();
         }
 
         private async void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -625,19 +632,31 @@ namespace Fitpad.View.Pages
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    // Удаляем из Firestore
+                    await DeleteProductFromFirestore(product);
+
                     // Удаляем из UI
                     _viewModel.SavedProducts.Remove(product);
                     Console.WriteLine($"🗑 Видалено з UI: {product.Title}");
 
-                    // Удаляем из Firestore
-                    await DeleteProductFromFirestore(product);
+                    // Обновляем текущие значения
+                    _viewModel.CurrentCalories -= product.Calories;
+                    _viewModel.CurrentProtein -= product.Protein;
+                    _viewModel.CurrentFats -= product.Fats;
+                    _viewModel.CurrentCarbs -= product.Carbs;
 
-                    // Обновляем графики и калории
+                    if (product.Title.ToLower().Contains("вода"))
+                    {
+                        _viewModel.CurrentWater -= product.Weight;
+                    }
+
+                    // Обновляем графики и UI
                     _viewModel.UpdatePieChart();
                     UpdateCalorieDisplay();
                 }
             }
         }
+
 
         private async Task DeleteProductFromFirestore(NutritionModel product)
         {
