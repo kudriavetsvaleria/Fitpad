@@ -123,8 +123,6 @@ namespace Fitpad.View.Components
             }
         }
 
-
-
         private bool ValidateInputs(out string gender, out int age, out int height, out double weight, out string activityLevel, out string purpose)
         {
             // 🔹 Устанавливаем начальные значения для `out` параметров
@@ -140,7 +138,13 @@ namespace Fitpad.View.Components
             string heightText = HeightInput?.Text;
             string weightText = WeightInput?.Text;
             activityLevel = (ActivityLevelInput?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            purpose = (GoalInput?.SelectedItem as ComboBoxItem)?.Content?.ToString(); // Проверяем цель
 
+            if (string.IsNullOrEmpty(gender))
+            {
+                MessageBox.Show("Помилка: оберіть стать!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
 
             if (!int.TryParse(ageText, out age) || age <= 0 || age > 120)
             {
@@ -160,8 +164,21 @@ namespace Fitpad.View.Components
                 return false;
             }
 
+            if (string.IsNullOrEmpty(activityLevel))
+            {
+                MessageBox.Show("Помилка: оберіть рівень активності!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(purpose))
+            {
+                MessageBox.Show("Помилка: оберіть ціль!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
             return true;
         }
+
 
 
         private async Task SaveUserInfoAsync(UserInfoModel userInfo)
