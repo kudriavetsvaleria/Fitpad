@@ -393,17 +393,26 @@ namespace Fitpad.View.Pages
         {
             if (NavigationService != null)
             {
-                var dishesPage = new DishesPage(); // Создаем новый экземпляр страницы
-                NavigationService.Navigate(dishesPage); // Навигация
+                var existingPage = NavigationService.Content as DishesPage; // Проверяем, загружена ли уже DishesPage
 
-                // 🔄 Обновляем данные (чтобы блюдо сразу появилось в списке)
-                dishesPage.RefreshDishesList();
+                if (existingPage != null)
+                {
+                    Console.WriteLine("✅ Используем существующую страницу DishesPage.");
+                    existingPage.RefreshDishesList(); // Обновляем список блюд
+                }
+                else
+                {
+                    Console.WriteLine("📌 Создаем новый экземпляр DishesPage.");
+                    DishesPage newDishesPage = new DishesPage();
+                    NavigationService.Navigate(newDishesPage);
+                }
             }
             else
             {
                 Console.WriteLine("❌ Ошибка: NavigationService = null");
             }
         }
+
 
         private void ResetForm()
         {
