@@ -11,40 +11,36 @@ namespace Fitpad.ViewModel.PagesViewModels
 {
     public class DishViewModel : INotifyPropertyChanged
     {
+        private readonly Google.Cloud.Firestore.FirestoreDb _db;
         private readonly DishRepository _repository;
         private ObservableCollection<DishModel> _dishes;
 
-        public ObservableCollection<DishModel> Dishes
-        {
-            get => _dishes;
-            set
-            {
-                _dishes = value;
-                OnPropertyChanged();
-            }
-        }
+        public ObservableCollection<DishModel> Dishes { get; }
 
-        public DishViewModel(FirestoreDb firestoreDb)
+
+        public DishViewModel(FirestoreDb db)
         {
-            _repository = new DishRepository(firestoreDb);
+            _db = db;
             Dishes = new ObservableCollection<DishModel>();
         }
 
-        public async Task LoadUserDishesAsync()
+        public async Task LoadUserDishesAsync(string userId)
         {
-            if (string.IsNullOrEmpty(UserSession.CurrentUserId))
-            {
-                Console.WriteLine("❌ Ошибка: UserId отсутствует!");
-                return;
-            }
-
-            var dishes = await _repository.GetUserDishesAsync(UserSession.CurrentUserId);
             Dishes.Clear();
-            foreach (var dish in dishes)
+
+            var snapshot = await _db
+                .Collection("Users").Document(userId)
+                .Collection("Dishes")
+                .GetSnapshotAsync();
+
+            foreach (var doc in snapshot.Documents)
             {
-                Dishes.Add(dish);
+                if (doc.Exists)
+                    Dishes.Add(doc.ConvertTo<DishModel>());
             }
         }
+
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

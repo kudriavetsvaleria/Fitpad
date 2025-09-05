@@ -24,7 +24,7 @@ namespace Fitpad.View.Pages
             _viewModel = new DishViewModel(FirestoreDb.Create("fitpad-2025"));
             DataContext = _viewModel;
 
-            _viewModel.LoadUserDishesAsync();
+            _viewModel.LoadUserDishesAsync(UserSession.CurrentUserId);
             CreateDishButton.DataContext = MainViewModel.Instance;
 
        
@@ -70,31 +70,21 @@ namespace Fitpad.View.Pages
             if (DishesList.SelectedItem is DishModel selectedDish)
             {
                 Console.WriteLine($"📌 Выбрано блюдо: {selectedDish.Name}");
-
-                if (NavigationService != null)
-                {
-                    NavigationService.Navigate(new DishDetailPage(selectedDish));
-                }
-                else
-                {
-                    Console.WriteLine("❌ Ошибка: NavigationService = null");
-                }
+                NavigationService?.Navigate(new DishDetailPage(selectedDish));
             }
         }
 
 
-        // ⭐ Обработчик избранного
         private async void ToggleFavorite_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is DishModel dish)
             {
-                Console.WriteLine($"🔹 Попытка изменить избранное для блюда ID: {dish.Id}");
-
                 dish.IsFavorite = !dish.IsFavorite;
+                var userId = UserSession.CurrentUserId;
 
                 try
                 {
-                    await _firestoreService.UpdateFavoriteStatus(dish.Id, dish.IsFavorite);
+                    await _firestoreService.UpdateFavoriteStatus(userId, dish.Id, dish.IsFavorite);
                     DishesList.Items.Refresh();
                 }
                 catch (Exception ex)
@@ -104,11 +94,13 @@ namespace Fitpad.View.Pages
             }
         }
 
+
         public void RefreshDishesList()
         {
-            _viewModel.LoadUserDishesAsync();
+            _viewModel.LoadUserDishesAsync(UserSession.CurrentUserId);
             DishesList.ItemsSource = null;
             DishesList.ItemsSource = _viewModel.Dishes;
+
             Console.WriteLine("🔄 Список страв оновлено!");
         }
 
@@ -117,22 +109,16 @@ namespace Fitpad.View.Pages
         {
             if (sender is Button button && button.Tag is DishModel dish)
             {
-                MessageBoxResult result = MessageBox.Show(
-                    $"Ви впевнені, що хочете видалити '{dish.Name}'?",
-                    "Підтвердження", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Ви впевнені, що хочете видалити '{dish.Name}'?",
+                                    "Підтвердження", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    Console.WriteLine($"❌ Видалення блюда: {dish.Name}");
+                    var userId = UserSession.CurrentUserId;
 
                     try
                     {
-                        await _firestoreService.DeleteDishFromFirebase(dish.Id);
-
-                        // Удаляем из списка
+                        await _firestoreService.DeleteDishFromFirebase(userId, dish.Id);
                         _viewModel.Dishes.Remove(dish);
                         DishesList.Items.Refresh();
-
                         Console.WriteLine($"✅ Блюдо '{dish.Name}' видалено.");
                     }
                     catch (Exception ex)
@@ -142,6 +128,7 @@ namespace Fitpad.View.Pages
                 }
             }
         }
+
 
     }
 }

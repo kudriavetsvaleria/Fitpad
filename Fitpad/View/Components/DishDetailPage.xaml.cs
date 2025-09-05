@@ -1,8 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using Google.Cloud.Firestore;
 using Fitpad.Model.Entities;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -60,7 +61,8 @@ namespace Fitpad.View.Components
         {
             if (_isEditing)
             {
-                await SaveChangesToFirestore();
+                var userId = UserSession.CurrentUserId;      // <-- получаем текущего юзера
+                await SaveChangesToFirestore(userId);        // <-- передаём userId
                 SetEditMode(false);
                 _isEditing = false;
             }
@@ -70,22 +72,27 @@ namespace Fitpad.View.Components
             }
         }
 
-        private async System.Threading.Tasks.Task SaveChangesToFirestore()
+        private async System.Threading.Tasks.Task SaveChangesToFirestore(string userId)
         {
-            DocumentReference dishRef = _firestoreDb.Collection("dishes").Document(_dish.Id);
+            var dishRef = _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("Dishes").Document(_dish.Id);
 
             var updatedData = new Dictionary<string, object>
             {
                 { "Name", DishNameBox.Text },
                 { "CookingTime", CookingTimeBox.Text },
                 { "Recipe", RecipeBox.Text },
-                { "Ingredients", _dish.Ingredients }
+                { "Ingredients", _dish.Ingredients },
+                { "UpdatedAt", Timestamp.FromDateTime(DateTime.UtcNow) }
             };
 
             await dishRef.UpdateAsync(updatedData);
 
             MessageBox.Show("Зміни збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

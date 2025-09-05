@@ -16,7 +16,6 @@ using System.Windows.Media.Imaging;
 using System.Linq;
 using System.Globalization;
 using System.Windows.Data;
-using static Fitpad.Services.FirestoreService;
 using Fitpad.Model.Repositories;
 using Newtonsoft.Json;
 using static Fitpad.View.Pages.ConstructorPage;
@@ -374,7 +373,8 @@ namespace Fitpad.View.Pages
 
             Console.WriteLine($"📌 Дані перед збереженням: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
 
-            await firestoreService.SaveDishToFirebase(dish);
+            await firestoreService.SaveDishToFirebase(userId, dish);
+
 
             MessageBox.Show("Блюдо успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
 

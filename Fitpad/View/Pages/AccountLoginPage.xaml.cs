@@ -17,8 +17,6 @@ namespace Fitpad.View.Pages
         private static readonly object _lock = new object();
         private readonly UserRepository _userRepository;
 
-
-        // Сделать конструктор публичным
         public AccountLoginPage(ProfileViewModel profileViewModel)
         {
             InitializeComponent();
@@ -33,7 +31,7 @@ namespace Fitpad.View.Pages
         {
             try
             {
-                // Путь к файлу в папке проекта (Resources)
+
                 string projectPath = Directory.GetCurrentDirectory();
                 string filePath = Path.Combine(projectPath, "Resources", "current_user.json");
 
@@ -116,10 +114,9 @@ namespace Fitpad.View.Pages
 
                 Console.WriteLine($"✅ Користувач {user.Name} успішно авторизований.");
 
-                // 🔹 Сохраняем UserID в сессию
+       
                 UserSession.SaveUserIdToFile(user.Id);
 
-                // ✅ Проверяем, есть ли заполненные данные
                 bool isUserInfoComplete = await userRepository.IsUserInfoComplete(user.Id);
                 if (!isUserInfoComplete)
                 {
@@ -128,10 +125,9 @@ namespace Fitpad.View.Pages
                     return;
                 }
 
-                // ✅ Обновляем MainViewModel, чтобы отображались все кнопки
+
                 await MainViewModel.Instance.UpdateNavigationStateAsync();
 
-                // ✅ Переход на страницу профиля
                 NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
 
             }
@@ -147,18 +143,17 @@ namespace Fitpad.View.Pages
         {
             try
             {
-                // Путь к файлу внутри папки проекта (Resources)
+                
                 string projectPath = Directory.GetCurrentDirectory();
                 string resourcesPath = Path.Combine(projectPath, "Resources");
                 string filePath = Path.Combine(resourcesPath, "current_user.json");
 
-                // Убедимся, что папка Resources существует
                 if (!Directory.Exists(resourcesPath))
                 {
                     Directory.CreateDirectory(resourcesPath);
                 }
 
-                // Сохраняем данные в JSON
+      
                 string json = JsonConvert.SerializeObject(user, Formatting.Indented);
                 File.WriteAllText(filePath, json);
 

@@ -20,7 +20,7 @@ namespace Fitpad.Services
         {
 
             // Абсолютный путь к файлу с учетными данными
-            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-firebase-adminsdk-orbvr-c6e144b386.json");
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-91f9ea3e1402.json");
 
 
             Console.WriteLine($"🔍 Ожидаемый путь к файлу учетных данных: {pathToKeyFile}");
@@ -56,17 +56,18 @@ namespace Fitpad.Services
             return _firestoreDb;
         }
 
-        public async Task DeleteDishFromFirebase(string dishId)
+        public async Task DeleteDishFromFirebase(string userId, string dishId)
         {
-            if (string.IsNullOrWhiteSpace(dishId))
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
             {
-                Console.WriteLine("❌ Ошибка: пустой ID блюда.");
+                Console.WriteLine("❌ Ошибка: пустой userId или dishId.");
                 return;
             }
 
-            var dishRef = _firestoreDb.Collection("dishes").Document(dishId);
-            DocumentSnapshot snapshot = await dishRef.GetSnapshotAsync();
+            var dishRef = _firestoreDb.Collection("Users").Document(userId)
+                                      .Collection("Dishes").Document(dishId);
 
+            DocumentSnapshot snapshot = await dishRef.GetSnapshotAsync();
             if (!snapshot.Exists)
             {
                 Console.WriteLine($"❌ Ошибка: Блюдо с ID {dishId} не найдено!");
@@ -76,6 +77,7 @@ namespace Fitpad.Services
             await dishRef.DeleteAsync();
             Console.WriteLine($"✅ Блюдо {dishId} успешно удалено!");
         }
+
 
 
         public async Task SaveUserAsync(UserModel user)
@@ -214,44 +216,46 @@ namespace Fitpad.Services
             }
         }
 
-
-        public async Task<List<DishModel>> GetFavoriteDishes(string userId)
+        public async Task<List<DishModel>> GetUserDishesAsync(string userId)
         {
-            List<DishModel> favoriteDishes = new List<DishModel>();
+            var dishes = new List<DishModel>();
 
             try
             {
-                var querySnapshot = await _firestoreDb.Collection("dishes")
-                    .WhereEqualTo("UserId", userId)
-                    .WhereEqualTo("IsFavorite", true)
+                var snapshot = await _firestoreDb
+                    .Collection("Users").Document(userId)
+                    .Collection("Dishes")
                     .GetSnapshotAsync();
 
-                foreach (var document in querySnapshot.Documents)
+                foreach (var doc in snapshot.Documents)
                 {
-                    DishModel dish = document.ConvertTo<DishModel>();
-                    favoriteDishes.Add(dish);
+                    if (doc.Exists)
+                        dishes.Add(doc.ConvertTo<DishModel>());
                 }
 
-                Console.WriteLine($"✅ Найдено {favoriteDishes.Count} избранных блюд для пользователя {userId}");
+                Console.WriteLine($"✅ Завантажено {dishes.Count} страв для користувача {userId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при получении избранных блюд: {ex.Message}");
+                Console.WriteLine($"❌ Помилка під час завантаження страв: {ex.Message}");
             }
 
-            return favoriteDishes;
+            return dishes;
         }
 
 
-        public async Task SaveDishToFirebase(DishModel dish)
+        public async Task SaveDishToFirebase(string userId, DishModel dish)
         {
             try
             {
-                FirestoreDb db = FirestoreDb.Create("fitpad-2025"); // Создание подключения
-                CollectionReference dishesRef = db.Collection("dishes");
+                if (string.IsNullOrWhiteSpace(userId) || dish == null || string.IsNullOrWhiteSpace(dish.Id))
+                {
+                    Console.WriteLine("❌ Ошибка: некорректные userId/dish.");
+                    return;
+                }
 
-                // Создаём новый документ в коллекции "dishes"
-                DocumentReference newDishRef = dishesRef.Document(dish.Id);
+                var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
+                var newDishRef = dishesRef.Document(dish.Id);
                 await newDishRef.SetAsync(dish);
 
                 Console.WriteLine($"✅ Блюдо '{dish.Name}' сохранено в Firestore (ID: {dish.Id})");
@@ -263,21 +267,25 @@ namespace Fitpad.Services
         }
 
 
-        public async Task<List<DishModel>> GetAllDishes()
+        public async Task<List<DishModel>> GetUserDishes(string userId)
         {
-            List<DishModel> dishes = new List<DishModel>();
+            var dishes = new List<DishModel>();
 
             try
             {
-                QuerySnapshot snapshot = await _firestoreDb.Collection("dishes").GetSnapshotAsync();
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    Console.WriteLine("❌ Ошибка: userId пустой.");
+                    return dishes;
+                }
 
-                foreach (DocumentSnapshot doc in snapshot.Documents)
+                var snapshot = await _firestoreDb.Collection("Users").Document(userId)
+                                                 .Collection("Dishes").GetSnapshotAsync();
+
+                foreach (var doc in snapshot.Documents)
                 {
                     if (doc.Exists)
-                    {
-                        DishModel dish = doc.ConvertTo<DishModel>();
-                        dishes.Add(dish);
-                    }
+                        dishes.Add(doc.ConvertTo<DishModel>());
                 }
 
                 Console.WriteLine($"✅ Загружено {dishes.Count} блюд.");
@@ -290,19 +298,18 @@ namespace Fitpad.Services
             return dishes;
         }
 
-
-        public async Task UpdateFavoriteStatus(string dishId, bool isFavorite)
+        public async Task UpdateFavoriteStatus(string userId, string dishId, bool isFavorite)
         {
-            if (string.IsNullOrWhiteSpace(dishId))
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
             {
-                Console.WriteLine("❌ Ошибка: ID блюда пустой!");
+                Console.WriteLine("❌ Ошибка: пустой userId или dishId!");
                 return;
             }
 
-            var dishRef = _firestoreDb.Collection("dishes").Document(dishId);
+            var dishRef = _firestoreDb.Collection("Users").Document(userId)
+                                      .Collection("Dishes").Document(dishId);
 
-            DocumentSnapshot snapshot = await dishRef.GetSnapshotAsync();
-
+            var snapshot = await dishRef.GetSnapshotAsync();
             if (!snapshot.Exists)
             {
                 Console.WriteLine($"❌ Ошибка: Блюдо с ID {dishId} не найдено в Firestore!");
@@ -310,12 +317,7 @@ namespace Fitpad.Services
             }
 
             Console.WriteLine($"🔥 Обновляем статус избранного: {dishId}, IsFavorite: {isFavorite}");
-
-            await dishRef.UpdateAsync(new Dictionary<string, object>
-    {
-        { "IsFavorite", isFavorite }
-    });
-
+            await dishRef.UpdateAsync(new Dictionary<string, object> { { "IsFavorite", isFavorite } });
             Console.WriteLine("✅ Избранное успешно обновлено в Firestore!");
         }
 
@@ -327,19 +329,26 @@ namespace Fitpad.Services
         }
 
 
-
-        public async Task UpdateDishFavoriteStatus(string dishId, bool isFavorite)
+        public async Task UpdateDishFavoriteStatus(string userId, string dishId, bool isFavorite)
         {
-            if (string.IsNullOrWhiteSpace(dishId))
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
             {
-                Console.WriteLine("❌ Ошибка: ID блюда пустой!");
+                Console.WriteLine("❌ Ошибка: userId или dishId пустой!");
                 return;
             }
 
             try
             {
-                var dishRef = _firestoreDb.Collection("dishes").Document(dishId);
-                await dishRef.UpdateAsync("IsFavorite", isFavorite);
+                var dishRef = _firestoreDb
+                    .Collection("Users").Document(userId)
+                    .Collection("Dishes").Document(dishId);
+
+                await dishRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "IsFavorite", isFavorite },
+            { "UpdatedAt", Timestamp.FromDateTime(DateTime.UtcNow) }
+        });
+
                 Console.WriteLine($"✅ Статус избранного для {dishId} обновлён: {isFavorite}");
             }
             catch (Exception ex)
@@ -348,27 +357,39 @@ namespace Fitpad.Services
             }
         }
 
-
-        public async Task CheckDishesCollection()
+        public async Task<List<DishModel>> GetFavoriteDishes(string userId)
         {
-            var db = FirestoreDb.Create("fitpad-2025"); // Подключаемся к Firestore
-            CollectionReference dishesRef = db.Collection("dishes");
+            var list = new List<DishModel>();
+            var snapshot = await _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("Dishes")
+                .WhereEqualTo("IsFavorite", true)
+                .GetSnapshotAsync();
 
-            QuerySnapshot snapshot = await dishesRef.GetSnapshotAsync();
+            foreach (var doc in snapshot.Documents)
+                list.Add(doc.ConvertTo<DishModel>());
 
-            if (snapshot.Documents.Count == 0)
+            return list;
+        }
+
+
+        public async Task CheckDishesCollection(string userId)
+        {
+            var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
+            var snapshot = await dishesRef.GetSnapshotAsync();
+
+            if (snapshot.Count == 0)
             {
-                Console.WriteLine("❌ Коллекция `dishes` пустая или не существует!");
+                Console.WriteLine("ℹ️ У пользователя нет блюд в `Users/{userId}/Dishes`.");
             }
             else
             {
-                Console.WriteLine($"✅ Найдено {snapshot.Documents.Count} блюд в коллекции `dishes`.");
+                Console.WriteLine($"✅ Найдено {snapshot.Count} блюд.");
                 foreach (var doc in snapshot.Documents)
-                {
-                    Console.WriteLine($"🔹 Блюдо ID: {doc.Id} - {doc.ToDictionary()}");
-                }
+                    Console.WriteLine($"🔹 {doc.Id} -> {doc.ToDictionary()}");
             }
         }
+
 
     }
 }

@@ -354,7 +354,6 @@ namespace Fitpad.View.Pages
             else
             {
                 Console.WriteLine("❌ Продукт НЕ НАЙДЕН в OpenFoodFacts API!");
-                MessageBox.Show("Продукт не найден!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             UpdateCalorieDisplay();
         }
@@ -509,7 +508,7 @@ namespace Fitpad.View.Pages
             if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
             {
                 Console.WriteLine("⚠ Ошибка: Некорректные пользовательские данные!");
-                return 2000; // ✅ Возвращаем базовое значение, если данные отсутствуют
+                return 2000; 
             }
 
             double bmr;

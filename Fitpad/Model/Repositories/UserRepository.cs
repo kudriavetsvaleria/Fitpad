@@ -59,8 +59,11 @@ namespace Fitpad.Model.Repositories
         {
             try
             {
-                // Проверяем наличие пользователя с указанным именем
-                var query = _firestoreDb.Collection("Users").WhereEqualTo("Name", username);
+                // Правильный запрос к коллекции Users
+                var query = _firestoreDb
+                    .Collection("Users")
+                    .WhereEqualTo("Name", username);
+
                 var snapshot = await query.GetSnapshotAsync();
 
                 if (snapshot.Documents.Count > 0)
@@ -79,6 +82,7 @@ namespace Fitpad.Model.Repositories
                 throw;
             }
         }
+
 
         public async Task<UserModel> GetCurrentUserAsync()
         {

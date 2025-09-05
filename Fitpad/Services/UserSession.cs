@@ -8,7 +8,8 @@ public static class UserSession
     private static string _currentUserId;
 
     // ✅ Унифицированный путь к файлу
-    private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
+    private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user"
+        );
 
 
     public static string CurrentUserId

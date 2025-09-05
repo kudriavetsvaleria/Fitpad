@@ -11,7 +11,7 @@ namespace Fitpad.Model.Repositories
     public class NutritionRepository
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "77fc6d4be49f4522900362727af5549f";
+        private const string ApiKey = "86241b5ba83247a39ebe1362a765a007";
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
         public NutritionRepository()

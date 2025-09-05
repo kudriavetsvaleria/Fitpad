@@ -19,10 +19,9 @@ namespace Fitpad.View.Pages
     {
         private readonly Random _random = new Random();
         private static AccountRegistrationPage _instance;
-        private static readonly object _lock = new object(); // Для потокобезопасности
+        private static readonly object _lock = new object();
         private readonly RegistrationService _registrationService;
 
-        // Публичный конструктор без параметров, необходимый для Activator.CreateInstance
         public AccountRegistrationPage()
         {
             InitializeComponent();
@@ -76,8 +75,7 @@ namespace Fitpad.View.Pages
                 await _registrationService.RegisterUserAsync(newUser);
                 await _userRepository.SaveUserAsync(newUser);
 
-         
-                // ✅ Перенаправление на страницу авторизации
+
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
@@ -120,7 +118,7 @@ namespace Fitpad.View.Pages
 
         private void StartConfetti(object sender, RoutedEventArgs e)
         {
-            // Запуск анимации
+
             Storyboard sb = FindResource("ConfettiStoryboard") as Storyboard;
             if (sb != null)
             {
@@ -130,7 +128,7 @@ namespace Fitpad.View.Pages
 
         private void CloseWelcomeOverlay(object sender, RoutedEventArgs e)
         {
-            WelcomeOverlay.Visibility = Visibility.Collapsed; // Скрываем окно приветствия
+            WelcomeOverlay.Visibility = Visibility.Collapsed; 
         }
 
 
