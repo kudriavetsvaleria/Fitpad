@@ -53,7 +53,8 @@ namespace Fitpad.View.Pages
         }
 
 
-        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void Search
+            (object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;
             if (textBox.Text == "Введіть запит")
@@ -62,16 +63,24 @@ namespace Fitpad.View.Pages
             }
         }
 
-        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            if (string.IsNullOrWhiteSpace(textBox.Text))
+            if (sender is TextBox tb &&
+               (tb.Text == "Введите название продукта..." || tb.Text == "Назва продукту..."))
             {
-                textBox.Text = "Введіть запит";
+                tb.Text = "";
+                tb.Foreground = Brushes.Black;
             }
         }
 
-
+        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb && string.IsNullOrWhiteSpace(tb.Text))
+            {
+                tb.Text = "Назва продукту...";
+                tb.Foreground = Brushes.Gray;
+            }
+        }
 
         private ScrollViewer FindScrollViewer(DependencyObject obj)
         {

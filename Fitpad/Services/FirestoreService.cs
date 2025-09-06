@@ -15,28 +15,15 @@ namespace Fitpad.Services
     {
         private readonly FirestoreDb _firestoreDb;
 
-        // Конструктор, инициализирующий соединение с Firestore
         public FirestoreService()
         {
-
-            // Абсолютный путь к файлу с учетными данными
             string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-91f9ea3e1402.json");
 
-
-            Console.WriteLine($"🔍 Ожидаемый путь к файлу учетных данных: {pathToKeyFile}");
-
             if (!File.Exists(pathToKeyFile))
-            {
-                Console.WriteLine($"❌ Файл НЕ найден: {pathToKeyFile}");
                 throw new FileNotFoundException($"Файл учетных данных не найден по пути: {pathToKeyFile}");
-            }
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKeyFile);
-            Console.WriteLine($"✅ GOOGLE_APPLICATION_CREDENTIALS установлен в: {Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")}");
 
-
-            Console.WriteLine($"GOOGLE_APPLICATION_CREDENTIALS set to: {Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")}");
-            // Создаем учетные данные Google и инициализируем Firestore
             GoogleCredential credential = GoogleCredential.FromFile(pathToKeyFile);
             ChannelCredentials channelCredentials = credential.ToChannelCredentials();
 
@@ -45,104 +32,52 @@ namespace Fitpad.Services
                 ProjectId = "fitpad-2025",
                 ChannelCredentials = channelCredentials
             }.Build();
-
-            Console.WriteLine("Соединение с Firestore установлено.");
         }
 
+        public FirestoreDb GetFirestoreDb() => _firestoreDb;
 
-        // Метод для получения экземпляра FirestoreDb
-        public FirestoreDb GetFirestoreDb()
-        {
-            return _firestoreDb;
-        }
+        // ---- FoodDiary ----
 
-        // Добавить запись в дневник
         public async Task AddFoodDiaryEntryAsync(string userId, NutritionModel product, DateTime whenUtc)
         {
             if (string.IsNullOrWhiteSpace(userId) || product == null) return;
 
             var diaryRef = _firestoreDb
                 .Collection("Users").Document(userId)
-                .Collection("FoodDiary")                       // <— коллекция дневника
-                .Document(Guid.NewGuid().ToString());          // авто-ID записи
+                .Collection("FoodDiary")
+                .Document(Guid.NewGuid().ToString());
 
-            var dateStr = whenUtc.ToLocalTime().ToString("yyyy-MM-dd");
-            var timeStr = whenUtc.ToLocalTime().ToString("HH:mm");
+            var local = whenUtc.ToLocalTime();
+            var dateStr = local.ToString("yyyy-MM-dd");
+            var timeStr = local.ToString("HH:mm");
 
             var data = new Dictionary<string, object>
-        {
-            { "Date", dateStr },                           // для запросов за день
-            { "Time", timeStr },
-            { "Timestamp", Timestamp.FromDateTime(whenUtc) },
+            {
+                { "Date", dateStr },
+                { "Time", timeStr },
+                { "Timestamp", Timestamp.FromDateTime(whenUtc) }, // whenUtc ДОЛЖЕН быть UTC
 
-            // основные поля из NutritionModel (на 100 г ты уже хранишь в каталоге,
-            // здесь пишем ФАКТ потребления — уже пересчитанные значения)
-            { "Title", product.Title ?? "" },
-            { "Weight", product.Weight },                  // граммы порции
-            { "Calories", product.Calories },
-            { "Protein", product.Protein },
-            { "Fats", product.Fats },
-            { "Carbs", product.Carbs },
-            { "Water", product.Water }
-        };
+                // значения порции (как показываешь в таблице)
+                { "Title", product.Title ?? "" },
+                { "Weight", product.Weight },
+                { "Calories", product.Calories },
+                { "Protein", product.Protein },
+                { "Fats", product.Fats },
+                { "Carbs", product.Carbs },
+                { "Water", product.Water }
+            };
 
             await diaryRef.SetAsync(data);
         }
 
-        public async Task SaveUserProductAsync(string userId, NutritionModel portion)
-        {
-            if (string.IsNullOrWhiteSpace(userId) || portion == null) return;
-
-            // 1) пересчёт на 100 г
-            var w = portion.Weight > 0 ? portion.Weight : 100.0;
-            var k = 100.0 / w;
-
-            var catalog = new NutritionModel
-            {
-                Id = (portion.Title ?? "").Trim().ToLower(), // фиксированный id по названию
-                Title = portion.Title,
-                Name = portion.Name,
-                // Image игнорируется Firestore-ом (FirestoreIgnore)
-                Calories = Math.Round(portion.Calories * k, 2),
-                Protein = Math.Round(portion.Protein * k, 2),
-                Fats = Math.Round(portion.Fats * k, 2),
-                Carbs = Math.Round(portion.Carbs * k, 2),
-                Sugar = Math.Round(portion.Sugar * k, 2),
-                Water = 0,
-                DefaultServingGrams = 100
-            };
-
-            var col = _firestoreDb.Collection("Users").Document(userId).Collection("UserProducts");
-
-            // 2) upsert по названию (без дублей)
-            // вариант A: фиксированный DocumentId (slug по названию)
-            var doc = col.Document(catalog.Id);
-            await doc.SetAsync(catalog);
-
-            // Вариант B (если не хочешь фиксированный id): сначала поиск по Title, потом SetAsync на найденный doc.
-        }
-
-
-        private static string NormalizeKey(string title)
-        {
-            if (string.IsNullOrWhiteSpace(title)) return Guid.NewGuid().ToString();
-            var key = title.Trim().ToLower();
-            key = new string(key.Where(ch => char.IsLetterOrDigit(ch) || ch == '-' || ch == '_').ToArray());
-            return string.IsNullOrEmpty(key) ? Guid.NewGuid().ToString() : key;
-        }
-
-
-        // Получить записи за конкретную дату
         public async Task<List<NutritionModel>> GetFoodDiaryForDateAsync(string userId, DateTime dateLocal)
         {
             var list = new List<NutritionModel>();
             if (string.IsNullOrWhiteSpace(userId)) return list;
 
-            // границы суток в локальном времени
-            var startLocal = dateLocal.Date;                 // 00:00
-            var endLocal = startLocal.AddDays(1);          // след. день 00:00
+            var startLocal = dateLocal.Date;
+            var endLocal = startLocal.AddDays(1);
 
-            // переведём в UTC (мы сохраняли Timestamp в UTC)
             var startUtc = startLocal.ToUniversalTime();
             var endUtc = endLocal.ToUniversalTime();
 
@@ -151,7 +86,7 @@ namespace Fitpad.Services
                 .Collection("FoodDiary")
                 .WhereGreaterThanOrEqualTo("Timestamp", Timestamp.FromDateTime(startUtc))
                 .WhereLessThan("Timestamp", Timestamp.FromDateTime(endUtc))
-                .OrderBy("Timestamp") // сортировка по тому же полю, что и фильтр
+                .OrderBy("Timestamp")
                 .GetSnapshotAsync();
 
             foreach (var doc in snap.Documents)
@@ -173,101 +108,57 @@ namespace Fitpad.Services
             return list;
         }
 
-
-        // При необходимости — удалить запись
         public async Task DeleteFoodDiaryEntryAsync(string userId, string diaryDocId)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(diaryDocId)) return;
 
-            var docRef = _firestoreDb
+            await _firestoreDb
                 .Collection("Users").Document(userId)
-                .Collection("FoodDiary").Document(diaryDocId);
-
-            await docRef.DeleteAsync();
+                .Collection("FoodDiary").Document(diaryDocId)
+                .DeleteAsync();
         }
-        public async Task DeleteDishFromFirebase(string userId, string dishId)
+
+        // ---- UserProducts (каталог пользователя на 100 г) ----
+
+        public async Task SaveUserProductAsync(string userId, NutritionModel portion)
         {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
+            if (string.IsNullOrWhiteSpace(userId) || portion == null) return;
+
+            // нормализуем к 100 г
+            var w = portion.Weight > 0 ? portion.Weight : 100.0;
+            var k = 100.0 / w;
+
+            var catalog = new NutritionModel
             {
-                Console.WriteLine("❌ Ошибка: пустой userId или dishId.");
-                return;
-            }
+                Id = NormalizeKey(portion.Title),
+                Title = portion.Title,
+                Name = portion.Name,
+                Calories = Math.Round(portion.Calories * k, 2),
+                Protein = Math.Round(portion.Protein * k, 2),
+                Fats = Math.Round(portion.Fats * k, 2),
+                Carbs = Math.Round(portion.Carbs * k, 2),
+                Sugar = Math.Round(portion.Sugar * k, 2),
+                Water = Math.Round(portion.Water * k, 2),
+                DefaultServingGrams = 100
+            };
 
-            var dishRef = _firestoreDb.Collection("Users").Document(userId)
-                                      .Collection("Dishes").Document(dishId);
-
-            DocumentSnapshot snapshot = await dishRef.GetSnapshotAsync();
-            if (!snapshot.Exists)
-            {
-                Console.WriteLine($"❌ Ошибка: Блюдо с ID {dishId} не найдено!");
-                return;
-            }
-
-            await dishRef.DeleteAsync();
-            Console.WriteLine($"✅ Блюдо {dishId} успешно удалено!");
+            var col = _firestoreDb.Collection("Users").Document(userId).Collection("UserProducts");
+            await col.Document(catalog.Id).SetAsync(catalog); // upsert без дублей
         }
 
-
-
-        public async Task SaveUserAsync(UserModel user)
+        private static string NormalizeKey(string title)
         {
-            try
-            {
-                DocumentReference docRef = _firestoreDb.Collection("Users").Document(user.Id);
-                await docRef.SetAsync(user); // Убедитесь, что у объекта user есть данные
-                Console.WriteLine("Пользователь успешно сохранен.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при сохранении пользователя: {ex.Message}");
-                throw;
-            }
+            if (string.IsNullOrWhiteSpace(title)) return Guid.NewGuid().ToString();
+            var key = title.Trim().ToLower();
+            key = new string(key.Where(ch => char.IsLetterOrDigit(ch) || ch == '-' || ch == '_').ToArray());
+            return string.IsNullOrEmpty(key) ? Guid.NewGuid().ToString() : key;
         }
 
+        // ---- Dishes (как было) ----
 
-        // Пример метода для сохранения данных пользователя
-        public async Task SaveUserInfoAsync(UserInfoModel userInfo)
-        {
-            try
-            {
-                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userInfo.UserId);
-                await docRef.SetAsync(userInfo);
-                Console.WriteLine("Информация о пользователе успешно сохранена.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при сохранении информации о пользователе: {ex.Message}");
-                throw;
-            }
-        }
-
-        // Пример метода для загрузки данных пользователя
-        public async Task<UserInfoModel> GetUserInfoAsync(string userId)
-        {
-            try
-            {
-                DocumentReference docRef = _firestoreDb.Collection("UserInfos").Document(userId);
-                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-                if (snapshot.Exists)
-                {
-                    Console.WriteLine("Информация о пользователе успешно загружена.");
-                    return snapshot.ConvertTo<UserInfoModel>();
-                }
-
-                Console.WriteLine("Информация о пользователе не найдена.");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при загрузке информации о пользователе: {ex.Message}");
-                throw;
-            }
-        }
         public async Task<List<DishModel>> GetUserDishesAsync(string userId)
         {
             var dishes = new List<DishModel>();
-
             try
             {
                 var snapshot = await _firestoreDb
@@ -276,101 +167,48 @@ namespace Fitpad.Services
                     .GetSnapshotAsync();
 
                 foreach (var doc in snapshot.Documents)
-                {
-                    if (doc.Exists)
-                        dishes.Add(doc.ConvertTo<DishModel>());
-                }
-
-                Console.WriteLine($"✅ Завантажено {dishes.Count} страв для користувача {userId}");
+                    if (doc.Exists) dishes.Add(doc.ConvertTo<DishModel>());
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Помилка під час завантаження страв: {ex.Message}");
             }
-
             return dishes;
         }
 
-
         public async Task SaveDishToFirebase(string userId, DishModel dish)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(userId) || dish == null || string.IsNullOrWhiteSpace(dish.Id))
-                {
-                    Console.WriteLine("❌ Ошибка: некорректные userId/dish.");
-                    return;
-                }
+            if (string.IsNullOrWhiteSpace(userId) || dish == null || string.IsNullOrWhiteSpace(dish.Id)) return;
 
-                var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
-                var newDishRef = dishesRef.Document(dish.Id);
-                await newDishRef.SetAsync(dish);
-
-                Console.WriteLine($"✅ Блюдо '{dish.Name}' сохранено в Firestore (ID: {dish.Id})");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Ошибка при сохранении блюда: {ex.Message}");
-            }
+            var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
+            await dishesRef.Document(dish.Id).SetAsync(dish);
         }
 
         public async Task UpdateFavoriteStatus(string userId, string dishId, bool isFavorite)
         {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
-            {
-                Console.WriteLine("❌ Ошибка: пустой userId или dishId!");
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId)) return;
 
-            var dishRef = _firestoreDb.Collection("Users").Document(userId)
-                                      .Collection("Dishes").Document(dishId);
-
+            var dishRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes").Document(dishId);
             var snapshot = await dishRef.GetSnapshotAsync();
-            if (!snapshot.Exists)
-            {
-                Console.WriteLine($"❌ Ошибка: Блюдо с ID {dishId} не найдено в Firestore!");
-                return;
-            }
+            if (!snapshot.Exists) return;
 
-            Console.WriteLine($"🔥 Обновляем статус избранного: {dishId}, IsFavorite: {isFavorite}");
             await dishRef.UpdateAsync(new Dictionary<string, object> { { "IsFavorite", isFavorite } });
-            Console.WriteLine("✅ Избранное успешно обновлено в Firestore!");
         }
 
-
-
-        public string GenerateDishId()
-        {
-            return Guid.NewGuid().ToString(); // Генерирует уникальный ID
-        }
-
-
+        public string GenerateDishId() => Guid.NewGuid().ToString();
         public async Task UpdateDishFavoriteStatus(string userId, string dishId, bool isFavorite)
         {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId))
-            {
-                Console.WriteLine("❌ Ошибка: userId или dishId пустой!");
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId)) return;
 
-            try
-            {
-                var dishRef = _firestoreDb
-                    .Collection("Users").Document(userId)
-                    .Collection("Dishes").Document(dishId);
+            var dishRef = _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("Dishes").Document(dishId);
 
-                await dishRef.UpdateAsync(new Dictionary<string, object>
-        {
-            { "IsFavorite", isFavorite },
-            { "UpdatedAt", Timestamp.FromDateTime(DateTime.UtcNow) }
-        });
-
-                Console.WriteLine($"✅ Статус избранного для {dishId} обновлён: {isFavorite}");
-            }
-            catch (Exception ex)
+            await dishRef.UpdateAsync(new Dictionary<string, object>
             {
-                Console.WriteLine($"❌ Ошибка при обновлении статуса избранного: {ex.Message}");
-            }
+                { "IsFavorite", isFavorite },
+                { "UpdatedAt", Timestamp.FromDateTime(DateTime.UtcNow) }
+            });
         }
 
         public async Task<List<DishModel>> GetFavoriteDishes(string userId)
@@ -388,6 +226,20 @@ namespace Fitpad.Services
             return list;
         }
 
+        public async Task DeleteDishFromFirebase(string userId, string dishId)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId)) return;
+
+            var dishRef = _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("Dishes").Document(dishId);
+
+            var snapshot = await dishRef.GetSnapshotAsync();
+            if (!snapshot.Exists) return;
+
+            await dishRef.DeleteAsync();
+        }
+
 
         public async Task CheckDishesCollection(string userId)
         {
@@ -395,17 +247,27 @@ namespace Fitpad.Services
             var snapshot = await dishesRef.GetSnapshotAsync();
 
             if (snapshot.Count == 0)
-            {
                 Console.WriteLine("ℹ️ У пользователя нет блюд в `Users/{userId}/Dishes`.");
-            }
             else
-            {
                 Console.WriteLine($"✅ Найдено {snapshot.Count} блюд.");
-                foreach (var doc in snapshot.Documents)
-                    Console.WriteLine($"🔹 {doc.Id} -> {doc.ToDictionary()}");
-            }
         }
 
+        // ---- Users / UserInfos (как было) ----
 
+        public async Task SaveUserAsync(UserModel user)
+        {
+            await _firestoreDb.Collection("Users").Document(user.Id).SetAsync(user);
+        }
+
+        public async Task SaveUserInfoAsync(UserInfoModel userInfo)
+        {
+            await _firestoreDb.Collection("UserInfos").Document(userInfo.UserId).SetAsync(userInfo);
+        }
+
+        public async Task<UserInfoModel> GetUserInfoAsync(string userId)
+        {
+            var doc = await _firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
+            return doc.Exists ? doc.ConvertTo<UserInfoModel>() : null;
+        }
     }
 }

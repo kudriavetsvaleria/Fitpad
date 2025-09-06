@@ -6,12 +6,12 @@ namespace Fitpad.Model.Entities
     [FirestoreData]
     public class NutritionModel
     {
-        // ---- Каталог (хранится в Firestore) ----
+        // ---- Каталог (хранится в Firestore, значения на 100 г) ----
         [FirestoreProperty] public string Id { get; set; }
         [FirestoreProperty] public string Title { get; set; }
         [FirestoreProperty] public string Name { get; set; }
 
-        // 🔹 Убрали [FirestoreProperty], чтобы Image не сохранялось в БД
+        // Не сохраняем картинку в БД
         public string Image { get; set; }
 
         // Пищевая ценность на 100 г
@@ -25,12 +25,12 @@ namespace Fitpad.Model.Entities
         [FirestoreProperty] public double DefaultServingGrams { get; set; } = 100;
 
         // ---- Поля только для UI/калькулятора (НЕ сохранять в БД) ----
-        public double Weight { get; set; }
+        public double Weight { get; set; }           // граммы выбранной порции
         public string Unit { get; set; }
         public double Quantity { get; set; }
         public double QuantityInGrams { get; set; }
 
-        public string Time { get; set; }
+        public string Time { get; set; }             // для отображения в таблице
         public int ReadyInMinutes { get; set; }
         public string FormattedTime { get; set; }
         public string RecipeDetails { get; set; }
