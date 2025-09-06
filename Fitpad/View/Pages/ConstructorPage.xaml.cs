@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using static Fitpad.View.Pages.ConstructorPage;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Google.Cloud.Firestore;
 
 namespace Fitpad.View.Pages
 {
@@ -348,7 +349,7 @@ namespace Fitpad.View.Pages
         {
             string userId = GetCurrentUserId();
 
-            // Проверяем, заполнены ли поля перед сохранением
+            // валидация
             if (string.IsNullOrWhiteSpace(DishNameBox.Text) ||
                 string.IsNullOrWhiteSpace(RecipeBox.Text) ||
                 string.IsNullOrWhiteSpace(CookingTimeBox.Text))
@@ -357,8 +358,20 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            FirestoreService firestoreService = new FirestoreService();
+            // агрегаты по ингредиентам из конструктора (_products у тебя уже есть)
+            double totalWeightGrams = _products.Sum(p => p.QuantityInGrams);
+            double totalCalories = _products.Sum(p => p.Calories);
+            double totalProtein = _products.Sum(p => p.Protein);
+            double totalFats = _products.Sum(p => p.Fats);
+            double totalCarbs = _products.Sum(p => p.Carbs);
+
+            // защита от деления на 0
+            double perUnitFactor = (totalWeightGrams > 0) ? (100.0 / totalWeightGrams) : 0.0;
+
+            // заполняем модель блюда
+            var firestoreService = new FirestoreService();
             string dishId = firestoreService.GenerateDishId();
+            var now = Timestamp.FromDateTime(DateTime.UtcNow);
 
             var dish = new DishModel
             {
@@ -368,22 +381,33 @@ namespace Fitpad.View.Pages
                 CookingTime = CookingTimeBox.Text,
                 Recipe = RecipeBox.Text,
                 Ingredients = _products.Select(p => p.Name).ToList(),
-                IsFavorite = isFavorite
+                IsFavorite = isFavorite,
+
+                // новые вычисляемые поля (на 100 г)
+                CaloriesPerUnit = Math.Round(totalCalories * perUnitFactor, 2),
+                ProteinPerUnit = Math.Round(totalProtein * perUnitFactor, 2),
+                FatPerUnit = Math.Round(totalFats * perUnitFactor, 2),
+                CarbPerUnit = Math.Round(totalCarbs * perUnitFactor, 2),
+
+                // базовая порция — 100 г (удобно для пересчётов)
+                DefaultServingGrams = 100,
+
+                // метки времени
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
             Console.WriteLine($"📌 Дані перед збереженням: {JsonConvert.SerializeObject(dish, Formatting.Indented)}");
 
             await firestoreService.SaveDishToFirebase(userId, dish);
 
-
             MessageBox.Show("Блюдо успішно збережено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // ✅ Сбрасываем все поля после успешного сохранения
+            // сброс формы и переход на страницу блюд
             ResetForm();
-
-            // ✅ Переход на страницу DishesPage
             NavigateToDishesPage();
         }
+
 
 
         /// <summary>

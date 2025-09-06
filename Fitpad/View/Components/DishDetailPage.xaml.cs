@@ -79,13 +79,13 @@ namespace Fitpad.View.Components
                 .Collection("Dishes").Document(_dish.Id);
 
             var updatedData = new Dictionary<string, object>
-            {
-                { "Name", DishNameBox.Text },
-                { "CookingTime", CookingTimeBox.Text },
-                { "Recipe", RecipeBox.Text },
-                { "Ingredients", _dish.Ingredients },
-                { "UpdatedAt", Timestamp.FromDateTime(DateTime.UtcNow) }
-            };
+                {
+                    { "Name", DishNameBox.Text },
+                    { "CookingTime", CookingTimeBox.Text },
+                    { "Recipe",      RecipeBox.Text },
+                    { "Ingredients", _dish.Ingredients },
+                    { "UpdatedAt",   Timestamp.FromDateTime(DateTime.UtcNow) }
+                };
 
             await dishRef.UpdateAsync(updatedData);
 
