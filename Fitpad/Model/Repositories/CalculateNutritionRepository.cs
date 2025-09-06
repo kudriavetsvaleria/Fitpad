@@ -85,7 +85,7 @@ namespace Fitpad.Model.Repositories
 
                     var savedProduct = new NutritionModel
                     {
-                        Id = int.TryParse(product.Code, out int id) ? id : 0,
+                        Id = !string.IsNullOrWhiteSpace(product.Code) ? product.Code : Guid.NewGuid().ToString(),
                         Name = productName,
                         Title = productName,
                         Image = product.ImageUrl ?? "",

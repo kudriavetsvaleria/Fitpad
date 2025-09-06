@@ -42,7 +42,7 @@ namespace Fitpad.Model.Repositories
 
             return new NutritionModel
             {
-                Id = recipeDetails.Id,
+                Id = recipeDetails.Id.ToString(),
                 Title = recipeDetails.Title,
                 Image = recipeDetails.Image,
                 Calories = (int)(recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
@@ -71,7 +71,7 @@ namespace Fitpad.Model.Repositories
             {
                 result.Add(new NutritionModel
                 {
-                    Id = recipe.Id,
+                    Id = recipe.Id.ToString(),
                     Title = recipe.Title,
                     Image = recipe.Image,
                     Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
@@ -150,7 +150,7 @@ namespace Fitpad.Model.Repositories
             {
                 result.Add(new NutritionModel
                 {
-                    Id = recipe.Id,
+                    Id = recipe.Id.ToString(),
                     Title = recipe.Title,
                     Image = recipe.Image,
                     Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
@@ -174,7 +174,7 @@ namespace Fitpad.Model.Repositories
             {
                 result.Add(new NutritionModel
                 {
-                    Id = recipe.Id,
+                    Id = recipe.Id.ToString(),
                     Title = recipe.Title,
                     Image = recipe.Image,
                     Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
@@ -196,7 +196,7 @@ namespace Fitpad.Model.Repositories
             {
                 result.Add(new NutritionModel
                 {
-                    Id = recipe.Id,
+                    Id = recipe.Id.ToString(),
                     Title = recipe.Title,
                     Image = recipe.Image,
                     Calories = 0, // Random не возвращает Nutrition

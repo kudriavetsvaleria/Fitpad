@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
 using Fitpad.Services;
+using Fitpad.Model.Entities;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
@@ -118,15 +119,24 @@ namespace Fitpad.ViewModel.PagesViewModels
             var recipes = await _repository.SearchRecipesAsync(translatedQuery);
 
             // Запрашиваем детали рецептов параллельно
+            // Запрашиваем детали рецептов параллельно
             var tasks = recipes.Select(async recipe =>
             {
-                var detailedRecipe = await _repository.GetRecipeDetailsAsync(recipe.Id);
-                recipe.Calories = detailedRecipe.Calories;
-                recipe.Protein = detailedRecipe.Protein;
-                recipe.Carbs = detailedRecipe.Carbs;
-                recipe.Fats = detailedRecipe.Fats;
-                recipe.RecipeDetails = detailedRecipe.RecipeDetails;
-                recipe.Ingredients = detailedRecipe.Ingredients;
+                // преобразуем string → int
+                if (int.TryParse(recipe.Id, out int recipeId))
+                {
+                    var detailedRecipe = await _repository.GetRecipeDetailsAsync(recipeId);
+                    recipe.Calories = detailedRecipe.Calories;
+                    recipe.Protein = detailedRecipe.Protein;
+                    recipe.Carbs = detailedRecipe.Carbs;
+                    recipe.Fats = detailedRecipe.Fats;
+                    recipe.RecipeDetails = detailedRecipe.RecipeDetails;
+                    recipe.Ingredients = detailedRecipe.Ingredients;
+                }
+                else
+                {
+                    Console.WriteLine($"⚠ Не удалось преобразовать Id рецепта '{recipe.Id}' в число!");
+                }
 
                 // Переводим название и описание рецепта
                 recipe.Title = await _translator.TranslateTextAsync(recipe.Title);
@@ -134,6 +144,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                 return recipe;
             });
+
 
             var detailedRecipes = await Task.WhenAll(tasks); // Ожидаем завершения всех запросов
 

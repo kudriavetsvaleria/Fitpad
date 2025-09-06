@@ -25,24 +25,32 @@ namespace Fitpad.View.Pages
         private async Task LoadRecipeDetailsAsync()
         {
             var repository = new NutritionRepository();
-            var (instructions, ingredients) = await repository.GetRecipeDetailsWithIngredientsAsync(_model.Id);
 
-            _model.RecipeDetails = await _translator.TranslateTextAsync(instructions); // Перевод инструкций
+            if (!int.TryParse(_model.Id, out var rid))
+            {
+                MessageBox.Show("Не удалось распознать ID рецепта.", "Помилка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var (instructions, ingredients) = await repository.GetRecipeDetailsWithIngredientsAsync(rid);
+
+            _model.RecipeDetails = await _translator.TranslateTextAsync(instructions);
             _model.Ingredients = new List<string>();
 
             foreach (var ingredient in ingredients)
             {
-                var translatedIngredient = await _translator.TranslateTextAsync(ingredient); // Перевод ингредиентов
+                var translatedIngredient = await _translator.TranslateTextAsync(ingredient);
                 _model.Ingredients.Add(translatedIngredient);
             }
 
-            // Обновляем привязку для отображения данных
             Dispatcher.Invoke(() =>
             {
                 DataContext = null;
                 DataContext = _model;
             });
         }
+
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
