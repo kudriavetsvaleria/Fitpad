@@ -343,12 +343,8 @@ namespace Fitpad.View.Pages
 
             // Поиск в OpenFoodFacts API
             var product = await _viewModel.SearchAndAddProductAsync(translatedName, weight);
-
             if (product != null)
             {
-                Console.WriteLine($"✅ Найден продукт: {product.Title}, Калории на {weight} г: {product.Calories}");
-
-                // 🔹 Автоматически добавляем в таблицу и сохраняем в Firestore
                 AddProductToTable(product);
             }
             else
@@ -393,106 +389,29 @@ namespace Fitpad.View.Pages
 
         private async void AddProductToTable(NutritionModel product)
         {
-            if (product == null)
-            {
-                Console.WriteLine("❌ [UI] Ошибка: продукт NULL, не могу добавить в таблицу.");
-                return;
-            }
+            if (product == null) return;
 
-            await SaveProductToFirestore(product);
+            var userId = UserSession.CurrentUserId;
+            var fs = new FirestoreService();
 
-            if (_viewModel.SavedProducts.Any(p => p.Title == product.Title && p.Weight == product.Weight))
-            {
-                Console.WriteLine($"⚠ [UI] Продукт '{product.Title}' ({product.Weight} г) уже добавлен в таблицу. Пропускаем.");
-                return;
-            }
+            // 1) Дневник: факт употребления (обязательно)
+            await fs.AddFoodDiaryEntryAsync(userId, product, DateTime.UtcNow);
 
-            Console.WriteLine($"🟢 [UI] Добавляем продукт в таблицу: {product.Title} ({product.Weight} г, {product.Calories} ккал)");
+            // 2) Каталог: опционально, чтобы «новые» попадали в UserProducts без дублей
+            await fs.SaveUserProductAsync(userId, product);
 
+
+            // 3) UI / суммы
             _viewModel.SavedProducts.Add(product);
             _viewModel.CurrentCalories += product.Calories;
             _viewModel.CurrentProtein += product.Protein;
             _viewModel.CurrentFats += product.Fats;
             _viewModel.CurrentCarbs += product.Carbs;
+            if ((product.Title ?? "").ToLower().Contains("вода"))
+                _viewModel.CurrentWater += product.Weight;
 
             _viewModel.UpdatePieChart();
-            UpdateCalorieDisplay(); // ✅ Добавляем вызов обновления UI
-        }
-
-
-
-        private async Task SaveProductToFirestore(NutritionModel product)
-        {
-            try
-            {
-                if (product == null)
-                {
-                    Console.WriteLine("❌ [Firestore] Ошибка: продукт NULL, не могу сохранить.");
-                    return;
-                }
-
-                var userId = UserSession.CurrentUserId;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    Console.WriteLine("❌ [Firestore] Ошибка: UserID не найден.");
-                    return;
-                }
-
-                Console.WriteLine($"🟢 [Firestore] Сохраняем продукт '{product.Title}' для пользователя {userId}");
-
-                var firestoreService = new FirestoreService();
-                await firestoreService.SaveUserProductAsync(userId, product);
-
-                Console.WriteLine($"✅ [Firestore] Продукт '{product.Title}' успешно сохранён!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ [Firestore] Ошибка при сохранении продукта: {ex.Message}");
-            }
-        }
-
-
-        public async Task SaveUserProductAsync(string userId, NutritionModel product)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    Console.WriteLine("❌ Ошибка: UserID пустой!");
-                    return;
-                }
-
-                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
-                CollectionReference userProductsRef = db.Collection("UserProducts");
-
-                DocumentReference newProductRef = userProductsRef.Document(Guid.NewGuid().ToString());
-
-                var productData = new Dictionary<string, object>
-        {
-            { "UserId", userId },
-            { "Title", product.Title },
-            { "Weight", product.Weight },
-            { "Calories", product.Calories },
-            { "Protein", product.Protein },
-            { "Fats", product.Fats },
-            { "Carbs", product.Carbs },
-            { "Time", product.Time }
-        };
-
-                if (product.Title.ToLower().Contains("вода") || product.Title.ToLower().Contains("water"))
-                {
-                    productData["Water"] = product.Weight;
-                    Console.WriteLine($"💧 Добавлен параметр Water: {product.Weight} мл");
-                }
-
-                Console.WriteLine($"🟢 Сохранение продукта {product.Title} в Firestore...");
-                await newProductRef.SetAsync(productData);
-                Console.WriteLine($"✅ Продукт {product.Title} сохранён в Firestore!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Ошибка при сохранении продукта: {ex.Message}");
-            }
+            UpdateCalorieDisplay();
         }
 
 
@@ -579,7 +498,8 @@ namespace Fitpad.View.Pages
             }
 
             var firestoreService = new FirestoreService();
-            var products = await firestoreService.GetUserProductsAsync(UserSession.CurrentUserId);
+            var today = DateTime.Now;
+            var products = await firestoreService.GetFoodDiaryForDateAsync(UserSession.CurrentUserId, today);
 
             if (products == null || products.Count == 0)
             {
@@ -666,7 +586,6 @@ namespace Fitpad.View.Pages
             }
         }
 
-
         private async Task DeleteProductFromFirestore(NutritionModel product)
         {
             try
@@ -679,26 +598,43 @@ namespace Fitpad.View.Pages
                 }
 
                 var db = FirestoreDb.Create("fitpad-2025");
-                var userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
+                var diaryRef = db.Collection("Users").Document(userId).Collection("FoodDiary");
 
-                // Поиск продукта в Firestore
-                var query = await userProductsRef
-                             .WhereEqualTo("Title", product.Title)
-                             .WhereEqualTo("Weight", product.Weight)
-                             .WhereEqualTo("Calories", product.Calories)
-                             .GetSnapshotAsync();
+                // Если ты показываешь текущий день — возьмём локальную дату сегодня.
+                // Если в UI выбирается дата — подставь её сюда.
+                string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
+                string timeStr = product.Time ?? "";
 
-                foreach (var doc in query.Documents)
+                var query = diaryRef
+                    .WhereEqualTo("Date", dateStr)
+                    .WhereEqualTo("Title", product.Title ?? "")
+                    .WhereEqualTo("Weight", product.Weight)
+                    .WhereEqualTo("Calories", product.Calories);
+
+                // Если поле Time заполняешь и отображаешь — добавь и его в фильтр:
+                if (!string.IsNullOrEmpty(timeStr))
+                    query = query.WhereEqualTo("Time", timeStr);
+
+                var snap = await query.GetSnapshotAsync();
+
+                if (snap.Count == 0)
+                {
+                    Console.WriteLine("⚠ Запись в FoodDiary не найдена по указанным полям.");
+                    return;
+                }
+
+                foreach (var doc in snap.Documents)
                 {
                     await doc.Reference.DeleteAsync();
-                    Console.WriteLine($"✅ [Firestore] Видалено продукт: {product.Title}");
+                    Console.WriteLine($"✅ [Firestore] Видалено запис FoodDiary: {doc.Id}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ [Firestore] Помилка при видаленні продукту: {ex.Message}");
+                Console.WriteLine($"❌ [Firestore] Помилка при видаленні запису FoodDiary: {ex.Message}");
             }
         }
+
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {

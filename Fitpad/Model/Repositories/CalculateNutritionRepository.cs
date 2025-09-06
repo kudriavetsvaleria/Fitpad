@@ -21,43 +21,6 @@ namespace Fitpad.Model.Repositories
             _translator = new TranslatorService();
         }
 
-        public async Task<List<NutritionModel>> GetUserProductsAsync(string userId)
-        {
-            List<NutritionModel> products = new List<NutritionModel>();
-
-            try
-            {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    Console.WriteLine("❌ Помилка: UserID не знайдено.");
-                    return products;
-                }
-
-                FirestoreDb db = FirestoreDb.Create("fitpad-2025");
-                CollectionReference userProductsRef = db.Collection("Users").Document(userId).Collection("UserProducts");
-
-                QuerySnapshot snapshot = await userProductsRef.GetSnapshotAsync();
-
-                foreach (DocumentSnapshot doc in snapshot.Documents)
-                {
-                    if (doc.Exists)
-                    {
-                        NutritionModel product = doc.ConvertTo<NutritionModel>();
-                        products.Add(product);
-                    }
-                }
-
-                Console.WriteLine($"✅ Завантажено {products.Count} продуктів для користувача {userId}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Помилка під час завантаження продуктів: {ex.Message}");
-            }
-
-            return products;
-        }
-
-
         public async Task<List<NutritionModel>> GetProductsAsync(string query)
         {
             try

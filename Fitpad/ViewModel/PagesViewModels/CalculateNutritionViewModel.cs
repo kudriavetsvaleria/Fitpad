@@ -339,20 +339,17 @@ namespace Fitpad.ViewModel.PagesViewModels
                 UpdatePieChart(); // ✅ Обновляем диаграмму калорий
             }
         }
-
         public async Task<NutritionModel> SearchAndAddProductAsync(string query, double weight)
         {
             if (weight <= 0)
-            {
                 throw new ArgumentException("Вага повинна бути більше 0 г.");
-            }
 
             string lowerQuery = query.Trim().ToLower();
 
-            // ✅ Если пользователь вводит "вода", обрабатываем её отдельно
+            // Спец-случай — вода
             if (lowerQuery == "вода" || lowerQuery == "water")
             {
-                var waterProduct = new NutritionModel
+                return new NutritionModel
                 {
                     Title = "Вода",
                     Weight = weight,
@@ -363,48 +360,36 @@ namespace Fitpad.ViewModel.PagesViewModels
                     Water = weight,
                     Time = DateTime.Now.ToString("HH:mm")
                 };
-
-                SavedProducts.Add(waterProduct);
-                CurrentWater += weight;
-                OnPropertyChanged(nameof(WaterDisplayText));
-                UpdateWaterChart();
-
-                Console.WriteLine($"✅ Добавлена вода: {weight} мл в {waterProduct.Time}");
-                return waterProduct;
             }
 
+            // Берём 100г значения из API
             var products = await _repository.GetProductsAsync(query);
-
             if (products == null || products.Count == 0)
-            {
-                Console.WriteLine($"❌ Продукт '{query}' не найден. Открываю форму ввода.");
-
-                // ✅ Сразу показываем форму БЕЗ MessageBox
-                ShowManualEntryOverlayAction?.Invoke(query, weight);
-
                 return null;
-            }
 
-            var product = products[0];
-            product.Weight = weight;
-            product.Calories = (product.Calories * weight) / 100;
-            product.Protein = (product.Protein * weight) / 100;
-            product.Fats = (product.Fats * weight) / 100;
-            product.Carbs = (product.Carbs * weight) / 100;
-            product.Time = DateTime.Now.ToString("HH:mm");
+            // Продукт из API — на 100г
+            var p100 = products[0];
 
-            SavedProducts.Add(product);
-            CurrentCalories += product.Calories;
-            CurrentProtein += product.Protein;
-            CurrentFats += product.Fats;
-            CurrentCarbs += product.Carbs;
+            // Возвращаем УЖЕ пересчитанный под введённый вес экземпляр
+            var pServing = new NutritionModel
+            {
+                Title = p100.Title,
+                Name = p100.Name,
+                Image = p100.Image,
+                Weight = weight,
+                Time = DateTime.Now.ToString("HH:mm"),
 
-            Console.WriteLine($"✅ Додано продукт: {product.Title}, калорії: {product.Calories}, Время: {product.Time}");
+                // пересчёт под вес
+                Calories = (p100.Calories * weight) / 100.0,
+                Protein = (p100.Protein * weight) / 100.0,
+                Fats = (p100.Fats * weight) / 100.0,
+                Carbs = (p100.Carbs * weight) / 100.0,
+                Sugar = (p100.Sugar * weight) / 100.0,
+                Water = 0
+            };
 
-            UpdatePieChart();
-            return product;
+            return pServing;
         }
-
 
         private void UpdateCalorieText()
         {
