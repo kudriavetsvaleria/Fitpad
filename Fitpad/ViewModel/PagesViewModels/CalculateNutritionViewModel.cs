@@ -4,22 +4,17 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Windows;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
-using Fitpad.View.Components;
 using LiveCharts;
 using LiveCharts.Wpf;
-using Fitpad.View;
-using System.Windows;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
     public class CalculateNutritionViewModel : INotifyPropertyChanged
     {
-        private readonly CalculateNutritionRepository _repository;
-
-        private readonly UserInfoRepository _userInfoRepository;
-        private readonly string _userId;
+        private readonly CalculateNutritionRepository _repository = new CalculateNutritionRepository();
 
         private double _currentCalories;
         private double _calorieNorm;
@@ -28,326 +23,162 @@ namespace Fitpad.ViewModel.PagesViewModels
         private double _proteinNorm, _fatsNorm, _carbsNorm, _waterNorm;
 
         public Action<string, double> ShowManualEntryOverlayAction { get; set; }
-        public Action UpdatePieChartAction { get; set; }
 
-        public UserInfoModel UserInfo { get; private set; }
-        public ObservableCollection<NutritionModel> SavedProducts { get; set; }
+        public UserInfoModel UserInfo { get; }
+        public ObservableCollection<NutritionModel> SavedProducts { get; }
 
-        public SeriesCollection CalorieChartSeries { get; set; }
-        public SeriesCollection WaterChartSeries { get; set; }
-
-        public SeriesCollection ConsumedCaloriesSeries { get; set; }
-        public SeriesCollection RemainingCaloriesSeries { get; set; }
+        public SeriesCollection CalorieChartSeries { get; private set; }
+        public SeriesCollection WaterChartSeries { get; private set; }
 
         private bool _canSave;
         public bool CanSave
         {
             get => _canSave;
-            set
-            {
-                _canSave = value;
-                OnPropertyChanged(nameof(CanSave));
-            }
+            set { _canSave = value; OnPropertyChanged(); }
         }
 
-        public CalculateNutritionViewModel(string userId)
+        public CalculateNutritionViewModel(UserInfoModel userInfo)
         {
-            _userId = userId;
-            _userInfoRepository = new UserInfoRepository();
+            UserInfo = userInfo ?? new UserInfoModel();
+            SavedProducts = new ObservableCollection<NutritionModel>();
+
+            CalorieNorm = CalculateDailyCalorieIntake(UserInfo);
+            CalculateMacroNorms();
+
+            // Инициализация серий (значения будут перезаписаны в UpdatePieChart)
+            CalorieChartSeries = new SeriesCollection
+            {
+                new PieSeries { Title = "З'їли",      Values = new ChartValues<double> { 0 },         Fill = new SolidColorBrush(Colors.Green), DataLabels = true },
+                new PieSeries { Title = "Залишилось", Values = new ChartValues<double> { CalorieNorm }, Fill = new SolidColorBrush(Colors.Gray),  DataLabels = true }
+            };
+
+            WaterChartSeries = new SeriesCollection
+            {
+                new PieSeries { Title = "Випито",     Values = new ChartValues<double> { 0 },        Fill = new SolidColorBrush(Color.FromRgb(122,206,255)), DataLabels = true },
+                new PieSeries { Title = "Залишилось", Values = new ChartValues<double> { WaterNorm }, Fill = new SolidColorBrush(Color.FromRgb(190,190,190)),  DataLabels = true }
+            };
+
+            UpdatePieChart();
         }
 
+        // опциональный конструктор, если где-то создаётся по userId
+        public CalculateNutritionViewModel(string userId) : this(new UserInfoModel { UserId = userId }) { }
 
-
-        // Метод для проверки, заполнены ли все поля
+        // ----- Валидация ввода
         public void CheckFields(string calories, string protein, string fats, string carbs)
         {
-            CanSave = !string.IsNullOrWhiteSpace(calories) &&
-                      !string.IsNullOrWhiteSpace(protein) &&
-                      !string.IsNullOrWhiteSpace(fats) &&
-                      !string.IsNullOrWhiteSpace(carbs);
+            CanSave = !string.IsNullOrWhiteSpace(calories)
+                   && !string.IsNullOrWhiteSpace(protein)
+                   && !string.IsNullOrWhiteSpace(fats)
+                   && !string.IsNullOrWhiteSpace(carbs);
         }
 
-
-        public double CurrentProtein
-        {
-            get => _currentProtein;
-            set { _currentProtein = value; OnPropertyChanged(nameof(ProteinDisplayText)); }
-        }
-        public double CurrentFats
-        {
-            get => _currentFats;
-            set { _currentFats = value; OnPropertyChanged(nameof(FatsDisplayText)); }
-        }
-        public double CurrentCarbs
-        {
-            get => _currentCarbs;
-            set { _currentCarbs = value; OnPropertyChanged(nameof(CarbsDisplayText)); }
-        }
-        public double CurrentWater
-        {
-            get => _currentWater;
-            set { _currentWater = value; OnPropertyChanged(nameof(WaterDisplayText)); }
-        }
-
-        public double ProteinNorm
-        {
-            get => _proteinNorm;
-            set { _proteinNorm = value; OnPropertyChanged(nameof(ProteinDisplayText)); }
-        }
-        public double FatsNorm
-        {
-            get => _fatsNorm;
-            set { _fatsNorm = value; OnPropertyChanged(nameof(FatsDisplayText)); }
-        }
-        public double CarbsNorm
-        {
-            get => _carbsNorm;
-            set { _carbsNorm = value; OnPropertyChanged(nameof(CarbsDisplayText)); }
-        }
-        public double WaterNorm
-        {
-            get => _waterNorm;
-            set { _waterNorm = value; OnPropertyChanged(nameof(WaterDisplayText)); }
-        }
-
-        public string ProteinDisplayText => $"{CurrentProtein:F1} / {ProteinNorm:F0} г";
-        public string FatsDisplayText => $"{CurrentFats:F1} / {FatsNorm:F0} г";
-        public string CarbsDisplayText => $"{CurrentCarbs:F1} / {CarbsNorm:F0} г";
-        public string WaterDisplayText => $"{CurrentWater:F1} / {WaterNorm:F0} мл";
-
-
-
-        private double _totalWater;
-
-
+        // ----- Текущие значения
         public double CurrentCalories
         {
             get => _currentCalories;
-            set
-            {
-                _currentCalories = value;
-                UpdateCalorieText(); // ✅ Обновляем текстовое отображение калорий
-            }
+            set { _currentCalories = value; OnPropertyChanged(nameof(CalorieDisplayText)); }
         }
+        public double CurrentProtein { get => _currentProtein; set { _currentProtein = value; OnPropertyChanged(nameof(ProteinDisplayText)); } }
+        public double CurrentFats { get => _currentFats; set { _currentFats = value; OnPropertyChanged(nameof(FatsDisplayText)); } }
+        public double CurrentCarbs { get => _currentCarbs; set { _currentCarbs = value; OnPropertyChanged(nameof(CarbsDisplayText)); } }
+        public double CurrentWater { get => _currentWater; set { _currentWater = value; OnPropertyChanged(nameof(WaterDisplayText)); } }
 
+        // ----- Нормы
         public double CalorieNorm
         {
             get => _calorieNorm;
             set
             {
                 _calorieNorm = value;
-                CalculateMacroNorms(); // ✅ Пересчитываем нормы БЖУ при изменении нормы калорий
+                CalculateMacroNorms();
                 OnPropertyChanged(nameof(CalorieDisplayText));
                 OnPropertyChanged(nameof(ProteinDisplayText));
                 OnPropertyChanged(nameof(FatsDisplayText));
                 OnPropertyChanged(nameof(CarbsDisplayText));
             }
         }
+        public double ProteinNorm { get => _proteinNorm; set { _proteinNorm = value; OnPropertyChanged(nameof(ProteinDisplayText)); } }
+        public double FatsNorm { get => _fatsNorm; set { _fatsNorm = value; OnPropertyChanged(nameof(FatsDisplayText)); } }
+        public double CarbsNorm { get => _carbsNorm; set { _carbsNorm = value; OnPropertyChanged(nameof(CarbsDisplayText)); } }
+        public double WaterNorm { get => _waterNorm; set { _waterNorm = value; OnPropertyChanged(nameof(WaterDisplayText)); } }
+
+        public string CalorieDisplayText => $"Ккал: {CurrentCalories:F1} / {CalorieNorm:F0}";
+        public string ProteinDisplayText => $"{CurrentProtein:F1} / {ProteinNorm:F0} г";
+        public string FatsDisplayText => $"{CurrentFats:F1} / {FatsNorm:F0} г";
+        public string CarbsDisplayText => $"{CurrentCarbs:F1} / {CarbsNorm:F0} г";
+        public string WaterDisplayText => $"{CurrentWater:F1} / {WaterNorm:F0} мл";
 
         private void CalculateMacroNorms()
         {
-            if (CalorieNorm > 0) // Проверяем, чтобы не было деления на 0
-            {
-                ProteinNorm = Math.Round((CalorieNorm * 0.2) / 4, 1);
-                FatsNorm = Math.Round((CalorieNorm * 0.25) / 9, 1);
-                CarbsNorm = Math.Round((CalorieNorm * 0.55) / 4, 1);
-                WaterNorm = 2000; // Минимальная суточная норма воды ✅
+            if (CalorieNorm <= 0) { ProteinNorm = FatsNorm = CarbsNorm = 0; WaterNorm = 2000; return; }
 
-                OnPropertyChanged(nameof(ProteinNorm));
-                OnPropertyChanged(nameof(FatsNorm));
-                OnPropertyChanged(nameof(CarbsNorm));
-                OnPropertyChanged(nameof(WaterNorm));
-                OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI для воды
-            }
-        }
+            ProteinNorm = Math.Round((CalorieNorm * 0.20) / 4, 1);
+            FatsNorm = Math.Round((CalorieNorm * 0.25) / 9, 1);
+            CarbsNorm = Math.Round((CalorieNorm * 0.55) / 4, 1);
+            WaterNorm = 2000; // мл
 
-
-        public string CalorieDisplayText => $"Ккал: {CurrentCalories:F1} / {CalorieNorm:F0}";
-
-
-        public CalculateNutritionViewModel(UserInfoModel userInfo)
-        {
-            UserInfo = userInfo ?? new UserInfoModel();
-            SavedProducts = new ObservableCollection<NutritionModel>();
-            _repository = new CalculateNutritionRepository();
-
-            CalorieNorm = CalculateDailyCalorieIntake(UserInfo);
-            CalculateMacroNorms();
-
-            Console.WriteLine("🚀 Инициализация диаграммы...");
-
-            // ✅ Создаем новые `SeriesCollection`
-            CalorieChartSeries = new SeriesCollection
-    {
-        new PieSeries
-        {
-            Title = "З'їли",
-            Values = new ChartValues<double> { 0 },
-            Fill = new SolidColorBrush(Colors.Green),
-            DataLabels = true
-        },
-        new PieSeries
-        {
-            Title = "Залишилось",
-            Values = new ChartValues<double> { CalorieNorm },
-            Fill = new SolidColorBrush(Colors.Gray),
-            DataLabels = true
-        }
-    };
-
-            WaterChartSeries = new SeriesCollection
-    {
-        new PieSeries
-        {
-            Title = "Випито",
-            Values = new ChartValues<double> { 0 },
-            Fill = new SolidColorBrush(Color.FromRgb(122, 206, 255)), // Голубой
-            DataLabels = true
-        },
-        new PieSeries
-        {
-            Title = "Залишилось",
-            Values = new ChartValues<double> { WaterNorm },
-            Fill = new SolidColorBrush(Color.FromRgb(190, 190, 190)), // Серый
-            DataLabels = true
-        }
-    };
-
-            Console.WriteLine("✅ Диаграмма инициализирована!");
-            UpdatePieChart(); // 🔥 Обновляем диаграмму
-        }
-
-
-        private void UpdateWaterChart()
-        {
-            if (WaterChartSeries == null || WaterChartSeries.Count < 2)
-                return;
-
-            double consumed = Math.Max(0, CurrentWater);
-            double remaining = Math.Max(0, WaterNorm - CurrentWater);
-
-            if (consumed == 0 && remaining == 0) // Если воды нет, показываем пустую диаграмму
-            {
-                remaining = WaterNorm > 0 ? WaterNorm : 1;
-            }
-
-            WaterChartSeries[0].Values = new ChartValues<double> { consumed };
-            WaterChartSeries[1].Values = new ChartValues<double> { remaining };
-
-            OnPropertyChanged(nameof(WaterChartSeries));
+            OnPropertyChanged(nameof(ProteinNorm));
+            OnPropertyChanged(nameof(FatsNorm));
+            OnPropertyChanged(nameof(CarbsNorm));
+            OnPropertyChanged(nameof(WaterNorm));
+            OnPropertyChanged(nameof(WaterDisplayText));
         }
 
         public void UpdatePieChart()
         {
-            if (CalorieChartSeries == null)
+            // защита от деления на ноль
+            var calPercent = CalorieNorm > 0 ? (CurrentCalories / CalorieNorm) * 100 : 0;
+            var waterPct = WaterNorm > 0 ? (CurrentWater / WaterNorm) * 100 : 0;
+
+            calPercent = Math.Max(0, Math.Min(100, calPercent));
+            waterPct = Math.Max(0, Math.Min(100, waterPct));
+
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                Console.WriteLine("❌ Ошибка: `CalorieChartSeries` = null! Повторная инициализация...");
-                CalorieChartSeries = new SeriesCollection();
-            }
+                var green = (Brush)new BrushConverter().ConvertFromString("#70A93D");
+                var gray = (Brush)new BrushConverter().ConvertFromString("#BEBEBE");
 
-            if (WaterChartSeries == null)
-            {
-                Console.WriteLine("❌ Ошибка: `WaterChartSeries` = null! Повторная инициализация...");
-                WaterChartSeries = new SeriesCollection();
-            }
-
-            double caloriePercentage = (CurrentCalories / CalorieNorm) * 100;
-            double waterPercentage = (CurrentWater / WaterNorm) * 100; // Используем `WaterNorm`
-
-            // Ограничиваем значения, чтобы не было больше 100%
-            caloriePercentage = Math.Min(caloriePercentage, 100);
-            waterPercentage = Math.Min(waterPercentage, 100);
-
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                try
+                CalorieChartSeries = new SeriesCollection
                 {
-                    // 🔥 Обновляем диаграмму калорий с правильными цветами
-                    var newCalorieSeries = new SeriesCollection
-            {
-                new PieSeries
-                {
-                    Title = "З'їли",
-                    Values = new ChartValues<double> { Math.Round(caloriePercentage, 2) },
-                    Fill = (Brush)new BrushConverter().ConvertFromString("#70A93D"), // ✅ Оригинальный зеленый
-                    DataLabels = true,
-                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
-                },
-                new PieSeries
-                {
-                    Title = "Залишилось",
-                    Values = new ChartValues<double> { Math.Round(100 - caloriePercentage, 2) },
-                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
-                    DataLabels = true,
-                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
-                }
-            };
+                    new PieSeries { Title = "З'їли",      Values = new ChartValues<double> { Math.Round(calPercent, 2) },      Fill = green, DataLabels = true, LabelPoint = cp => $"{cp.Y:F2}%" },
+                    new PieSeries { Title = "Залишилось", Values = new ChartValues<double> { Math.Round(100 - calPercent, 2) }, Fill = gray,  DataLabels = true, LabelPoint = cp => $"{cp.Y:F2}%" }
+                };
+                OnPropertyChanged(nameof(CalorieChartSeries));
 
-                    CalorieChartSeries = newCalorieSeries;
-                    OnPropertyChanged(nameof(CalorieChartSeries));
-
-                    // 🔥 Обновляем диаграмму воды (оставил без изменений)
-                    var newWaterSeries = new SeriesCollection
-            {
-                new PieSeries
+                WaterChartSeries = new SeriesCollection
                 {
-                    Title = "Випито",
-                    Values = new ChartValues<double> { Math.Round(waterPercentage, 2) },
-                    Fill = new SolidColorBrush(Color.FromRgb(122, 206, 255)), // Голубой
-                    DataLabels = true,
-                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
-                },
-                new PieSeries
-                {
-                    Title = "Залишилось",
-                    Values = new ChartValues<double> { Math.Round(100 - waterPercentage, 2) },
-                    Fill = (Brush)new BrushConverter().ConvertFromString("#BEBEBE"), // ✅ Оригинальный серый
-                    DataLabels = true,
-                    LabelPoint = chartPoint => $"{chartPoint.Y:F2}%"
-                }
-            };
-
-                    WaterChartSeries = newWaterSeries;
-                    OnPropertyChanged(nameof(WaterChartSeries));
-
-                    Console.WriteLine($"📊 Обновлены диаграммы: Калории {caloriePercentage:F2}%, Вода {waterPercentage:F2}%");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"❌ Ошибка обновления диаграмм: {ex.Message}");
-                }
+                    new PieSeries { Title = "Випито",     Values = new ChartValues<double> { Math.Round(waterPct, 2) },        Fill = new SolidColorBrush(Color.FromRgb(122,206,255)), DataLabels = true, LabelPoint = cp => $"{cp.Y:F2}%" },
+                    new PieSeries { Title = "Залишилось", Values = new ChartValues<double> { Math.Round(100 - waterPct, 2) },  Fill = gray,                                        DataLabels = true, LabelPoint = cp => $"{cp.Y:F2}%" }
+                };
+                OnPropertyChanged(nameof(WaterChartSeries));
             });
         }
 
-
         public void AddProduct(NutritionModel product)
         {
-            if (product != null)
+            if (product == null) return;
+
+            CurrentCalories += product.Calories;
+            CurrentProtein += product.Protein;
+            CurrentFats += product.Fats;
+            CurrentCarbs += product.Carbs;
+
+            if ((product.Title ?? "").Equals("вода", StringComparison.OrdinalIgnoreCase) ||
+                (product.Title ?? "").Equals("water", StringComparison.OrdinalIgnoreCase))
             {
-                CurrentCalories += product.Calories;
-                CurrentProtein += product.Protein;
-                CurrentFats += product.Fats;
-                CurrentCarbs += product.Carbs;
-
-                if (product.Title.ToLower() == "вода" || product.Title.ToLower() == "water")
-                {
-                    CurrentWater += product.Weight;
-                    OnPropertyChanged(nameof(WaterDisplayText)); // ✅ Обновляем UI
-                    UpdateWaterChart(); // ✅ Обновляем диаграмму воды
-                }
-
-                UpdatePieChart(); // ✅ Обновляем диаграмму калорий
+                CurrentWater += product.Weight;
             }
+
+            UpdatePieChart();
         }
+
         public async Task<NutritionModel> SearchAndAddProductAsync(string query, double weight)
         {
-            if (weight <= 0)
-                throw new ArgumentException("Вага повинна бути більше 0 г.");
+            if (weight <= 0) throw new ArgumentException("Вага повинна бути більше 0 г.");
 
-            string lowerQuery = query.Trim().ToLower();
-
-            // Спец-случай — вода
-            if (lowerQuery == "вода" || lowerQuery == "water")
+            var lower = (query ?? "").Trim().ToLowerInvariant();
+            if (lower == "вода" || lower == "water")
             {
                 return new NutritionModel
                 {
@@ -362,16 +193,13 @@ namespace Fitpad.ViewModel.PagesViewModels
                 };
             }
 
-            // Берём 100г значения из API
-            var products = await _repository.GetProductsAsync(query);
-            if (products == null || products.Count == 0)
-                return null;
+            // ВНИМАНИЕ: сюда уже лучше подавать переведённый на EN текст
+            var products100g = await _repository.GetProductsAsync(query);
+            if (products100g == null || products100g.Count == 0) return null;
 
-            // Продукт из API — на 100г
-            var p100 = products[0];
+            var p100 = products100g[0];
 
-            // Возвращаем УЖЕ пересчитанный под введённый вес экземпляр
-            var pServing = new NutritionModel
+            return new NutritionModel
             {
                 Title = p100.Title,
                 Name = p100.Name,
@@ -379,7 +207,6 @@ namespace Fitpad.ViewModel.PagesViewModels
                 Weight = weight,
                 Time = DateTime.Now.ToString("HH:mm"),
 
-                // пересчёт под вес
                 Calories = (p100.Calories * weight) / 100.0,
                 Protein = (p100.Protein * weight) / 100.0,
                 Fats = (p100.Fats * weight) / 100.0,
@@ -387,67 +214,17 @@ namespace Fitpad.ViewModel.PagesViewModels
                 Sugar = (p100.Sugar * weight) / 100.0,
                 Water = 0
             };
-
-            return pServing;
-        }
-
-        private void UpdateCalorieText()
-        {
-            OnPropertyChanged(nameof(CalorieDisplayText));
-        }
-
-
-        private NutritionModel ShowManualProductEntryDialog(string productName, double weight)
-        {
-            var dialog = new ManualProductEntryDialog(productName, weight);
-            if (dialog.ShowDialog() == true)
-            {
-                var manualProduct = dialog.GetEnteredProduct();
-                if (manualProduct != null)
-                {
-                    SavedProducts.Add(manualProduct);
-                    CurrentCalories += manualProduct.Calories;
-                    CurrentProtein += manualProduct.Protein;
-                    CurrentFats += manualProduct.Fats;
-                    CurrentCarbs += manualProduct.Carbs;
-
-                    Console.WriteLine($"✅ Вручную добавлен продукт: {manualProduct.Title}, калорії: {manualProduct.Calories}");
-
-                    UpdatePieChart();
-                    return manualProduct;
-                }
-            }
-
-            return null; // Если пользователь нажал "Скасувати"
-        }
-
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public double CalculateDailyCalorieIntake(UserInfoModel userInfo)
-
         {
-            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
-            {
-                return 0;
-            }
+            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0) return 0;
 
-            double bmr;
-            if (userInfo.Gender == "Чоловік" || userInfo.Gender == "Мужчина")
-            {
-                bmr = 88.36 + (13.4 * userInfo.Weight) + (4.8 * userInfo.Height) - (5.7 * userInfo.Age);
-            }
-            else
-            {
-                bmr = 447.6 + (9.2 * userInfo.Weight) + (3.1 * userInfo.Height) - (4.3 * userInfo.Age);
-            }
+            double bmr = (userInfo.Gender == "Чоловік" || userInfo.Gender == "Мужчина")
+                ? 88.36 + (13.4 * userInfo.Weight) + (4.8 * userInfo.Height) - (5.7 * userInfo.Age)
+                : 447.6 + (9.2 * userInfo.Weight) + (3.1 * userInfo.Height) - (4.3 * userInfo.Age);
 
-            double activityMultiplier = userInfo.ActivityLevel switch
+            double activity = userInfo.ActivityLevel switch
             {
                 "Низька" => 1.2,
                 "Середня" => 1.375,
@@ -457,8 +234,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 _ => 1.2
             };
 
-            double tdee = bmr * activityMultiplier;
-
+            double tdee = bmr * activity;
             tdee = userInfo.Purpose switch
             {
                 "Схуднення" => tdee * 0.85,
@@ -469,5 +245,8 @@ namespace Fitpad.ViewModel.PagesViewModels
             return Math.Round(tdee);
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

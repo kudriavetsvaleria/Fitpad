@@ -10,214 +10,116 @@ namespace Fitpad.Model.Repositories
 {
     public class NutritionRepository
     {
-        private readonly HttpClient _httpClient;
+        private static readonly HttpClient _http = new HttpClient();
+
+        // TODO: хранить ключ не в коде
         private const string ApiKey = "86241b5ba83247a39ebe1362a765a007";
         private const string BaseUrl = "https://api.spoonacular.com/recipes";
 
-        public NutritionRepository()
-        {
-            _httpClient = new HttpClient();
-        }
+        public string StripHtmlTags(string input) =>
+            string.IsNullOrWhiteSpace(input) ? string.Empty : Regex.Replace(input, "<.*?>", string.Empty).Trim();
 
-        /// <summary>
-        /// Удаляет HTML-теги из строки.
-        /// </summary>
-        public string StripHtmlTags(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-                return string.Empty;
-
-            return Regex.Replace(input, "<.*?>", string.Empty).Trim();
-        }
         public async Task<NutritionModel> GetRecipeDetailsAsync(int recipeId)
         {
             var url = $"{BaseUrl}/{recipeId}/information?apiKey={ApiKey}&includeNutrition=true";
-            var response = await _httpClient.GetAsync(url);
+            using var resp = await _http.GetAsync(url);
+            if (!resp.IsSuccessStatusCode) throw new HttpRequestException($"Ошибка запроса: {resp.StatusCode}");
 
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
-
-            var json = await response.Content.ReadAsStringAsync();
-            var recipeDetails = JsonConvert.DeserializeObject<Recipe>(json);
+            var json = await resp.Content.ReadAsStringAsync();
+            var r = JsonConvert.DeserializeObject<Recipe>(json);
 
             return new NutritionModel
             {
-                Id = recipeDetails.Id.ToString(),
-                Title = recipeDetails.Title,
-                Image = recipeDetails.Image,
-                Calories = (int)(recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
-                Protein = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
-                Carbs = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
-                Fats = recipeDetails.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
-                ReadyInMinutes = recipeDetails.ReadyInMinutes
+                Id = r.Id.ToString(),
+                Title = r.Title,
+                Image = r.Image,
+                Calories = r.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0,
+                Protein = r.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                Carbs = r.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                Fats = r.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                ReadyInMinutes = r.ReadyInMinutes
             };
-
         }
 
-
-        public async Task<List<NutritionModel>> SearchRecipesAsync(string query)
-        {
-            var url = $"{BaseUrl}/complexSearch?query={Uri.EscapeDataString(query)}&apiKey={ApiKey}&addRecipeInformation=true";
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Ошибка запроса: {response.StatusCode}");
-
-            var json = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
-
-            var result = new List<NutritionModel>();
-            foreach (var recipe in apiResponse.Results)
-            {
-                result.Add(new NutritionModel
-                {
-                    Id = recipe.Id.ToString(),
-                    Title = recipe.Title,
-                    Image = recipe.Image,
-                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
-                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
-                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
-                    Fats = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
-                    ReadyInMinutes = recipe.ReadyInMinutes
-                });
-            }
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Получает инструкции по рецепту по его ID.
-        /// </summary>
         public async Task<(string Instructions, List<string> Ingredients)> GetRecipeDetailsWithIngredientsAsync(int id)
         {
             var url = $"{BaseUrl}/{id}/information?apiKey={ApiKey}";
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Помилка запиту: {response.StatusCode}");
+            using var resp = await _http.GetAsync(url);
+            if (!resp.IsSuccessStatusCode) throw new HttpRequestException($"Помилка запиту: {resp.StatusCode}");
 
-            var json = await response.Content.ReadAsStringAsync();
-            var recipeDetails = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
+            var json = await resp.Content.ReadAsStringAsync();
+            var r = JsonConvert.DeserializeObject<RecipeDetailsResponse>(json);
 
             var ingredients = new List<string>();
-            if (recipeDetails.ExtendedIngredients != null)
+            if (r?.ExtendedIngredients != null)
+                foreach (var i in r.ExtendedIngredients) ingredients.Add(i.Original);
+
+            return (StripHtmlTags(r?.Instructions ?? "Інструкції не знайдено."), ingredients);
+        }
+
+        public async Task<List<NutritionModel>> SearchRecipesAsync(string query)
+        {
+            var url = $"{BaseUrl}/complexSearch?query={Uri.EscapeDataString(query ?? "")}&apiKey={ApiKey}&addRecipeInformation=true";
+            using var resp = await _http.GetAsync(url);
+            if (!resp.IsSuccessStatusCode) throw new HttpRequestException($"Ошибка запроса: {resp.StatusCode}");
+
+            var json = await resp.Content.ReadAsStringAsync();
+            var api = JsonConvert.DeserializeObject<ApiResponse>(json);
+
+            var list = new List<NutritionModel>();
+            if (api?.Results == null) return list;
+
+            foreach (var r in api.Results)
             {
-                foreach (var ingredient in recipeDetails.ExtendedIngredients)
+                list.Add(new NutritionModel
                 {
-                    ingredients.Add(ingredient.Original);
-                }
+                    Id = r.Id.ToString(),
+                    Title = r.Title,
+                    Image = r.Image,
+                    Calories = r.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0,
+                    Protein = r.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                    Carbs = r.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                    Fats = r.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                    ReadyInMinutes = r.ReadyInMinutes
+                });
             }
-
-            return (StripHtmlTags(recipeDetails.Instructions ?? "Інструкції не знайдено."), ingredients);
+            return list;
         }
 
-        public class RecipeDetailsResponse
-        {
-            public string Instructions { get; set; }
-            public List<Ingredient> ExtendedIngredients { get; set; }
-        }
-
-        public class Ingredient
-        {
-            public string Original { get; set; }
-        }
-
-        /// <summary>
-        /// Получает список рецептов, либо случайных, либо с заданным смещением.
-        /// </summary>
         public async Task<List<NutritionModel>> GetRecipesAsync(bool useRandom = false, int offset = 0)
         {
-            string url;
+            var url = useRandom
+                ? $"{BaseUrl}/random?number=48&apiKey={ApiKey}"
+                : $"{BaseUrl}/complexSearch?number=24&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
 
-            if (useRandom)
+            using var resp = await _http.GetAsync(url);
+            if (!resp.IsSuccessStatusCode) throw new HttpRequestException($"Помилка запиту: {resp.StatusCode}");
+
+            var json = await resp.Content.ReadAsStringAsync();
+            var api = JsonConvert.DeserializeObject<ApiResponse>(json);
+
+            var list = new List<NutritionModel>();
+            if (api?.Results == null) return list;
+
+            foreach (var r in api.Results)
             {
-                url = $"{BaseUrl}/random?number=48&apiKey={ApiKey}";
-            }
-            else
-            {
-                url = $"{BaseUrl}/complexSearch?number=24&offset={offset}&apiKey={ApiKey}&addRecipeInformation=true&addRecipeNutrition=true";
-            }
-
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Помилка запиту: {response.StatusCode}");
-
-            var json = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
-
-            var result = new List<NutritionModel>();
-            foreach (var recipe in apiResponse.Results)
-            {
-                result.Add(new NutritionModel
+                list.Add(new NutritionModel
                 {
-                    Id = recipe.Id.ToString(),
-                    Title = recipe.Title,
-                    Image = recipe.Image,
-                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
-                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
-                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
-                    Fats = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
-                    ReadyInMinutes = recipe.ReadyInMinutes
+                    Id = r.Id.ToString(),
+                    Title = r.Title,
+                    Image = r.Image,
+                    Calories = r.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0,
+                    Protein = r.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
+                    Carbs = r.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
+                    Fats = r.Nutrition?.Nutrients?.Find(n => n.Name == "Fat")?.Amount ?? 0,
+                    ReadyInMinutes = r.ReadyInMinutes
                 });
             }
-
-            return result;
+            return list;
         }
 
-        /// <summary>
-        /// Преобразует результаты complexSearch в модели.
-        /// </summary>
-        private List<NutritionModel> MapComplexSearchRecipes(List<Recipe> recipes)
-        {
-            var result = new List<NutritionModel>();
-            foreach (var recipe in recipes)
-            {
-                result.Add(new NutritionModel
-                {
-                    Id = recipe.Id.ToString(),
-                    Title = recipe.Title,
-                    Image = recipe.Image,
-                    Calories = (int)(recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Calories")?.Amount ?? 0),
-                    Protein = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Protein")?.Amount ?? 0,
-                    Carbs = recipe.Nutrition?.Nutrients?.Find(n => n.Name == "Carbohydrates")?.Amount ?? 0,
-                    ReadyInMinutes = recipe.ReadyInMinutes
-                });
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Преобразует результаты random в модели.
-        /// </summary>
-        private List<NutritionModel> MapRandomRecipes(List<Recipe> recipes)
-        {
-            var result = new List<NutritionModel>();
-            foreach (var recipe in recipes)
-            {
-                result.Add(new NutritionModel
-                {
-                    Id = recipe.Id.ToString(),
-                    Title = recipe.Title,
-                    Image = recipe.Image,
-                    Calories = 0, // Random не возвращает Nutrition
-                    Protein = 0,
-                    Carbs = 0,
-                    ReadyInMinutes = recipe.ReadyInMinutes
-                });
-            }
-            return result;
-        }
-
-        public class ApiResponse
-        {
-            public List<Recipe> Results { get; set; }
-        }
-
-        public class RandomApiResponse
-        {
-            public List<Recipe> Recipes { get; set; }
-        }
-
+        // --- DTOs
+        public class ApiResponse { public List<Recipe> Results { get; set; } }
         public class Recipe
         {
             public int Id { get; set; }
@@ -226,21 +128,14 @@ namespace Fitpad.Model.Repositories
             public Nutrition Nutrition { get; set; }
             public int ReadyInMinutes { get; set; }
         }
+        public class Nutrition { public List<Nutrient> Nutrients { get; set; } }
+        public class Nutrient { public string Name { get; set; } public double Amount { get; set; } }
 
-        public class Nutrition
-        {
-            public List<Nutrient> Nutrients { get; set; }
-        }
-
-        public class Nutrient
-        {
-            public string Name { get; set; }
-            public double Amount { get; set; }
-        }
-
-        public class RecipeDetails
+        public class RecipeDetailsResponse
         {
             public string Instructions { get; set; }
+            public List<Ingredient> ExtendedIngredients { get; set; }
         }
+        public class Ingredient { public string Original { get; set; } }
     }
 }

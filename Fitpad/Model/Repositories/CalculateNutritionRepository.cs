@@ -4,90 +4,60 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Fitpad.Model.Entities;
-using Fitpad.Services;
-using Google.Cloud.Firestore;
 
 namespace Fitpad.Model.Repositories
 {
+    /// <summary>
+    /// Берём продукты из OpenFoodFacts (данные на 100 г).
+    /// ВАЖНО: сюда лучше передавать уже переведённый на EN query.
+    /// </summary>
     public class CalculateNutritionRepository
     {
-        private readonly HttpClient _httpClient;
-        private readonly TranslatorService _translator;
+        private static readonly HttpClient _http = new HttpClient(); // единый экземпляр
         private const string BaseUrl = "https://world.openfoodfacts.org/cgi/search.pl";
-
-        public CalculateNutritionRepository()
-        {
-            _httpClient = new HttpClient();
-            _translator = new TranslatorService();
-        }
 
         public async Task<List<NutritionModel>> GetProductsAsync(string query)
         {
+            var list = new List<NutritionModel>();
             try
             {
-                string translatedQuery = await _translator.TranslateTextAsync(query, "en");
-                Console.WriteLine($"Перекладений запит: {translatedQuery}");
+                var url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(query ?? "")}&search_simple=1&action=process&json=1";
+                using var resp = await _http.GetAsync(url);
+                if (!resp.IsSuccessStatusCode) return list;
 
-                string url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(translatedQuery)}&search_simple=1&action=process&json=1";
-                var response = await _httpClient.GetAsync(url);
+                var json = await resp.Content.ReadAsStringAsync();
+                var api = JsonConvert.DeserializeObject<ApiResponse>(json);
 
-                if (!response.IsSuccessStatusCode)
+                if (api?.Products == null || api.Products.Count == 0) return list;
+
+                var p = api.Products[0];
+                var name = string.IsNullOrWhiteSpace(p.ProductName) ? query : p.ProductName;
+
+                list.Add(new NutritionModel
                 {
-                    Console.WriteLine($"Помилка запиту: {response.StatusCode}");
-                    return new List<NutritionModel>();
-                }
+                    Id = !string.IsNullOrWhiteSpace(p.Code) ? p.Code : Guid.NewGuid().ToString(),
+                    Name = name,
+                    Title = name,
+                    Image = p.ImageUrl ?? "",
+                    Calories = p.Nutriments?.EnergyKcal ?? 0,
+                    Protein = p.Nutriments?.Proteins ?? 0,
+                    Carbs = p.Nutriments?.Carbohydrates ?? 0,
+                    Fats = p.Nutriments?.Fats ?? 0,
+                    Sugar = p.Nutriments?.Sugars ?? 0,
+                    Water = p.Nutriments?.Water ?? 0,
+                    Weight = 100,
+                    Time = DateTime.Now.ToString("HH:mm")
+                });
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(json);
-                var result = new List<NutritionModel>();
-
-                if (apiResponse.Products != null && apiResponse.Products.Count > 0)
-                {
-                    var product = apiResponse.Products[0];
-                    string productName = string.IsNullOrEmpty(product.ProductName) ? query : product.ProductName;
-
-                    var savedProduct = new NutritionModel
-                    {
-                        Id = !string.IsNullOrWhiteSpace(product.Code) ? product.Code : Guid.NewGuid().ToString(),
-                        Name = productName,
-                        Title = productName,
-                        Image = product.ImageUrl ?? "",
-                        Calories = (int)(product.Nutriments?.EnergyKcal ?? 0),
-                        Protein = product.Nutriments?.Proteins ?? 0,
-                        Carbs = product.Nutriments?.Carbohydrates ?? 0,
-                        Fats = product.Nutriments?.Fats ?? 0,
-                        Water = product.Nutriments?.Water ?? 0,
-                        Weight = 100,
-                        Time = DateTime.Now.ToString("HH:mm")
-                    };
-
-                    result.Add(savedProduct);
-                }
-                else
-                {
-                    Console.WriteLine("⚠ УВАГА: API не знайшов продукти!");
-                }
-
-                return result;
+                return list;
             }
-            catch (HttpRequestException ex)
+            catch
             {
-                Console.WriteLine($"❌ Помилка HTTP: {ex.Message}");
-                return new List<NutritionModel>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Загальна помилка: {ex.Message}");
-                return new List<NutritionModel>();
+                return list;
             }
         }
 
-
-
-        private class ApiResponse
-        {
-            public List<Product> Products { get; set; }
-        }
+        private class ApiResponse { public List<Product> Products { get; set; } }
 
         private class Product
         {
@@ -99,20 +69,12 @@ namespace Fitpad.Model.Repositories
 
         private class Nutriments
         {
-            [JsonProperty("energy-kcal")]
-            public double EnergyKcal { get; set; }
-
-            [JsonProperty("proteins")]
-            public double Proteins { get; set; }
-
-            [JsonProperty("carbohydrates")]
-            public double Carbohydrates { get; set; }
-
-            [JsonProperty("fat")]
-            public double Fats { get; set; }
-
-            [JsonProperty("water")]
-            public double Water { get; set; }
+            [JsonProperty("energy-kcal")] public double EnergyKcal { get; set; }
+            [JsonProperty("proteins")] public double Proteins { get; set; }
+            [JsonProperty("carbohydrates")] public double Carbohydrates { get; set; }
+            [JsonProperty("fat")] public double Fats { get; set; }
+            [JsonProperty("sugars")] public double Sugars { get; set; }
+            [JsonProperty("water")] public double Water { get; set; }
         }
     }
 }
