@@ -326,20 +326,10 @@ namespace Fitpad.View.Pages
             _instance = null;
         }
 
-        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+        // ProfilePage.xaml.cs
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("🚪 Выход из аккаунта. Очистка UserSession...");
-
-            // ✅ Очищаем данные пользователя
-            UserSession.ClearUserData();
-
-            // ✅ Обновляем состояние навигации
-            await MainViewModel.Instance.UpdateNavigationStateAsync();
-
-            // ✅ Перенаправляем пользователя на страницу входа
-            NavigationService.Navigate(AccountLoginPage.GetInstance(new ProfileViewModel()));
-
-            Console.WriteLine("✅ Навигация обновлена. Видны только кнопки 'Регистрация', 'Авторизация' и 'Профиль'.");
+            MainViewModel.Instance?.Logout();
         }
 
 

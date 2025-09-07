@@ -1,140 +1,81 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
-using Fitpad.Model.Repositories;
-using Newtonsoft.Json;
 
 public static class UserSession
 {
-    private static string _currentUserId;
+    private static readonly string Dir =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad");
+    private static readonly string FilePath = Path.Combine(Dir, "current_user.json");
 
-    // ✅ Унифицированный путь к файлу
-    private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user"
-        );
+    public static string CurrentUserId { get; private set; } = string.Empty;
 
-
-    public static string CurrentUserId
+    public static void SaveUserIdToFile(string userId)
     {
-        get => _currentUserId;
-        set
+        try
         {
-            Console.WriteLine($"🔹 Изменение UserSession.CurrentUserId: {_currentUserId} → {value}");
-            _currentUserId = value;
+            if (!Directory.Exists(Dir))
+                Directory.CreateDirectory(Dir);
+
+            var payload = new { UserId = userId }; // простой формат
+            File.WriteAllText(FilePath, JsonConvert.SerializeObject(payload, Formatting.Indented));
+
+            CurrentUserId = userId;
+            Console.WriteLine($"✅ UserId сохранён: {FilePath}");
         }
-    }
-
-    public static void Logout()
-{
-    CurrentUserId = string.Empty;
-    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
-    
-    if (File.Exists(filePath))
-    {
-        File.Delete(filePath);
-    }
-
-    Console.WriteLine("🔹 UserSession очищен. Пользователь вышел.");
-}
-
-
-    // ✅ Загрузка UserID из файла
-    static UserSession()
-    {
-        LoadUserIdFromFile();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Ошибка сохранения UserId: {ex.Message}");
+        }
     }
 
     public static void LoadUserIdFromFile()
     {
         try
         {
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
-            Console.WriteLine($"📂 Ищем файл: {filePath}");
-
-            if (File.Exists(filePath))
+            if (!File.Exists(FilePath))
             {
-                string json = File.ReadAllText(filePath);
-                Console.WriteLine($"📜 Загруженные данные из current_user.json: {json}");
-
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    Console.WriteLine("❌ Файл `current_user.json` пустой!");
-                    return;
-                }
-
-                var data = JsonConvert.DeserializeObject<dynamic>(json);
-
-                if (data != null && data.UserId != null)
-                {
-                    Console.WriteLine($"✅ UserID найден в файле: {data.UserId}");
-
-                    // ✅ Перед установкой проверяем, что значение не пустое
-                    if (!string.IsNullOrEmpty(data.UserId.ToString()))
-                    {
-                        UserSession.CurrentUserId = data.UserId.ToString();
-                        Console.WriteLine($"✅ Установлен UserSession.CurrentUserId: {UserSession.CurrentUserId}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("❌ Ошибка: UserID пустой после десериализации!");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
-                }
+                Console.WriteLine("ℹ️ current_user.json не найден (первый запуск?).");
+                CurrentUserId = string.Empty;
+                return;
             }
-            else
+
+            var json = File.ReadAllText(FilePath);
+            if (string.IsNullOrWhiteSpace(json))
             {
-                Console.WriteLine("❌ Файл `current_user.json` не найден.");
+                Console.WriteLine("❌ current_user.json пустой.");
+                CurrentUserId = string.Empty;
+                return;
             }
+
+            dynamic data = JsonConvert.DeserializeObject(json);
+            CurrentUserId = data?.UserId != null ? (string)data.UserId : string.Empty;
+
+            Console.WriteLine($"✅ UserId загружен: {CurrentUserId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка при загрузке UserID: {ex.Message}");
+            Console.WriteLine($"❌ Ошибка чтения UserId: {ex.Message}");
+            CurrentUserId = string.Empty;
         }
     }
 
-
-    // ✅ Сохранение UserID в файл
-    public static void SaveUserIdToFile(string userId)
-    {
-        CurrentUserId = userId;
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)); // Создаём папку, если её нет
-
-            var data = new { UserId = userId };
-            string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-            File.WriteAllText(FilePath, json);
-
-            _currentUserId = userId;
-            Console.WriteLine($"✅ UserID {userId} сохранён в файле.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Ошибка сохранения UserID в файл: {ex.Message}");
-        }
-    }
-
-    // ✅ Очистка данных при выходе
-    public static void ClearUserData()
+    public static void Logout()
     {
         try
         {
             if (File.Exists(FilePath))
-            {
                 File.Delete(FilePath);
-                Console.WriteLine("✅ Файл current_user.json успешно удалён.");
-            }
-            else
-            {
-                Console.WriteLine("⚠️ Файл current_user.json уже отсутствует.");
-            }
 
-            _currentUserId = null;
+            CurrentUserId = string.Empty;
+            Console.WriteLine("🚪 Logout: файл current_user.json удалён, сессия очищена.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка удаления файла: {ex.Message}");
+            Console.WriteLine($"❌ Ошибка очистки сессии: {ex.Message}");
         }
     }
+
+
+
 }

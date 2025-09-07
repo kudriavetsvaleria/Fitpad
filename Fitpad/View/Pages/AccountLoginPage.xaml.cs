@@ -23,54 +23,10 @@ namespace Fitpad.View.Pages
             _userRepository = new UserRepository();
             DataContext = profileViewModel;
 
-            LoadCurrentUserFromFile();
         }
 
 
-        private void LoadCurrentUserFromFile()
-        {
-            try
-            {
-
-                string projectPath = Directory.GetCurrentDirectory();
-                string filePath = Path.Combine(projectPath, "Resources", "current_user.json");
-
-                Console.WriteLine($"📂 Ищем файл: {filePath}");
-
-                if (File.Exists(filePath))
-                {
-                    string json = File.ReadAllText(filePath);
-                    Console.WriteLine($"📜 JSON: {json}");
-
-                    if (string.IsNullOrWhiteSpace(json))
-                    {
-                        Console.WriteLine("❌ Файл `current_user.json` пустой!");
-                        return;
-                    }
-
-                    var data = JsonConvert.DeserializeObject<dynamic>(json);
-
-                    if (data != null && data.UserId != null)
-                    {
-                        UserRepository.CurrentUserId = data.UserId.ToString();
-                        Console.WriteLine($"✅ User ID загружен из файла: {UserRepository.CurrentUserId}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("❌ Файл `current_user.json` не найден.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Ошибка при загрузке UserID: {ex.Message}");
-            }
-        }
-
+      
 
     public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
     {

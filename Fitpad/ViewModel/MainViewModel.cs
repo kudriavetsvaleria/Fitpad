@@ -115,29 +115,34 @@ public class MainViewModel : INotifyPropertyChanged
         await UpdateNavigationStateAsync();
     }
 
-    private void Logout()
+    // В MainViewModel
+    public void Logout()   // было private void Logout()
     {
         Console.WriteLine("🚪 Выход из аккаунта...");
 
-        // ✅ Удаляем сохраненный UserID
+        // 1) чистим сессию
         UserSession.Logout();
 
-        // ✅ Сбрасываем состояние пользователя
+        // 2) сбрасываем состояние
         IsUserAuthenticated = false;
         IsProfileComplete = false;
 
+        // 3) (опционально) очисти кэш страниц, чтобы не держать старые статики
+        _pageCache.Clear();
+        ProfilePage.ResetInstance();
 
-        // ✅ Обновляем навигацию
+        // 4) обновляем UI
         OnPropertyChanged(nameof(IsUserAuthenticated));
         OnPropertyChanged(nameof(IsProfileComplete));
         OnPropertyChanged(nameof(IsFullNavigationVisible));
         OnPropertyChanged(nameof(IsLimitedNavigationVisible));
 
-        // ✅ Перенаправляем на страницу входа
+        // 5) ЕДИНСТВЕННОЕ место, где переключаемся на логин
         CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
 
-        Console.WriteLine("✅ Выход выполнен. Отображаются только кнопки 'Регистрация', 'Авторизация' и 'Профиль'.");
+        Console.WriteLine("✅ Выход выполнен. Показаны 'Регистрация', 'Авторизация', 'Профіль'.");
     }
+
 
 
     private async void InitializeCurrentPageAsync()
@@ -214,45 +219,6 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
-
-    // Метод для загрузки данных пользователя из JSON-файла
-    private UserModel LoadCurrentUserFromFile()
-    {
-        try
-        {
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fitpad", "current_user.json");
-            Console.WriteLine($"📂 Ищем файл по пути: {filePath}");
-
-            if (File.Exists(filePath))
-            {
-                string json = File.ReadAllText(filePath);
-                Console.WriteLine($"📜 Загруженные данные: {json}");
-
-                var data = JsonConvert.DeserializeObject<dynamic>(json);
-
-                if (data != null && data.UserId != null)
-                {
-                    UserRepository.CurrentUserId = data.UserId.ToString();
-                    Console.WriteLine($"✅ UserID загружен: {UserRepository.CurrentUserId}");
-
-                    return JsonConvert.DeserializeObject<UserModel>(JsonConvert.SerializeObject(data.User));
-                }
-                else
-                {
-                    Console.WriteLine("❌ Ошибка: данные в файле некорректны!");
-                }
-            }
-            else
-            {
-                Console.WriteLine("❌ Файл `current_user.json` не найден!");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Ошибка загрузки данных пользователя: {ex.Message}");
-        }
-        return null;
-    }
 
 
     public async Task NavigateToAsync<T>() where T : Page
