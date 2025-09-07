@@ -4,46 +4,45 @@ using System.Windows;
 using System.Windows.Controls;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
-using Fitpad.Services; // Добавьте это пространство имен, если еще не добавлено
+using Fitpad.Services;
 
 namespace Fitpad.View.Pages
 {
     public partial class RecipePage : Page
     {
         private readonly NutritionModel _model;
-        private readonly TranslatorService _translator; // Добавлено поле для переводчика
+        private readonly TranslatorService _translator = new TranslatorService();
 
         public RecipePage(NutritionModel model)
         {
             InitializeComponent();
-            _model = model;
-            _translator = new TranslatorService(); // Инициализация переводчика
-            DataContext = _model; // Базовая информация доступна сразу
-            _ = LoadRecipeDetailsAsync(); // Асинхронная загрузка деталей
+            _model = model ?? new NutritionModel();
+            DataContext = _model;
+            _ = LoadRecipeDetailsAsync();
         }
 
         private async Task LoadRecipeDetailsAsync()
         {
-            var repository = new NutritionRepository();
+            var repo = new NutritionRepository();
 
             if (!int.TryParse(_model.Id, out var rid))
             {
-                MessageBox.Show("Не удалось распознать ID рецепта.", "Помилка",
+                MessageBox.Show("Не вдалося розпізнати ID рецепта.", "Помилка",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var (instructions, ingredients) = await repository.GetRecipeDetailsWithIngredientsAsync(rid);
+            var (instructions, ingredients) = await repo.GetRecipeDetailsWithIngredientsAsync(rid);
 
             _model.RecipeDetails = await _translator.TranslateTextAsync(instructions);
             _model.Ingredients = new List<string>();
 
-            foreach (var ingredient in ingredients)
+            foreach (var ing in ingredients)
             {
-                var translatedIngredient = await _translator.TranslateTextAsync(ingredient);
-                _model.Ingredients.Add(translatedIngredient);
+                _model.Ingredients.Add(await _translator.TranslateTextAsync(ing));
             }
 
+            // Обновляем биндинги
             Dispatcher.Invoke(() =>
             {
                 DataContext = null;
@@ -51,10 +50,6 @@ namespace Fitpad.View.Pages
             });
         }
 
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            NavigationService.GoBack(); // Возврат на предыдущую страницу
-        }
+        private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService?.GoBack();
     }
 }

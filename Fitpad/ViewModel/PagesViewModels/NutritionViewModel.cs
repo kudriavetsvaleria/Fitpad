@@ -8,124 +8,119 @@ using System.Threading.Tasks;
 using Fitpad.Model.Entities;
 using Fitpad.Model.Repositories;
 using Fitpad.Services;
-using Fitpad.Model.Entities;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
     public class NutritionViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<NutritionModel> _nutritionCards;
-        private readonly TranslatorService _translator;
-        private readonly Dictionary<string, string> _translationCache = new Dictionary<string, string>(); // Кэш для переводов
+        private readonly NutritionRepository _repository = new NutritionRepository();
+        private readonly TranslatorService _translator = new TranslatorService();
+
+        // Кэш переводов (простая LRU по размеру)
+        private readonly Dictionary<string, string> _translationCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private const int CacheSizeLimit = 1000;
+
+        private ObservableCollection<NutritionModel> _nutritionCards = new ObservableCollection<NutritionModel>();
         public ObservableCollection<NutritionModel> NutritionCards
         {
             get => _nutritionCards;
-            set
-            {
-                _nutritionCards = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(IsNutritionEmpty)); // Обновляем состояние пустоты
-            }
-        }
-        public bool IsNutritionEmpty => NutritionCards == null || NutritionCards.Count == 0; // Если список пуст
-        private readonly NutritionRepository _repository;
-
-        public NutritionViewModel()
-        {
-            _repository = new NutritionRepository();
-            _translator = new TranslatorService(); // Инициализация переводчика
-            NutritionCards = new ObservableCollection<NutritionModel>();
+            set { _nutritionCards = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsNutritionEmpty)); }
         }
 
-        private void AddToCache(string query, string translatedQuery)
-        {
-            if (_translationCache.Count >= CacheSizeLimit)
-            {
-                var firstKey = _translationCache.Keys.First();
-                _translationCache.Remove(firstKey);
-                Console.WriteLine($"Удален из кэша: {firstKey}");
-            }
-            _translationCache[query] = translatedQuery;
-        }
-
-        public async Task TranslateNutritionCardsAsync()
-        {
-            foreach (var card in NutritionCards)
-            {
-                card.Title = await _translator.TranslateTextAsync(card.Title);
-                card.RecipeDetails = await _translator.TranslateTextAsync(card.RecipeDetails);
-            }
-            OnPropertyChanged(nameof(NutritionCards)); // Обновляем привязку
-        }
-
-        public async Task LoadNutritionAsync(bool useRandom, int offset)
-        {
-            Console.WriteLine("Начинается загрузка рецептов...");
-
-            NutritionCards.Clear();
-            var recipes = await _repository.GetRecipesAsync(useRandom, offset);
-
-            foreach (var recipe in recipes)
-            {
-                Console.WriteLine($"Переводим рецепт: {recipe.Title}");
-                recipe.Title = await _translator.TranslateTextAsync(recipe.Title);
-                recipe.RecipeDetails = await _translator.TranslateTextAsync(recipe.RecipeDetails);
-                NutritionCards.Add(recipe);
-            }
-
-            OnPropertyChanged(nameof(NutritionCards));
-            Console.WriteLine("Загрузка и перевод завершены.");
-        }
-
-
-
-        public async Task LoadMoreNutritionAsync(int offset)
-        {
-            var recipes = await _repository.GetRecipesAsync(false, offset);
-            foreach (var recipe in recipes)
-            {
-                NutritionCards.Add(recipe);
-            }
-        }
+        public bool IsNutritionEmpty => NutritionCards == null || NutritionCards.Count == 0;
 
         private bool _isSearchEmpty;
         public bool IsSearchEmpty
         {
             get => _isSearchEmpty;
-            set
+            set { _isSearchEmpty = value; OnPropertyChanged(); }
+        }
+
+        private void AddToCache(string key, string value)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return;
+            if (_translationCache.Count >= CacheSizeLimit)
             {
-                _isSearchEmpty = value;
-                OnPropertyChanged(); // Уведомляем привязку об изменении
+                // наивное удаление самого старого по ключу
+                var first = _translationCache.Keys.FirstOrDefault();
+                if (first != null) _translationCache.Remove(first);
             }
+            _translationCache[key] = value ?? string.Empty;
+        }
+
+        private async Task<string> TranslateCachedAsync(string text, string to = "uk")
+        {
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+            if (_translationCache.TryGetValue($"{to}:{text}", out var cached)) return cached;
+
+            var translated = await _translator.TranslateTextAsync(text, to);
+            AddToCache($"{to}:{text}", translated);
+            return translated;
+        }
+
+        public async Task TranslateNutritionCardsAsync()
+        {
+            // Переводим карточки «на месте»
+            var tasks = NutritionCards.Select(async card =>
+            {
+                card.Title = await TranslateCachedAsync(card.Title);
+                card.RecipeDetails = await TranslateCachedAsync(card.RecipeDetails);
+                return 0;
+            });
+
+            await Task.WhenAll(tasks);
+            OnPropertyChanged(nameof(NutritionCards));
+        }
+
+        public async Task LoadNutritionAsync(bool useRandom, int offset)
+        {
+            NutritionCards.Clear();
+
+            var recipes = await _repository.GetRecipesAsync(useRandom, offset);
+
+            // Переводим параллельно (название + описание)
+            var translated = await Task.WhenAll(recipes.Select(async r =>
+            {
+                r.Title = await TranslateCachedAsync(r.Title);
+                r.RecipeDetails = await TranslateCachedAsync(r.RecipeDetails);
+                return r;
+            }));
+
+            foreach (var recipe in translated)
+                NutritionCards.Add(recipe);
+
+            OnPropertyChanged(nameof(NutritionCards));
+        }
+
+        public async Task LoadMoreNutritionAsync(int offset)
+        {
+            var recipes = await _repository.GetRecipesAsync(false, offset);
+            foreach (var recipe in recipes)
+                NutritionCards.Add(recipe);
         }
 
         public async Task SearchNutritionAsync(string query)
         {
-            // Проверяем наличие запроса в кэше
-            if (!_translationCache.TryGetValue(query, out var translatedQuery))
+            if (string.IsNullOrWhiteSpace(query))
             {
-                translatedQuery = await _translator.TranslateTextAsync(query, "en");
-                _translationCache[query] = translatedQuery;
-                Console.WriteLine($"Добавлено в кэш: {query} -> {translatedQuery}");
-            }
-            else
-            {
-                Console.WriteLine($"Использован кэш: {query} -> {translatedQuery}");
+                NutritionCards.Clear();
+                IsSearchEmpty = true;
+                return;
             }
 
-            NutritionCards.Clear(); // Очистка текущего списка
+            // Переводим поисковую строку на EN для API
+            var translatedQuery = await TranslateCachedAsync(query, "en");
+
+            NutritionCards.Clear();
 
             var recipes = await _repository.SearchRecipesAsync(translatedQuery);
 
-            // Запрашиваем детали рецептов параллельно
-            // Запрашиваем детали рецептов параллельно
-            var tasks = recipes.Select(async recipe =>
+            // Загружаем подробности параллельно, потом переводим на украинский для UI
+            var detailed = await Task.WhenAll(recipes.Select(async recipe =>
             {
-                // преобразуем string → int
-                if (int.TryParse(recipe.Id, out int recipeId))
+                if (int.TryParse(recipe.Id, out var rid))
                 {
-                    var detailedRecipe = await _repository.GetRecipeDetailsAsync(recipeId);
+                    var detailedRecipe = await _repository.GetRecipeDetailsAsync(rid);
                     recipe.Calories = detailedRecipe.Calories;
                     recipe.Protein = detailedRecipe.Protein;
                     recipe.Carbs = detailedRecipe.Carbs;
@@ -133,37 +128,22 @@ namespace Fitpad.ViewModel.PagesViewModels
                     recipe.RecipeDetails = detailedRecipe.RecipeDetails;
                     recipe.Ingredients = detailedRecipe.Ingredients;
                 }
-                else
-                {
-                    Console.WriteLine($"⚠ Не удалось преобразовать Id рецепта '{recipe.Id}' в число!");
-                }
 
-                // Переводим название и описание рецепта
-                recipe.Title = await _translator.TranslateTextAsync(recipe.Title);
-                recipe.RecipeDetails = await _translator.TranslateTextAsync(recipe.RecipeDetails);
-
+                recipe.Title = await TranslateCachedAsync(recipe.Title);
+                recipe.RecipeDetails = await TranslateCachedAsync(recipe.RecipeDetails);
                 return recipe;
-            });
+            }));
 
-
-            var detailedRecipes = await Task.WhenAll(tasks); // Ожидаем завершения всех запросов
-
-            foreach (var recipe in detailedRecipes)
-            {
-                NutritionCards.Add(recipe); // Добавляем рецепты в список
-            }
+            foreach (var r in detailed)
+                NutritionCards.Add(r);
 
             IsSearchEmpty = NutritionCards.Count == 0;
             OnPropertyChanged(nameof(IsSearchEmpty));
-            OnPropertyChanged(nameof(NutritionCards)); // Обновляем привязку для отображения данных
+            OnPropertyChanged(nameof(NutritionCards));
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        private void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
-
 }
