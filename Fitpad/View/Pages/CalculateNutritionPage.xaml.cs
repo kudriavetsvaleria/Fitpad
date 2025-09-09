@@ -287,7 +287,11 @@ namespace Fitpad.View.Pages
 
             _viewModel.UpdatePieChart();
             UpdateCalorieDisplay();
+
+            // 🔥 пересчитать дневную сводку на сегодня
+            await fs.RecomputeTodayAsync(userId);
         }
+
 
         private void OnManualEntryCancel(object sender, RoutedEventArgs e) => HideManualEntryOverlay();
 
@@ -354,6 +358,10 @@ namespace Fitpad.View.Pages
                     _viewModel.CurrentWater -= product.Weight;
 
                 ForceUpdateCharts();
+
+                var fs = new FirestoreService();
+                await fs.RecomputeTodayAsync(UserSession.CurrentUserId);
+
             }
         }
 

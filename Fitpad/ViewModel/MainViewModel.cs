@@ -107,6 +107,7 @@ public class MainViewModel : INotifyPropertyChanged
         LogoutCommand = new RelayCommand(o => Logout());
 
         InitializeCurrentPageAsync();
+
         InitializeNavigationState();
     }
 
@@ -178,23 +179,14 @@ public class MainViewModel : INotifyPropertyChanged
             IsProfileComplete = false;
             CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(new UserModel { Id = UserSession.CurrentUserId }));
         }
+
+        var fs = new FirestoreService();
+        await fs.BackfillDaySummariesFromRegistrationAsync(UserSession.CurrentUserId);
     }
 
     public async Task UpdateNavigationStateAsync()
     {
-        Console.WriteLine("🔄 Обновление состояния навигации...");
-
-        // Загружаем сохранённый UserID из файла
-        UserSession.LoadUserIdFromFile();
-
-        if (string.IsNullOrEmpty(UserSession.CurrentUserId))
-        {
-            IsUserAuthenticated = false;
-            IsProfileComplete = false;
-            Console.WriteLine("❌ Пользователь не авторизован.");
-            return;
-        }
-
+        // ... твоя текущая логика ...
         var firestoreService = new FirestoreService();
         var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
 
@@ -202,24 +194,18 @@ public class MainViewModel : INotifyPropertyChanged
         {
             IsUserAuthenticated = true;
             IsProfileComplete = true;
-            Console.WriteLine("✅ Профиль заполнен. Все кнопки доступны.");
         }
         else
         {
             IsUserAuthenticated = true;
             IsProfileComplete = false;
-            Console.WriteLine("⚠ Пользователь авторизован, но профиль не заполнен.");
         }
 
-        // 🔄 Обновляем UI
         OnPropertyChanged(nameof(IsUserAuthenticated));
         OnPropertyChanged(nameof(IsProfileComplete));
         OnPropertyChanged(nameof(IsFullNavigationVisible));
         OnPropertyChanged(nameof(IsLimitedNavigationVisible));
     }
-
-
-
 
     public async Task NavigateToAsync<T>() where T : Page
     {

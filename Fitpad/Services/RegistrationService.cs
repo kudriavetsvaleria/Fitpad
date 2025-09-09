@@ -1,7 +1,8 @@
 ﻿using Fitpad.Model.Entities;
 using Fitpad.Services;
 using System.Threading.Tasks;
-
+using System;                    
+using Google.Cloud.Firestore;
 namespace Fitpad.Services
 {
     public class RegistrationService
@@ -15,7 +16,8 @@ namespace Fitpad.Services
 
         public async Task RegisterUserAsync(UserModel user)
         {
-            await _firestoreService.SaveUserAsync(user).ConfigureAwait(false); // Сохранение пользователя
+            user.CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow); // <== добавить поле в модель UserModel
+            await _firestoreService.SaveUserAsync(user).ConfigureAwait(false);
 
             var userInfo = new UserInfoModel
             {
@@ -28,8 +30,9 @@ namespace Fitpad.Services
                 Purpose = "Не вказано"
             };
 
-            await _firestoreService.SaveUserInfoAsync(userInfo).ConfigureAwait(false); // Создание пустой анкеты
+            await _firestoreService.SaveUserInfoAsync(userInfo).ConfigureAwait(false);
         }
+
 
     }
 }

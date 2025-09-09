@@ -14,11 +14,10 @@ namespace Fitpad.Services
     public class FirestoreService
     {
         private readonly FirestoreDb _firestoreDb;
-
+        private static string DayId(DateTime dayLocal) => dayLocal.ToString("yyyy-MM-dd");
         public FirestoreService()
         {
-            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-91f9ea3e1402.json");
-
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-320d3ddb471a.json");
             if (!File.Exists(pathToKeyFile))
                 throw new FileNotFoundException($"Файл учетных данных не найден по пути: {pathToKeyFile}");
 
@@ -36,7 +35,65 @@ namespace Fitpad.Services
 
         public FirestoreDb GetFirestoreDb() => _firestoreDb;
 
-        // ---- FoodDiary ----
+        public async Task BackfillDaySummariesFromRegistrationAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return;
+
+            var createdAt = await GetUserCreatedAtAsync(userId);
+            if (createdAt == null) return;
+
+            var startLocal = createdAt.Value.ToDateTime();         // UTC -> DateTime
+            startLocal = startLocal.ToLocalTime().Date;            // в локальную дату
+            var todayLocal = DateTime.Now.Date;
+
+            for (var day = startLocal; day <= todayLocal; day = day.AddDays(1))
+            {
+                // пробуем пересчитать из дневника
+                var summary = await RecomputeDaySummaryAsync(userId, day);
+
+                // если записей не было — создадим пустую сводку
+                if (summary != null && summary.ItemsCount > 0) continue;
+                await UpsertEmptySummaryIfMissingAsync(userId, day);
+            }
+        }
+
+        public async Task<Timestamp?> GetUserCreatedAtAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return null;
+
+            var userDoc = await _firestoreDb.Collection("Users").Document(userId).GetSnapshotAsync();
+            if (!userDoc.Exists) return null;
+
+            var user = userDoc.ConvertTo<UserModel>();
+            return user?.CreatedAt;
+        }
+
+        private async Task UpsertEmptySummaryIfMissingAsync(string userId, DateTime dayLocal)
+        {
+            var dayStr = DayId(dayLocal);
+            var docRef = _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("DaySummaries").Document(dayStr);
+
+            var snap = await docRef.GetSnapshotAsync();
+            if (snap.Exists) return;
+
+            var empty = new DaySummaryModel
+            {
+                Date = dayStr,
+                Calories = 0,
+                Protein = 0,
+                Fats = 0,
+                Carbs = 0,
+                Water = 0,
+                ItemsCount = 0
+            };
+            await docRef.SetAsync(empty);
+        }
+
+
+
+        // ===================== FoodDiary =====================
 
         public async Task AddFoodDiaryEntryAsync(string userId, NutritionModel product, DateTime whenUtc)
         {
@@ -55,9 +112,8 @@ namespace Fitpad.Services
             {
                 { "Date", dateStr },
                 { "Time", timeStr },
-                { "Timestamp", Timestamp.FromDateTime(whenUtc) }, // whenUtc ДОЛЖЕН быть UTC
+                { "Timestamp", Timestamp.FromDateTime(whenUtc) },
 
-                // значения порции (как показываешь в таблице)
                 { "Title", product.Title ?? "" },
                 { "Weight", product.Weight },
                 { "Calories", product.Calories },
@@ -118,13 +174,95 @@ namespace Fitpad.Services
                 .DeleteAsync();
         }
 
-        // ---- UserProducts (каталог пользователя на 100 г) ----
+        // ===================== DaySummaries =====================
+
+        /// <summary>Получить сводку за день (если есть), без пересчёта.</summary>
+        public async Task<DaySummaryModel> GetDaySummaryAsync(string userId, DateTime dayLocal)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return null;
+
+            var doc = await _firestoreDb
+                .Collection("Users").Document(userId)
+                .Collection("DaySummaries").Document(DayId(dayLocal))
+                .GetSnapshotAsync();
+
+            return doc.Exists ? doc.ConvertTo<DaySummaryModel>() : null;
+        }
+
+        /// <summary>Вернуть список сводок в диапазоне дат (включительно).</summary>
+        public async Task<List<DaySummaryModel>> GetDaySummariesAsync(string userId, DateTime fromLocal, DateTime toLocal)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return new List<DaySummaryModel>();
+
+            var col = _firestoreDb.Collection("Users").Document(userId).Collection("DaySummaries");
+            var start = DayId(fromLocal.Date);
+            var end = DayId(toLocal.Date);
+
+            var snap = await col
+                .WhereGreaterThanOrEqualTo(FieldPath.DocumentId, start)
+                .WhereLessThanOrEqualTo(FieldPath.DocumentId, end)
+                .OrderBy(FieldPath.DocumentId)
+                .GetSnapshotAsync();
+
+            return snap.Documents.Select(d => d.ConvertTo<DaySummaryModel>()).ToList();
+        }
+
+        /// <summary>Пересчитать сводку за день из коллекции FoodDiary (источник истины).</summary>
+        public async Task<DaySummaryModel> RecomputeDaySummaryAsync(string userId, DateTime dayLocal)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return null;
+
+            var dayStr = DayId(dayLocal);
+
+            var diaryRef = _firestoreDb.Collection("Users").Document(userId).Collection("FoodDiary");
+            var snap = await diaryRef.WhereEqualTo("Date", dayStr).GetSnapshotAsync();
+
+            double calories = 0, protein = 0, fats = 0, carbs = 0, water = 0;
+            int items = 0;
+
+            foreach (var doc in snap.Documents)
+            {
+                var d = doc.ToDictionary();
+
+                double Get(string key) => d.TryGetValue(key, out var v) ? Convert.ToDouble(v) : 0;
+
+                calories += Get("Calories");
+                protein += Get("Protein");
+                fats += Get("Fats");
+                carbs += Get("Carbs");
+                water += Get("Water");
+                items++;
+            }
+
+            var summary = new DaySummaryModel
+            {
+                Date = dayStr,
+                Calories = Math.Round(calories, 1),
+                Protein = Math.Round(protein, 1),
+                Fats = Math.Round(fats, 1),
+                Carbs = Math.Round(carbs, 1),
+                Water = Math.Round(water, 1),
+                ItemsCount = items
+            };
+
+            await _firestoreDb.Collection("Users").Document(userId)
+                .Collection("DaySummaries").Document(dayStr)
+                .SetAsync(summary);
+
+            return summary;
+        }
+
+        public Task<DaySummaryModel> RecomputeTodayAsync(string userId)
+            => RecomputeDaySummaryAsync(userId, DateTime.Now.Date);
+    
+
+
+        // ===================== UserProducts =====================
 
         public async Task SaveUserProductAsync(string userId, NutritionModel portion)
         {
             if (string.IsNullOrWhiteSpace(userId) || portion == null) return;
 
-            // нормализуем к 100 г
             var w = portion.Weight > 0 ? portion.Weight : 100.0;
             var k = 100.0 / w;
 
@@ -143,7 +281,7 @@ namespace Fitpad.Services
             };
 
             var col = _firestoreDb.Collection("Users").Document(userId).Collection("UserProducts");
-            await col.Document(catalog.Id).SetAsync(catalog); // upsert без дублей
+            await col.Document(catalog.Id).SetAsync(catalog);
         }
 
         private static string NormalizeKey(string title)
@@ -154,7 +292,7 @@ namespace Fitpad.Services
             return string.IsNullOrEmpty(key) ? Guid.NewGuid().ToString() : key;
         }
 
-        // ---- Dishes (как было) ----
+        // ===================== Dishes =====================
 
         public async Task<List<DishModel>> GetUserDishesAsync(string userId)
         {
@@ -179,7 +317,6 @@ namespace Fitpad.Services
         public async Task SaveDishToFirebase(string userId, DishModel dish)
         {
             if (string.IsNullOrWhiteSpace(userId) || dish == null || string.IsNullOrWhiteSpace(dish.Id)) return;
-
             var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
             await dishesRef.Document(dish.Id).SetAsync(dish);
         }
@@ -196,6 +333,7 @@ namespace Fitpad.Services
         }
 
         public string GenerateDishId() => Guid.NewGuid().ToString();
+
         public async Task UpdateDishFavoriteStatus(string userId, string dishId, bool isFavorite)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(dishId)) return;
@@ -240,7 +378,6 @@ namespace Fitpad.Services
             await dishRef.DeleteAsync();
         }
 
-
         public async Task CheckDishesCollection(string userId)
         {
             var dishesRef = _firestoreDb.Collection("Users").Document(userId).Collection("Dishes");
@@ -252,7 +389,7 @@ namespace Fitpad.Services
                 Console.WriteLine($"✅ Найдено {snapshot.Count} блюд.");
         }
 
-        // ---- Users / UserInfos (как было) ----
+        // ===================== Users / UserInfos =====================
 
         public async Task SaveUserAsync(UserModel user)
         {
@@ -266,8 +403,17 @@ namespace Fitpad.Services
 
         public async Task<UserInfoModel> GetUserInfoAsync(string userId)
         {
-            var doc = await _firestoreDb.Collection("UserInfos").Document(userId).GetSnapshotAsync();
-            return doc.Exists ? doc.ConvertTo<UserInfoModel>() : null;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Console.WriteLine("GetUserInfoAsync: userId is empty/null — return null, skip Firestore.");
+                return null;
+            }
+
+            var docRef = _firestoreDb.Collection("UserInfos").Document(userId);
+            var snapshot = await docRef.GetSnapshotAsync();
+
+            return snapshot.Exists ? snapshot.ConvertTo<UserInfoModel>() : null;
         }
+
     }
 }
