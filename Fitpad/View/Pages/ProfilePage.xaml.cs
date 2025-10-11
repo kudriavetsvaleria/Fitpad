@@ -1,23 +1,25 @@
 ﻿using Fitpad.Services;
 using Fitpad.ViewModel.PagesViewModels;
+using LiveCharts;
+using LiveCharts.Wpf;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
-using System.IO;
+using System.Windows.Input;
 using System.Windows.Media;
-using Fitpad.View.Components;
+// ✅ просто пространство имён, где лежит CalculateNutritionViewModel
+using Fitpad.ViewModel.PagesViewModels;
 
 namespace Fitpad.View.Pages
 {
     public partial class ProfilePage : Page
     {
-        private static ProfilePage _instance;
-        private static readonly object _lock = new object();
-        private readonly ProfileViewModel _profileViewModel;
         private readonly FirestoreService _firestoreService;
-        private bool _isEditing = false;
+        private readonly ProfileViewModel _profileViewModel;
+        private bool _profileExpanded = false;
+        private int _daysRange = 7;
 
         public ProfilePage(ProfileViewModel profileViewModel)
         {
@@ -26,358 +28,152 @@ namespace Fitpad.View.Pages
             _profileViewModel = profileViewModel;
             DataContext = profileViewModel;
 
-            if (_profileViewModel.CurrentUser != null)
+            Loaded += async (s, e) =>
             {
-                Console.WriteLine($"🔹 Загружаем данные анкеты для пользователя: {_profileViewModel.CurrentUser.Id}");
-                _ = LoadUserInfoAsync(_profileViewModel.CurrentUser.Id);
-            }
-            else
-            {
-                Console.WriteLine("❌ Нет текущего пользователя!");
-            }
-
-            CheckUserInfoAndShowForm(); // Проверяем данные и при необходимости открываем анкету
+                await LoadCalorieChartAsync();
+                await LoadMacroChartAsync();
+            };
         }
 
+        private void ProfileCard_Click(object sender, MouseButtonEventArgs e)
+        {
+            _profileExpanded = !_profileExpanded;
+            ProfileButtons.Visibility = _profileExpanded ? Visibility.Visible : Visibility.Collapsed;
+        }
 
+        private void EditProfile_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Редагування профілю поки не реалізовано, але тут відкриється форма редагування.",
+                            "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            MainViewModel.Instance?.Logout();
+        }
+
+        private void Range_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded || _firestoreService == null || _profileViewModel == null)
+                return;
+
+            if (sender is RadioButton rb && int.TryParse(rb.Tag?.ToString(), out int days))
+            {
+                _daysRange = days;
+                _ = LoadCalorieChartAsync();
+            }
+        }
+
+        // ===================== ГРАФІК КАЛОРІЙ =====================
+        private async Task LoadCalorieChartAsync()
+        {
+            string userId = _profileViewModel.CurrentUser?.Id;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            DateTime today = DateTime.Now.Date;
+            DateTime from = today.AddDays(-_daysRange + 1);
+
+            var summaries = await _firestoreService.GetDaySummariesAsync(userId, from, today);
+            if (summaries == null || summaries.Count == 0) return;
+
+            summaries = summaries.OrderBy(s => s.Date).ToList();
+
+            var labels = summaries.Select(s => s.Date.Substring(5)).ToArray();
+            var calories = summaries.Select(s => s.Calories).ToArray();
+            var protein = summaries.Select(s => s.Protein).ToArray();
+            var fats = summaries.Select(s => s.Fats).ToArray();
+            var carbs = summaries.Select(s => s.Carbs).ToArray();
+            var water = summaries.Select(s => s.Water).ToArray();
+
+            // 🔹 вычисляем норму калорій пользователя
+            double calorieNorm = 0;
+            if (_profileViewModel.CurrentUserInfo != null)
+            {
+                var calcVM = new CalculateNutritionViewModel(_profileViewModel.CurrentUserInfo);
+                calorieNorm = calcVM.CalculateDailyCalorieIntake(_profileViewModel.CurrentUserInfo);
+            }
+
+            var normValues = Enumerable.Repeat(calorieNorm, summaries.Count).ToArray();
+
+            CaloriesChart.Series = new SeriesCollection
+            {
+                // 🔹 зона нормы (серая полоса)
+                new LineSeries
+                {
+                    Title = "Норма калорій",
+                    Values = new ChartValues<double>(normValues),
+                    Stroke = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
+                    Fill = new SolidColorBrush(Color.FromArgb(40, 100, 100, 100)),
+                    PointGeometry = null,
+                    LineSmoothness = 0,
+                    StrokeThickness = 2
+                },
+                new LineSeries { Title="Калорії", Values=new ChartValues<double>(calories), Stroke=Brushes.Black, Fill=Brushes.Transparent, PointGeometrySize=6 },
+                new LineSeries { Title="Білки", Values=new ChartValues<double>(protein), Stroke=Brushes.Blue, Fill=Brushes.Transparent, PointGeometrySize=6 },
+                new LineSeries { Title="Жири", Values=new ChartValues<double>(fats), Stroke=Brushes.Red, Fill=Brushes.Transparent, PointGeometrySize=6 },
+                new LineSeries { Title="Вуглеводи", Values=new ChartValues<double>(carbs), Stroke=Brushes.Green, Fill=Brushes.Transparent, PointGeometrySize=6 },
+                new LineSeries { Title="Вода", Values=new ChartValues<double>(water), Stroke=Brushes.SkyBlue, Fill=Brushes.Transparent, PointGeometrySize=6 }
+            };
+
+            CaloriesChart.AxisX.Clear();
+            CaloriesChart.AxisY.Clear();
+
+            CaloriesChart.AxisX.Add(new Axis
+            {
+                Labels = labels,
+                Title = "Дата",
+                FontSize = 12,
+                Foreground = Brushes.Gray
+            });
+
+            CaloriesChart.AxisY.Add(new Axis
+            {
+                Title = "Ккал / г / мл",
+                FontSize = 12,
+                Foreground = Brushes.Gray
+            });
+        }
+
+        // ===================== ДІАГРАМА БЖВ =====================
+        private async Task LoadMacroChartAsync()
+        {
+            string userId = _profileViewModel.CurrentUser?.Id;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            var today = DateTime.Now.Date;
+            var summary = await _firestoreService.GetDaySummaryAsync(userId, today);
+            if (summary == null) return;
+
+            MacroBalanceChart.Series = new SeriesCollection
+            {
+                new PieSeries { Title="Білки", Values=new ChartValues<double>{summary.Protein}, Fill=Brushes.Blue },
+                new PieSeries { Title="Жири", Values=new ChartValues<double>{summary.Fats}, Fill=Brushes.Red },
+                new PieSeries { Title="Вуглеводи", Values=new ChartValues<double>{summary.Carbs}, Fill=Brushes.Green }
+            };
+
+            MacroBalanceChart.LegendLocation = LegendLocation.Right;
+        }
+
+        // ===================== SINGLETON =====================
+        private static ProfilePage _instance;
+        private static readonly object _lock = new object();
 
         public static ProfilePage GetInstance(ProfileViewModel profileViewModel = null)
         {
             lock (_lock)
             {
                 if (_instance == null || profileViewModel != null)
-                {
                     _instance = new ProfilePage(profileViewModel ?? new ProfileViewModel());
-                    _instance.DataContext = _instance._profileViewModel; // Добавляем обновление контекста
-                }
-
-                if (_instance._profileViewModel.CurrentUser != null)
-                {
-                    _ = _instance.LoadUserInfoAsync(_instance._profileViewModel.CurrentUser.Id);
-                }
-
                 return _instance;
             }
         }
 
-
-        public void UpdateProfileData(ProfileViewModel profileViewModel)
-        {
-            if (profileViewModel != null)
-            {
-                _profileViewModel.CurrentUser = profileViewModel.CurrentUser;
-                _profileViewModel.CurrentUserInfo = profileViewModel.CurrentUserInfo;
-                DataContext = _profileViewModel; // 🔹 Обновляем DataContext
-                Console.WriteLine("🔄 Данные профиля обновлены!");
-            }
-        }
-
-        private void EditProfile_Click(object sender, RoutedEventArgs e)
-        {
-            _isEditing = true;
-            SetEditingState(_isEditing);
-        }
-
-        private async void SaveProfileData()
-        {
-            if (_profileViewModel.CurrentUser == null || string.IsNullOrWhiteSpace(_profileViewModel.CurrentUser.Id))
-            {
-                MessageBox.Show("Ошибка: Пользователь не найден!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            try
-            {
-                await _firestoreService.SaveUserInfoAsync(_profileViewModel.CurrentUserInfo);
-                
-                _isEditing = false;
-                SetEditingState(_isEditing);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при обновлении данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-
-        private async void SaveProfile_Click(object sender, RoutedEventArgs e)
-        {
-            if (_profileViewModel.CurrentUser == null || string.IsNullOrWhiteSpace(_profileViewModel.CurrentUser.Id))
-            {
-                MessageBox.Show("Ошибка: Пользователь не найден!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            // Валидация данных перед сохранением
-            if (!ValidateInputs(out string gender, out int age, out int height, out double weight, out string activityLevel, out string purpose))
-            {
-                return; // Прерываем выполнение, если валидация не прошла
-            }
-
-            // Присваиваем валидные данные модели
-            _profileViewModel.CurrentUserInfo.Gender = gender;
-            _profileViewModel.CurrentUserInfo.Age = age;
-            _profileViewModel.CurrentUserInfo.Height = height;
-            _profileViewModel.CurrentUserInfo.Weight = weight;
-            _profileViewModel.CurrentUserInfo.ActivityLevel = activityLevel;
-            _profileViewModel.CurrentUserInfo.Purpose = purpose;
-
-            try
-            {
-                await _firestoreService.SaveUserInfoAsync(_profileViewModel.CurrentUserInfo);
-                MessageBox.Show("Дані успішно збережені!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка при оновленні даних: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            _isEditing = false;
-            SetEditingState(_isEditing);
-        }
-
-
-        private void SetEditingState(bool isEditing)
-        {
-            // Изменяем состояние текстовых полей
-            AgeInput.IsReadOnly = !isEditing;
-            HeightInput.IsReadOnly = !isEditing;
-            WeightInput.IsReadOnly = !isEditing;
-
-            AgeInput.Background = isEditing ? Brushes.White : Brushes.LightGray;
-            HeightInput.Background = isEditing ? Brushes.White : Brushes.LightGray;
-            WeightInput.Background = isEditing ? Brushes.White : Brushes.LightGray;
-
-            // Переключаем ComboBox и TextBlock без наложения элементов
-            GenderTextBlock.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
-            GenderInput.Opacity = isEditing ? 1 : 0;
-            GenderInput.IsHitTestVisible = isEditing;
-
-            ActivityTextBlock.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
-            ActivityLevelInput.Opacity = isEditing ? 1 : 0;
-            ActivityLevelInput.IsHitTestVisible = isEditing;
-
-            PurposeTextBlock.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
-            PurposeInput.Opacity = isEditing ? 1 : 0;
-            PurposeInput.IsHitTestVisible = isEditing;
-
-            // Отображаем нужные кнопки
-            EditButton.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
-            SaveButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
-            LogoutButton.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible; // Скрываем "Вийти"
-        }
-
-
-
-        private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj != null)
-            {
-                for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
-                {
-                    DependencyObject child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
-                    if (child is T tChild)
-                    {
-                        yield return tChild;
-                    }
-
-                    foreach (T childOfChild in FindVisualChildren<T>(child))
-                    {
-                        yield return childOfChild;
-                    }
-                }
-            }
-        }
-
-        private void ClearValidationErrors(TextBox textBox)
-        {
-            var binding = textBox.GetBindingExpression(TextBox.TextProperty);
-            if (binding != null)
-            {
-                Validation.ClearInvalid(binding);
-            }
-        }
-
-
-        private bool ValidateInputs(out string gender, out int age, out int height, out double weight, out string activityLevel, out string purpose)
-        {
-            // Устанавливаем значения по умолчанию
-            gender = "";
-            age = 0;
-            height = 0;
-            weight = 0;
-            activityLevel = "";
-            purpose = "";
-
-            // Получаем данные из UI
-            gender = GenderInput.Text;
-            activityLevel = ActivityLevelInput.Text;
-            purpose = PurposeInput.Text;
-
-            string ageText = AgeInput?.Text;
-            string heightText = HeightInput?.Text.Replace(" см", "").Trim();
-            string weightText = WeightInput?.Text.Replace(" кг", "").Trim();
-
-
-
-            // Проверка возраста
-            if (!int.TryParse(ageText, out age) || age <= 0 || age > 120)
-            {
-                MessageBox.Show("Помилка: введіть коректний вік (від 1 до 120 років).", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            // Проверка роста
-            if (!int.TryParse(heightText, out height) || height < 50 || height > 250)
-            {
-                MessageBox.Show("Помилка: введіть коректний зріст (50 - 250 см).", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            // Проверка веса
-            if (!double.TryParse(weightText, out weight) || weight < 10 || weight > 300)
-            {
-                MessageBox.Show("Помилка: введіть коректну вагу (10 - 300 кг).", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            return true;
-        }
-
-
-        private async void SaveProfileData_Click(object sender, RoutedEventArgs e)
-        {
-            // Проверяем, изменились ли данные перед сохранением
-            bool isChanged = _profileViewModel.CurrentUserInfo.Gender != GenderInput.Text ||
-                             _profileViewModel.CurrentUserInfo.Age.ToString() != AgeInput.Text ||
-                             _profileViewModel.CurrentUserInfo.Height.ToString() != HeightInput.Text.Replace(" см", "") ||
-                             _profileViewModel.CurrentUserInfo.Weight.ToString() != WeightInput.Text.Replace(" кг", "") ||
-                             _profileViewModel.CurrentUserInfo.ActivityLevel != ActivityLevelInput.Text ||
-                             _profileViewModel.CurrentUserInfo.Purpose != PurposeInput.Text;
-
-            if (!isChanged)
-            {
-                MessageBox.Show("Дані не змінені!", "Увага", MessageBoxButton.OK, MessageBoxImage.Information);
-                _isEditing = false;
-                SetEditingState(_isEditing);
-                return;
-            }
-
-            // Валидация данных перед сохранением
-            if (!ValidateInputs(out string gender, out int age, out int height, out double weight, out string activityLevel, out string purpose))
-            {
-                return; // Прерываем выполнение, если валидация не прошла
-            }
-
-            // Присваиваем валидные данные модели
-            _profileViewModel.CurrentUserInfo.Gender = gender;
-            _profileViewModel.CurrentUserInfo.Age = age;
-            _profileViewModel.CurrentUserInfo.Height = height;
-            _profileViewModel.CurrentUserInfo.Weight = weight;
-            _profileViewModel.CurrentUserInfo.ActivityLevel = activityLevel;
-            _profileViewModel.CurrentUserInfo.Purpose = purpose;
-
-            try
-            {
-                await _firestoreService.SaveUserInfoAsync(_profileViewModel.CurrentUserInfo);
-                MessageBox.Show("Дані успішно збережені!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка при оновленні даних: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            _isEditing = false;
-            SetEditingState(_isEditing);
-        }
-
-
-
-        private async Task LoadUserInfoAsync(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                Console.WriteLine("❌ Ошибка: UserId пустой!");
-                return;
-            }
-
-            Console.WriteLine($"🔹 Загружаем данные пользователя с ID: {userId}");
-
-            var firestoreService = new FirestoreService();
-            var userInfo = await firestoreService.GetUserInfoAsync(userId);
-
-            if (userInfo != null)
-            {
-                Console.WriteLine($"✅ Дані анкети успішно завантажені: {userInfo.Gender}, {userInfo.Age}, {userInfo.Height}, {userInfo.Weight}");
-
-                _profileViewModel.CurrentUserInfo = userInfo;
-                Dispatcher.Invoke(() => DataContext = _profileViewModel);
-            }
-            else
-            {
-                Console.WriteLine("❌ Дані анкети не знайдено.");
-            }
-        }
-
-
-
         public static void ResetInstance()
         {
-            _instance = null;
-        }
-
-        // ProfilePage.xaml.cs
-        private void LogoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            MainViewModel.Instance?.Logout();
-        }
-
-
-        private async void CheckUserInfoAndShowForm()
-        {
-            string userId = UserSession.CurrentUserId;
-
-            if (string.IsNullOrEmpty(userId))
+            lock (_lock)
             {
-                Console.WriteLine("❌ Ошибка: пользователь не найден.");
-                return;
-            }
-
-            var userInfo = await _firestoreService.GetUserInfoAsync(userId);
-
-            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0)
-            {
-                Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем анкету.");
-
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    MainViewModel.Instance.CurrentPage = new UserInfoForm(); // ✅ Открываем анкету
-                });
+                _instance = null;
             }
         }
-
-
-
-        private void ClearCurrentUserFile()
-        {
-            try
-            {
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "current_user.json");
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    Console.WriteLine("✅ Файл current_user.json успешно удалён.");
-                }
-                else
-                {
-                    Console.WriteLine("⚠️ Файл current_user.json уже отсутствует.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Ошибка при удалении файла: {ex.Message}");
-            }
-        }
-
     }
 }
