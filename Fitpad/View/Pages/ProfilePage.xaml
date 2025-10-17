@@ -1,137 +1,199 @@
 <Page x:Class="Fitpad.View.Pages.ProfilePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
-      Background="#FAFAFA">
+      Background="#FAFAFA"
+      Loaded="Page_Loaded">
 
-    <!-- ======= ОСНОВНАЯ СЕТКА ======= -->
-    <Grid Margin="20">
+    <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- заголовок -->
             <RowDefinition Height="*"/>
-            <!-- основное содержимое -->
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <!-- графики -->
-            <ColumnDefinition Width="Auto"/>
-            <!-- карточка профиля -->
-        </Grid.ColumnDefinitions>
+        <!-- ======= ВЕРХНЯЯ ПАНЕЛЬ KPI + ПРОФИЛЬ ======= -->
+        <DockPanel Margin="0,0,0,10" LastChildFill="False">
+            <!-- KPI блоки -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Калорії сьогодні" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="1 870 ккал" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="+5 % до мети" FontSize="10" Foreground="#23C552"/>
+                    </StackPanel>
+                </Border>
 
-        <!-- ======= Заголовок ======= -->
-        <TextBlock Grid.Row="0" Grid.Column="0" 
-                   Text="Аналітика харчування"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   Foreground="#222"
-                   Margin="5,0,0,15"/>
+                <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Баланс БЖВ" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="30 / 25 / 45" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="ідеальний баланс" FontSize="10" Foreground="#23C552"/>
+                    </StackPanel>
+                </Border>
 
-        <!-- ======= КАРТОЧКА ПРОФИЛЯ (правая верхняя часть) ======= -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
-                Width="140" Height="140"
-                Padding="8"
-                CornerRadius="12"
-                Background="White"
-                VerticalAlignment="Top"
-                Margin="15,10,0,0"
-                MouseLeftButtonUp="ProfileCard_Click">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="10" Opacity="0.25"/>
-            </Border.Effect>
+                <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Прогрес до мети" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="74 %" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="+2 % за тиждень" FontSize="10" Foreground="#23C552"/>
+                    </StackPanel>
+                </Border>
 
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Ellipse Width="50" Height="50" Stroke="#E0E0E0" StrokeThickness="2" Margin="0,0,0,6">
-                    <Ellipse.Fill>
-                        <ImageBrush ImageSource="pack://application:,,,/Images/profile.png" Stretch="UniformToFill"/>
-                    </Ellipse.Fill>
-                </Ellipse>
-
-                <TextBlock Text="{Binding CurrentUser.Name}" FontSize="13" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding CurrentUser.Email}" FontSize="10" Foreground="#777" HorizontalAlignment="Center"/>
-
-                <StackPanel x:Name="ProfileButtons" Orientation="Vertical" Visibility="Collapsed" Margin="0,5,0,0">
-                    <Button x:Name="EditButton" Content="Редагувати" Width="90" Height="22" Margin="0,2"
-                            FontSize="11" Foreground="White" Background="#5CB85C" BorderThickness="0" Click="EditProfile_Click"/>
-                    <Button x:Name="LogoutButton" Content="Вийти" Width="90" Height="22" Margin="0,2"
-                            FontSize="11" Foreground="White" Background="#D9534F" BorderThickness="0" Click="LogoutButton_Click"/>
-                </StackPanel>
+                <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Вода сьогодні" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="2.3 л" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="+0.4 л сьогодні" FontSize="10" Foreground="#23C552"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
-        </Border>
 
-        <!-- ======= ГРАФИКИ ======= -->
-        <Grid Grid.Row="1" Grid.Column="0">
+            <!-- Мини-профиль справа -->
+            <Border Background="White" CornerRadius="10" Padding="10" Height="75" Width="155" Margin="10,0,0,0" DockPanel.Dock="Right">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                </Border.Effect>
+                <DockPanel>
+                    <Ellipse Width="35" Height="35" Fill="#6C63FF" DockPanel.Dock="Left" Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Kot04ka" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="Рівень 12" FontSize="11" Foreground="#6C63FF"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+
+        <!-- ======= ОСНОВНАЯ СЕТКА ======= -->
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <!-- круговая БЖВ -->
-                <RowDefinition Height="Auto"/>
-                <!-- линия калорий -->
-                <RowDefinition Height="Auto"/>
-                <!-- ещё один график -->
+                <RowDefinition Height="2.2*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- ==== 1. Баланс БЖВ ==== -->
-            <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="10" Margin="0,0,0,15">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.25"/>
-                </Border.Effect>
-                <StackPanel>
-                    <TextBlock Text="Баланс макронутрієнтів (БЖВ)"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Margin="5,0,0,10"/>
-                    <lvc:PieChart x:Name="MacroBalanceChart"
-                                  Height="180"
-                                  LegendLocation="Right"
-                                  InnerRadius="60"/>
-                </StackPanel>
-            </Border>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3.2*"/>
+                <ColumnDefinition Width="1.8*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- ==== 2. Калорії, білки, жири, вуглеводи, вода ==== -->
-            <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="10" Margin="0,0,-157,15">
+            <!-- 📈 ЛИНЕЙНЫЙ ГРАФИК -->
+            <Border Grid.Row="0" Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="5">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.25"/>
+                    <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="5,0,0,5">
-                        <RadioButton GroupName="Range" Content="7 днів" IsChecked="True" Tag="7" Checked="Range_Checked" Margin="0,0,10,0"/>
-                        <RadioButton GroupName="Range" Content="30 днів" Tag="30" Checked="Range_Checked" Margin="0,0,10,0"/>
-                        <RadioButton GroupName="Range" Content="90 днів" Tag="90" Checked="Range_Checked"/>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Динаміка споживання калорій (тиждень)" 
+                                   FontSize="13" FontWeight="SemiBold" Margin="5,0,0,6"/>
+                        <lvc:CartesianChart x:Name="CaloriesChart"
+                                            Height="200"
+                                            LegendLocation="None"
+                                            DisableAnimations="True"/>
                     </StackPanel>
 
-                    <lvc:CartesianChart x:Name="CaloriesChart"
-                                        Height="220"
-                                        LegendLocation="Right"
-                                        Hoverable="True">
-                        <lvc:CartesianChart.AxisX>
-                            <lvc:Axis Title="Дата"
-                                      FontSize="11"
-                                      Foreground="#555"
-                                      LabelsRotation="15"/>
-                        </lvc:CartesianChart.AxisX>
-                        <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="Ккал / г / мл"
-                                      FontSize="11"
-                                      Foreground="#555"/>
-                        </lvc:CartesianChart.AxisY>
-                    </lvc:CartesianChart>
+                    <!-- Легенда снизу -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,2">
+                        <StackPanel Orientation="Horizontal" Margin="10,0">
+                            <Rectangle Width="15" Height="3" Fill="Gray" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Норма" FontSize="11" Foreground="#333"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="10,0">
+                            <Ellipse Width="9" Height="9" Fill="#6C63FF" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Фактичне споживання" FontSize="11" Foreground="#333"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 🥯 КОЛЬЦЕВАЯ ДИАГРАММА -->
+            <Border Grid.Row="0" Grid.Column="1" Background="White" CornerRadius="10" Padding="10" Margin="5">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Співвідношення макронутрієнтів (БЖВ)"
+                               FontSize="13" FontWeight="SemiBold" Margin="5,0,0,6"/>
+                    <lvc:PieChart x:Name="MacroChart"
+                                  InnerRadius="50"
+                                  Height="190"
+                                  LegendLocation="None"
+                                  DisableAnimations="True"/>
+                    <!-- Подписи под диаграммой -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="10,0">
+                            <Ellipse Width="12" Height="12" Fill="Blue" Margin="0,0,5,0"/>
+                            <TextBlock Text="Білки" FontSize="12"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="10,0">
+                            <Ellipse Width="12" Height="12" Fill="Red" Margin="0,0,5,0"/>
+                            <TextBlock Text="Жири" FontSize="12"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="10,0">
+                            <Ellipse Width="12" Height="12" Fill="Green" Margin="0,0,5,0"/>
+                            <TextBlock Text="Вуглеводи" FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- ==== 3. Можна додати інший графік ==== -->
-            <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="10">
+            <!-- 🧾 Таблица -->
+            <Border Grid.Row="1" Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="5">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.25"/>
+                    <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Найчастіше споживані продукти" 
+                               FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8"/>
+                    <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
+                              Height="150" BorderThickness="0" FontSize="12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Назва" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Ккал" Binding="{Binding Calories}" Width="Auto"/>
+                            <DataGridTextColumn Header="Білки" Binding="{Binding Protein}" Width="Auto"/>
+                            <DataGridTextColumn Header="Жири" Binding="{Binding Fat}" Width="Auto"/>
+                            <DataGridTextColumn Header="Вуглеводи" Binding="{Binding Carbs}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
 
-                <TextBlock Text="(Резерв для майбутнього графіка)" 
-                           FontSize="12" Foreground="#999" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Height="100"/>
+            <!-- 📊 Загальна статистика -->
+            <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="10" Padding="10" Margin="5">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Загальна статистика користувача" 
+                               FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="12" Height="12" Fill="#6C63FF" Margin="0,0,8,0"/>
+                        <TextBlock Text="Днів активності: 21"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="12" Height="12" Fill="#FF5C5C" Margin="0,0,8,0"/>
+                        <TextBlock Text="Збережених страв: 34"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="12" Height="12" Fill="#23C552" Margin="0,0,8,0"/>
+                        <TextBlock Text="Продуктів у базі: 58"/>
+                    </StackPanel>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>
