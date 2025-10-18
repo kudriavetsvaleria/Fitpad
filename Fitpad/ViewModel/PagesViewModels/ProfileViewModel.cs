@@ -347,6 +347,7 @@ namespace Fitpad.View.Pages
 
             // 🔸 Баланс БЖВ
 
+            // 🔸 Баланс БЖВ
             KpiMacroBalanceText =
                 sToday.Protein + sToday.Fats + sToday.Carbs > 0
                 ? $"{Math.Round(sToday.Protein, 0)} / {Math.Round(sToday.Fats, 0)} / {Math.Round(sToday.Carbs, 0)}"
@@ -355,19 +356,46 @@ namespace Fitpad.View.Pages
             if (sToday.Protein > 0 && sToday.Fats > 0 && sToday.Carbs > 0)
             {
                 var ratio = sToday.Protein + sToday.Fats + sToday.Carbs;
-                // примерное соотношение белки/жиры/углеводы
                 var percP = sToday.Protein / ratio * 100;
                 var percF = sToday.Fats / ratio * 100;
                 var percC = sToday.Carbs / ratio * 100;
 
-                // если распределение близко к 30/25/45 — считаем “ідеальний баланс”
-                if (Math.Abs(percP - 30) < 5 && Math.Abs(percF - 25) < 5 && Math.Abs(percC - 45) < 5)
+                // идеальные диапазоны (±5%)
+                bool goodP = percP >= 25 && percP <= 35;
+                bool goodF = percF >= 20 && percF <= 30;
+                bool goodC = percC >= 40 && percC <= 50;
+
+                // по умолчанию просто проценты
+                KpiMacroDeltaText = $"{Math.Round(percP)} / {Math.Round(percF)} / {Math.Round(percC)} %";
+
+                if (goodP && goodF && goodC)
+                {
                     KpiMacroDeltaText = "ідеальний баланс";
+                }
                 else
-                    KpiMacroDeltaText = $"{Math.Round(percP)}/{Math.Round(percF)}/{Math.Round(percC)} %";
+                {
+                    // определяем, где перекос
+                    if (percP < 25)
+                        KpiMacroDeltaText = "варто додати білків";
+                    else if (percF > 35)
+                        KpiMacroDeltaText = "забагато жирів";
+                    else if (percC > 55)
+                        KpiMacroDeltaText = "занадто багато вуглеводів";
+                    else if (percP > 40)
+                        KpiMacroDeltaText = "забагато білків";
+                    else if (percF < 15)
+                        KpiMacroDeltaText = "недостатньо жирів";
+                    else if (percC < 35)
+                        KpiMacroDeltaText = "мало вуглеводів";
+                    else
+                        KpiMacroDeltaText = "дисбаланс БЖВ";
+                }
             }
             else
+            {
                 KpiMacroDeltaText = "";
+            }
+
 
 
             // 🔸 Прогрес до мети
