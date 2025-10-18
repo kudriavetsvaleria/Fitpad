@@ -1,76 +1,77 @@
 ﻿using LiveCharts;
 using LiveCharts.Wpf;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Fitpad.Model.Entities;
 
 namespace Fitpad.View.Pages
 {
     public partial class ProfilePage : Page
     {
-        // === ЗАГЛУШКИ ДЛЯ ПАТТЕРНА SINGLETON ===
         private static ProfilePage _instance;
         private static readonly object _lock = new object();
 
-        public static ProfilePage GetInstance(object profileViewModel = null)
+        // Универсальная версия — можно передавать UserModel или ViewModel
+        public static ProfilePage GetInstance(object context = null)
         {
             lock (_lock)
             {
                 if (_instance == null)
-                    _instance = new ProfilePage();
+                    _instance = new ProfilePage(context);
                 return _instance;
             }
         }
 
         public static void ResetInstance()
         {
-            lock (_lock)
-            {
-                _instance = null;
-            }
+            lock (_lock) { _instance = null; }
         }
-        // ========================================
 
-        public ProfilePage()
+        private readonly ProfileViewModel _vm;
+
+        public ProfilePage(object context = null)
         {
             InitializeComponent();
-            LoadCharts();
+
+            if (context is ProfileViewModel vm)
+                _vm = vm;
+            else if (context is UserModel user)
+                _vm = new ProfileViewModel(user);
+            else
+                _vm = new ProfileViewModel(null);
+
+            DataContext = _vm;
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e) { }
-
-        private void LoadCharts()
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            // 🔸 Линейный график (калории)
-            var calories = new ChartValues<double> { 1800, 1950, 2100, 1900, 2300, 2250, 2400 };
-            var norm = new ChartValues<double> { 2000, 2000, 2000, 2000, 2000, 2000, 2000 };
+            var userId = _vm.CurrentUser != null ? _vm.CurrentUser.Id : null;
+            if (string.IsNullOrWhiteSpace(userId))
+                return;
 
-            CaloriesChart.Series = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Title = "Норма",
-                    Values = norm,
-                    Stroke = Brushes.Gray,
-                    Fill = Brushes.Transparent,
-                    PointGeometry = null,
-                    StrokeThickness = 2
-                },
-                new LineSeries
-                {
-                    Title = "Фактичне споживання",
-                    Values = calories,
-                    Stroke = new SolidColorBrush(Color.FromRgb(108, 99, 255)),
-                    Fill = new SolidColorBrush(Color.FromArgb(40, 108, 99, 255)),
-                    StrokeThickness = 3,
-                    PointGeometrySize = 6
-                }
-            };
+            await _vm.LoadDashboardDataAsync(userId);
+
+            CaloriesChart.Series = _vm.CaloriesChartSeries;
+            SetupCaloriesAxes();
+            MacroChart.Series = _vm.MacroChartSeries;
+
+            ApplyKpiTexts();
+            ApplyMiniProfileTexts();
+            ApplyGeneralStatsTexts();
+        }
+
+        private void SetupCaloriesAxes()
+        {
+            CaloriesChart.AxisX.Clear();
+            CaloriesChart.AxisY.Clear();
 
             CaloriesChart.AxisX.Add(new Axis
             {
-                Labels = new List<string> { "10-11", "10-12", "10-13", "10-14", "10-15", "10-16", "10-17" },
+                Labels = _vm.CaloriesAxisLabels != null ? _vm.CaloriesAxisLabels.ToList() : new List<string>(),
                 Title = "Дата",
                 FontSize = 11
             });
@@ -80,16 +81,103 @@ namespace Fitpad.View.Pages
                 Title = "Ккал",
                 LabelFormatter = val => val.ToString("N0")
             });
+        }
 
-            // 🔸 Кольцевая диаграмма (БЖВ)
-            MacroChart.Series = new SeriesCollection
+        private void ApplyKpiTexts()
+        {
+            var rootDock = FindVisualChildren<DockPanel>(this).FirstOrDefault();
+            if (rootDock == null) return;
+
+            var leftStack = rootDock.Children.OfType<StackPanel>().FirstOrDefault();
+            if (leftStack == null) return;
+
+            var cards = leftStack.Children.OfType<Border>().ToList();
+            if (cards.Count < 4) return;
+
+            SetCardTexts(cards[0], null, _vm.KpiCaloriesToday, _vm.KpiCaloriesDeltaText);
+            // Баланс БЖВ
+            SetCardTexts(cards[1], null, _vm.KpiMacroBalanceText, _vm.KpiMacroDeltaText);
+            SetCardTexts(cards[2], null, _vm.KpiProgressToGoal, _vm.KpiProgressDeltaText);
+            SetCardTexts(cards[3], null, _vm.KpiWaterToday, _vm.KpiWaterDeltaText);
+        }
+
+        private void ApplyMiniProfileTexts()
+        {
+            var rootDock = FindVisualChildren<DockPanel>(this).FirstOrDefault();
+            if (rootDock == null) return;
+
+            var rightBorder = rootDock.Children.OfType<Border>().LastOrDefault();
+            if (rightBorder == null) return;
+
+            var stack = FindVisualChildren<StackPanel>(rightBorder).FirstOrDefault();
+            if (stack == null) return;
+
+            var tbs = stack.Children.OfType<TextBlock>().ToList();
+            if (tbs.Count >= 1) tbs[0].Text = _vm.MiniProfile_Name ?? "";
+            if (tbs.Count >= 2) tbs[1].Text = _vm.MiniProfile_Level ?? "";
+        }
+
+        private void ApplyGeneralStatsTexts()
+        {
+            var allTB = FindVisualChildren<TextBlock>(this).ToList();
+            var header = allTB.FirstOrDefault(t => (t.Text ?? "").Trim().StartsWith("Загальна статистика"));
+            if (header == null) return;
+
+            var container = FindAncestor<StackPanel>(header);
+            if (container == null) return;
+
+            var rows = container.Children.OfType<StackPanel>()
+                .Where(sp => sp.Orientation == Orientation.Horizontal)
+                .ToList();
+
+            if (rows.Count >= 1)
             {
-                new PieSeries { Title = "Білки", Values = new ChartValues<double> { 90 }, Fill = Brushes.Blue, PushOut = 2 },
-                new PieSeries { Title = "Жири", Values = new ChartValues<double> { 60 }, Fill = Brushes.Red, PushOut = 2 },
-                new PieSeries { Title = "Вуглеводи", Values = new ChartValues<double> { 200 }, Fill = Brushes.Green, PushOut = 2 }
-            };
+                var row1 = rows[0].Children.OfType<TextBlock>().LastOrDefault();
+                if (row1 != null) row1.Text = _vm.StatDaysActiveText;
+            }
+            if (rows.Count >= 2)
+            {
+                var row2 = rows[1].Children.OfType<TextBlock>().LastOrDefault();
+                if (row2 != null) row2.Text = _vm.StatSavedDishesText;
+            }
+            if (rows.Count >= 3)
+            {
+                var row3 = rows[2].Children.OfType<TextBlock>().LastOrDefault();
+                if (row3 != null) row3.Text = _vm.StatProductsInBaseText;
+            }
+        }
 
+        private static void SetCardTexts(Border card, string header, string main, string sub)
+        {
+            if (card != null && card.Child is StackPanel sp)
+            {
+                var tbs = sp.Children.OfType<TextBlock>().ToList();
+                if (tbs.Count >= 1 && header != null) tbs[0].Text = header;
+                if (tbs.Count >= 2) tbs[1].Text = main ?? "";
+                if (tbs.Count >= 3) tbs[2].Text = sub ?? "";
+            }
+        }
 
+        private static T FindAncestor<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            while (parent != null && !(parent is T))
+                parent = VisualTreeHelper.GetParent(parent);
+            return parent as T;
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is T)
+                    yield return (T)child;
+
+                foreach (var c in FindVisualChildren<T>(child))
+                    yield return c;
+            }
         }
     }
 }

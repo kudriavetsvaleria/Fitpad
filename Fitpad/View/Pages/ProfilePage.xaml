@@ -11,71 +11,76 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ======= ВЕРХНЯЯ ПАНЕЛЬ KPI + ПРОФИЛЬ ======= -->
+        <!-- ======= ВЕРХНЯЯ ПАНЕЛЬ KPI + ПРОФІЛЬ ======= -->
         <DockPanel Margin="0,0,0,10" LastChildFill="False">
+
             <!-- KPI блоки -->
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <!-- Калорії сьогодні -->
                 <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="Калорії сьогодні" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="1 870 ккал" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
-                        <TextBlock Text="+5 % до мети" FontSize="10" Foreground="#23C552"/>
+                        <TextBlock Text="" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="" FontSize="10" Foreground="#23C552"/>
                     </StackPanel>
                 </Border>
 
+                <!-- Баланс БЖВ -->
                 <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="Баланс БЖВ" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="30 / 25 / 45" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
-                        <TextBlock Text="ідеальний баланс" FontSize="10" Foreground="#23C552"/>
+                        <TextBlock Text="" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="" FontSize="10" Foreground="#23C552"/>
                     </StackPanel>
                 </Border>
 
+                <!-- Прогрес до мети -->
                 <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="Прогрес до мети" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="74 %" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
-                        <TextBlock Text="+2 % за тиждень" FontSize="10" Foreground="#23C552"/>
+                        <TextBlock Text="" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="" FontSize="10" Foreground="#23C552"/>
                     </StackPanel>
                 </Border>
 
+                <!-- Вода сьогодні -->
                 <Border Background="White" CornerRadius="10" Padding="10" Width="135" Height="75" Margin="4">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="Вода сьогодні" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="2.3 л" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
-                        <TextBlock Text="+0.4 л сьогодні" FontSize="10" Foreground="#23C552"/>
+                        <TextBlock Text="" FontSize="17" FontWeight="Bold" Foreground="#6C63FF"/>
+                        <TextBlock Text="" FontSize="10" Foreground="#23C552"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- Мини-профиль справа -->
-            <Border Background="White" CornerRadius="10" Padding="10" Height="75" Width="155" Margin="10,0,0,0" DockPanel.Dock="Right">
+            <!-- Міні-профіль справа -->
+            <Border Background="White" CornerRadius="10" Padding="10" Height="75" Width="141" Margin="10,0,0,0" DockPanel.Dock="Right">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
                 <DockPanel>
                     <Ellipse Width="35" Height="35" Fill="#6C63FF" DockPanel.Dock="Left" Margin="0,0,8,0"/>
                     <StackPanel>
-                        <TextBlock Text="Kot04ka" FontWeight="Bold" FontSize="14"/>
-                        <TextBlock Text="Рівень 12" FontSize="11" Foreground="#6C63FF"/>
+                        <TextBlock Text="" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="" FontSize="11" Foreground="#6C63FF"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
         </DockPanel>
 
-        <!-- ======= ОСНОВНАЯ СЕТКА ======= -->
+        <!-- ======= ОСНОВНА СІТКА ======= -->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2.2*"/>
@@ -87,7 +92,7 @@
                 <ColumnDefinition Width="1.8*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 📈 ЛИНЕЙНЫЙ ГРАФИК -->
+            <!-- 📈 ЛІНІЙНИЙ ГРАФІК -->
             <Border Grid.Row="0" Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="5">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
@@ -99,7 +104,7 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0">
-                        <TextBlock Text="Динаміка споживання калорій (тиждень)" 
+                        <TextBlock Text="Динаміка споживання калорій (тиждень)"
                                    FontSize="13" FontWeight="SemiBold" Margin="5,0,0,6"/>
                         <lvc:CartesianChart x:Name="CaloriesChart"
                                             Height="200"
@@ -107,22 +112,41 @@
                                             DisableAnimations="True"/>
                     </StackPanel>
 
-                    <!-- Легенда снизу -->
+                    <!-- Легенда -->
+
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,2">
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <Rectangle Width="15" Height="3" Fill="Gray" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="Норма" FontSize="11" Foreground="#333"/>
+                        <!-- Додаткова легенда для білків, жирів, вуглеводів -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,4">
+                            <StackPanel Orientation="Horizontal" Margin="8,0">
+                                <Ellipse Width="9" Height="9" Fill="#6C63FF" Margin="0,0,5,0"/>
+                                <TextBlock Text="Калорії" FontSize="11" Foreground="#333"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8,0">
+                                <Ellipse Width="9" Height="9" Fill="Blue" Margin="0,0,5,0"/>
+                                <TextBlock Text="Білки" FontSize="11" Foreground="#333"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8,0">
+                                <Ellipse Width="9" Height="9" Fill="Red" Margin="0,0,5,0"/>
+                                <TextBlock Text="Жири" FontSize="11" Foreground="#333"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8,0">
+                                <Ellipse Width="9" Height="9" Fill="Green" Margin="0,0,5,0"/>
+                                <TextBlock Text="Вуглеводи" FontSize="11" Foreground="#333"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8,0">
+                                <Rectangle Width="15" Height="3" Fill="Gray" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="Норма" FontSize="11" Foreground="#333"/>
+                            </StackPanel>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <Ellipse Width="9" Height="9" Fill="#6C63FF" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="Фактичне споживання" FontSize="11" Foreground="#333"/>
-                        </StackPanel>
+
                     </StackPanel>
                 </Grid>
             </Border>
+            
+            
 
-            <!-- 🥯 КОЛЬЦЕВАЯ ДИАГРАММА -->
-            <Border Grid.Row="0" Grid.Column="1" Background="White" CornerRadius="10" Padding="10" Margin="5">
+            <!-- 🥯 КОЛЬЦЕВА ДІАГРАМА -->
+            <Border Grid.Row="0" Grid.Column="1" Background="White" CornerRadius="10" Padding="10" Margin="5,5,0,5">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
@@ -134,7 +158,7 @@
                                   Height="190"
                                   LegendLocation="None"
                                   DisableAnimations="True"/>
-                    <!-- Подписи под диаграммой -->
+                    <!-- Легенда -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                         <StackPanel Orientation="Horizontal" Margin="10,0">
                             <Ellipse Width="12" Height="12" Fill="Blue" Margin="0,0,5,0"/>
@@ -152,16 +176,16 @@
                 </StackPanel>
             </Border>
 
-            <!-- 🧾 Таблица -->
+            <!-- 🧾 Таблиця -->
             <Border Grid.Row="1" Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="5">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="Найчастіше споживані продукти" 
+                    <TextBlock Text="Найчастіше споживані продукти"
                                FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8"/>
                     <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
-                              Height="150" BorderThickness="0" FontSize="12">
+                              Height="150" BorderThickness="0" FontSize="12" ItemsSource="{Binding FrequentProducts}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Назва" Binding="{Binding Name}" Width="*"/>
                             <DataGridTextColumn Header="Ккал" Binding="{Binding Calories}" Width="Auto"/>
@@ -179,20 +203,9 @@
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="Загальна статистика користувача" 
+                    <TextBlock Text="Загальна статистика користувача"
                                FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                        <Ellipse Width="12" Height="12" Fill="#6C63FF" Margin="0,0,8,0"/>
-                        <TextBlock Text="Днів активності: 21"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                        <Ellipse Width="12" Height="12" Fill="#FF5C5C" Margin="0,0,8,0"/>
-                        <TextBlock Text="Збережених страв: 34"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                        <Ellipse Width="12" Height="12" Fill="#23C552" Margin="0,0,8,0"/>
-                        <TextBlock Text="Продуктів у базі: 58"/>
-                    </StackPanel>
+     
                 </StackPanel>
             </Border>
         </Grid>
