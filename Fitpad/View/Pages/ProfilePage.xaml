@@ -65,16 +65,24 @@
                 </Border>
             </StackPanel>
 
-            <!-- Міні-профіль справа -->
-            <Border Background="White" CornerRadius="10" Padding="10" Height="75" Width="141" Margin="10,0,0,0" DockPanel.Dock="Right">
+            <!-- 🧍 Міні-профіль користувача -->
+            <Border Background="White"
+        CornerRadius="10"
+        Padding="10"
+        Height="75"
+        Width="141"
+        Margin="10,0,0,0"
+        DockPanel.Dock="Right"
+        Cursor="Hand"
+        MouseLeftButtonUp="MiniProfile_Click">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
                 <DockPanel>
                     <Ellipse Width="35" Height="35" Fill="#6C63FF" DockPanel.Dock="Left" Margin="0,0,8,0"/>
                     <StackPanel>
-                        <TextBlock Text="" FontWeight="Bold" FontSize="14"/>
-                        <TextBlock Text="" FontSize="11" Foreground="#6C63FF"/>
+                        <TextBlock Text="{Binding MiniProfile_Name}" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="{Binding MiniProfile_Level}" FontSize="11" Foreground="#6C63FF"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -142,8 +150,6 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            
-            
 
             <!-- 🥯 КОЛЬЦЕВА ДІАГРАМА -->
             <Border Grid.Row="0" Grid.Column="1" Background="White" CornerRadius="10" Padding="10" Margin="5,5,0,5">
@@ -152,29 +158,51 @@
                 </Border.Effect>
                 <StackPanel>
                     <TextBlock Text="Співвідношення макронутрієнтів (БЖВ)"
-                               FontSize="13" FontWeight="SemiBold" Margin="5,0,0,6"/>
+                   FontSize="13" FontWeight="SemiBold" Margin="5,0,0,6"/>
                     <lvc:PieChart x:Name="MacroChart"
-                                  InnerRadius="50"
-                                  Height="190"
-                                  LegendLocation="None"
-                                  DisableAnimations="True"/>
-                    <!-- Легенда -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <Ellipse Width="12" Height="12" Fill="Blue" Margin="0,0,5,0"/>
-                            <TextBlock Text="Білки" FontSize="12"/>
+                      InnerRadius="50"
+                      Height="190"
+                      LegendLocation="None"
+                      DisableAnimations="True"/>
+
+                    <!-- 🟢 Легенда с количеством -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <!-- Білки -->
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Ellipse Width="12" Height="12" Fill="Blue" Margin="0,0,5,0"/>
+                                <TextBlock Text="Білки" FontSize="12"/>
+                            </StackPanel>
+                            <Border Background="#EEF3FF" CornerRadius="4" Margin="0,10,0,0" Padding="4,1">
+                                <TextBlock Text="{Binding MacroProteinsText}" FontSize="11" FontWeight="SemiBold" Foreground="Black" HorizontalAlignment="Center"/>
+                            </Border>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <Ellipse Width="12" Height="12" Fill="Red" Margin="0,0,5,0"/>
-                            <TextBlock Text="Жири" FontSize="12"/>
+
+                        <!-- Жири -->
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Ellipse Width="12" Height="12" Fill="Red" Margin="0,0,5,0"/>
+                                <TextBlock Text="Жири" FontSize="12"/>
+                            </StackPanel>
+                            <Border Background="#FFEFEF" CornerRadius="4" Margin="0,10,0,0" Padding="4,1">
+                                <TextBlock Text="{Binding MacroFatsText}" FontSize="11" FontWeight="SemiBold" Foreground="Black" HorizontalAlignment="Center"/>
+                            </Border>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <Ellipse Width="12" Height="12" Fill="Green" Margin="0,0,5,0"/>
-                            <TextBlock Text="Вуглеводи" FontSize="12"/>
+
+                        <!-- Вуглеводи -->
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Ellipse Width="12" Height="12" Fill="Green" Margin="0,0,5,0"/>
+                                <TextBlock Text="Вуглеводи" FontSize="12"/>
+                            </StackPanel>
+                            <Border Background="#E9F8E9" CornerRadius="4" Margin="0,10,0,0" Padding="4,1">
+                                <TextBlock Text="{Binding MacroCarbsText}" FontSize="11" FontWeight="SemiBold" Foreground="Black" HorizontalAlignment="Center"/>
+                            </Border>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </Border>
+
 
             <!-- 🧾 Таблиця -->
             <Border Grid.Row="1" Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="5">
@@ -202,11 +230,36 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
-                <StackPanel>
+                
+                <!-- Загальна статистика користувача -->
+                <StackPanel Orientation="Vertical" Margin="10,0,0,0" x:Name="UserStatsPanel">
                     <TextBlock Text="Загальна статистика користувача"
                                FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8"/>
-     
+                    <!-- Дні активності -->
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="10" Height="10" Fill="#6C63FF" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding StatDaysActiveText}"
+                   FontSize="12"
+                   Foreground="#333"/>
+                    </StackPanel>
+
+                    <!-- Збережених страв -->
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="10" Height="10" Fill="Red" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding StatSavedDishesText}"
+                   FontSize="12"
+                   Foreground="#333"/>
+                    </StackPanel>
+
+                    <!-- Продуктів у базі -->
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <Ellipse Width="10" Height="10" Fill="Green" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding StatProductsInBaseText}"
+                   FontSize="12"
+                   Foreground="#333"/>
+                    </StackPanel>
                 </StackPanel>
+
             </Border>
         </Grid>
     </Grid>

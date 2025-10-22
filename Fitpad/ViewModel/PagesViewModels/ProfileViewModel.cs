@@ -31,6 +31,16 @@ namespace Fitpad.View.Pages
         private UserModel _currentUser;
         private UserInfoModel _currentUserInfo;
 
+        // ===== Макро-тексты для подписи под диаграммой =====
+        public string MacroProteinsText { get => _macroProteinsText; private set { _macroProteinsText = value; OnPropertyChanged(); } }
+        private string _macroProteinsText = "";
+
+        public string MacroFatsText { get => _macroFatsText; private set { _macroFatsText = value; OnPropertyChanged(); } }
+        private string _macroFatsText = "";
+
+        public string MacroCarbsText { get => _macroCarbsText; private set { _macroCarbsText = value; OnPropertyChanged(); } }
+        private string _macroCarbsText = "";
+
         public UserModel CurrentUser
         {
             get => _currentUser;
@@ -235,6 +245,10 @@ namespace Fitpad.View.Pages
             var f = Math.Max(0, s.Fats);
             var c = Math.Max(0, s.Carbs);
 
+            MacroProteinsText = $"{Math.Round(p, 1)} г";
+            MacroFatsText = $"{Math.Round(f, 1)} г";
+            MacroCarbsText = $"{Math.Round(c, 1)} г";
+
             MacroChartSeries = new SeriesCollection
             {
                 new PieSeries { Title = "Білки",      Values = new ChartValues<double> { p }, Fill = Brushes.Blue,  PushOut = 2 },
@@ -345,7 +359,6 @@ namespace Fitpad.View.Pages
                 }
             }
 
-            // 🔸 Баланс БЖВ
 
             // 🔸 Баланс БЖВ
             KpiMacroBalanceText =
@@ -360,7 +373,7 @@ namespace Fitpad.View.Pages
                 var percF = sToday.Fats / ratio * 100;
                 var percC = sToday.Carbs / ratio * 100;
 
-                // идеальные диапазоны (±5%)
+                // идеальные диапазоны (5%)
                 bool goodP = percP >= 25 && percP <= 35;
                 bool goodF = percF >= 20 && percF <= 30;
                 bool goodC = percC >= 40 && percC <= 50;

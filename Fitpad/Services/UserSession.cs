@@ -21,11 +21,11 @@ public static class UserSession
             File.WriteAllText(FilePath, JsonConvert.SerializeObject(payload, Formatting.Indented));
 
             CurrentUserId = userId;
-            Console.WriteLine($"✅ UserId сохранён: {FilePath}");
+            Console.WriteLine($"UserId сохранён: {FilePath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка сохранения UserId: {ex.Message}");
+            Console.WriteLine($"Ошибка сохранения UserId: {ex.Message}");
         }
     }
 
@@ -43,7 +43,7 @@ public static class UserSession
             var json = File.ReadAllText(FilePath);
             if (string.IsNullOrWhiteSpace(json))
             {
-                Console.WriteLine("❌ current_user.json пустой.");
+                Console.WriteLine("current_user.json пустой.");
                 CurrentUserId = string.Empty;
                 return;
             }
@@ -51,11 +51,11 @@ public static class UserSession
             dynamic data = JsonConvert.DeserializeObject(json);
             CurrentUserId = data?.UserId != null ? (string)data.UserId : string.Empty;
 
-            Console.WriteLine($"✅ UserId загружен: {CurrentUserId}");
+            Console.WriteLine($"UserId загружен: {CurrentUserId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка чтения UserId: {ex.Message}");
+            Console.WriteLine($"Ошибка чтения UserId: {ex.Message}");
             CurrentUserId = string.Empty;
         }
     }
@@ -72,7 +72,7 @@ public static class UserSession
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Ошибка очистки сессии: {ex.Message}");
+            Console.WriteLine($"Ошибка очистки сессии: {ex.Message}");
         }
     }
 

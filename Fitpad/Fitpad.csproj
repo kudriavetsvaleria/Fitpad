@@ -218,6 +218,9 @@
     <Compile Include="View\Components\ManualProductEntryDialog.xaml.cs">
       <DependentUpon>ManualProductEntryDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Components\UserInfoWindow.xaml.cs">
+      <DependentUpon>UserInfoWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\CalculateNutritionPage.xaml.cs">
       <DependentUpon>CalculateNutritionPage.xaml</DependentUpon>
     </Compile>
@@ -226,9 +229,6 @@
     </Compile>
     <Compile Include="View\Pages\DishesPage.xaml.cs">
       <DependentUpon>DishesPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Components\UserInfoForm.xaml.cs">
-      <DependentUpon>UserInfoForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\AccountLoginPage.xaml.cs">
       <DependentUpon>AccountLoginPage.xaml</DependentUpon>
@@ -254,6 +254,10 @@
     <Page Include="View\Components\ManualProductEntryDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Components\UserInfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Pages\CalculateNutritionPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -261,9 +265,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\DishesPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Components\UserInfoForm.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\AccountLoginPage.xaml">

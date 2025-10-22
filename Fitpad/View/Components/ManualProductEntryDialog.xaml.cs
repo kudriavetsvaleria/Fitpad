@@ -16,7 +16,7 @@ namespace Fitpad.View
 
         public ManualProductEntryDialog(string productTitle, double weight)
         {
-            InitializeComponent();  // ✅ Это теперь должно работать
+            InitializeComponent();  // Это теперь должно работать
             ProductTitle = productTitle;
             Weight = weight;
         }

@@ -68,7 +68,7 @@ namespace Fitpad.View.Pages
                     return;
                 }
 
-                Console.WriteLine($"✅ Користувач {user.Name} успішно авторизований.");
+                Console.WriteLine($"Користувач {user.Name} успішно авторизований.");
 
        
                 UserSession.SaveUserIdToFile(user.Id);
@@ -76,8 +76,14 @@ namespace Fitpad.View.Pages
                 bool isUserInfoComplete = await userRepository.IsUserInfoComplete(user.Id);
                 if (!isUserInfoComplete)
                 {
-                    Console.WriteLine("⚠️ Дані користувача не заповнені. Перенаправляємо на форму введення.");
-                    NavigationService.Navigate(new UserInfoForm(user));
+                    Console.WriteLine("Дані користувача не заповнені. Перенаправляємо на форму введення.");
+                    var vm = new ProfileViewModel(user);
+                    var userInfoWindow = new UserInfoWindow(vm)
+                    {
+                        Owner = Application.Current.MainWindow
+                    };
+                    userInfoWindow.ShowDialog();
+
                     return;
                 }
 
@@ -89,8 +95,8 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Помилка авторизації: {ex.Message}");
-                MessageBox.Show($"❌ Помилка авторизації: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"Помилка авторизації: {ex.Message}");
+                MessageBox.Show($"Помилка авторизації: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -113,11 +119,11 @@ namespace Fitpad.View.Pages
                 string json = JsonConvert.SerializeObject(user, Formatting.Indented);
                 File.WriteAllText(filePath, json);
 
-                Console.WriteLine($"✅ Данные пользователя сохранены в {filePath}");
+                Console.WriteLine($"Данные пользователя сохранены в {filePath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка сохранения файла: {ex.Message}");
+                Console.WriteLine($"Ошибка сохранения файла: {ex.Message}");
             }
         }
 

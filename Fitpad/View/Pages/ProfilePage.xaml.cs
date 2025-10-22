@@ -2,7 +2,7 @@
 using LiveCharts.Wpf;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Fitpad.View.Components;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -165,6 +165,14 @@ namespace Fitpad.View.Pages
                 parent = VisualTreeHelper.GetParent(parent);
             return parent as T;
         }
+
+        private void MiniProfile_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var window = new UserInfoWindow(_vm);
+            window.Owner = Window.GetWindow(this);
+            window.ShowDialog();
+        }
+
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {

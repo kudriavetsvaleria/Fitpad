@@ -64,7 +64,7 @@ namespace Fitpad.View.Pages
             }
         }
 
-        // ✅ Обработчик выбора блюда (включает кнопку удаления)
+        // Обработчик выбора блюда (включает кнопку удаления)
         private void DishesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DishesList.SelectedItem is DishModel selectedDish)
@@ -89,7 +89,7 @@ namespace Fitpad.View.Pages
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ Ошибка обновления избранного: {ex.Message}");
+                    Console.WriteLine($"Ошибка обновления избранного: {ex.Message}");
                 }
             }
         }
@@ -119,11 +119,11 @@ namespace Fitpad.View.Pages
                         await _firestoreService.DeleteDishFromFirebase(userId, dish.Id);
                         _viewModel.Dishes.Remove(dish);
                         DishesList.Items.Refresh();
-                        Console.WriteLine($"✅ Блюдо '{dish.Name}' видалено.");
+                        Console.WriteLine($"Блюдо '{dish.Name}' видалено.");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"❌ Помилка видалення: {ex.Message}");
+                        Console.WriteLine($"Помилка видалення: {ex.Message}");
                     }
                 }
             }

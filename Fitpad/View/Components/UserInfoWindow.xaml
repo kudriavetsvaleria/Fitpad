@@ -1,0 +1,87 @@
+﻿<Window x:Class="Fitpad.View.Components.UserInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Профіль користувача"
+        Height="470" Width="340"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="White">
+
+    <Border Background="White" CornerRadius="12" Padding="20">
+        <StackPanel>
+            <TextBlock Text="Інформація користувача"
+                       FontWeight="Bold"
+                       FontSize="18"
+                       Foreground="#6C63FF"
+                       Margin="0,0,0,15"/>
+
+            <!-- Ім’я -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Ім’я:"/>
+                <TextBox Text="{Binding CurrentUser.Name}" Margin="0,2,0,0" IsReadOnly="True"/>
+            </StackPanel>
+
+            <!-- Вік -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Вік:"/>
+                <TextBox Text="{Binding CurrentUserInfo.Age}" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- Зріст -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Зріст (см):"/>
+                <TextBox Text="{Binding CurrentUserInfo.Height}" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- Вага -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Вага (кг):"/>
+                <TextBox Text="{Binding CurrentUserInfo.Weight}" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- Рівень активності -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Рівень активності:"/>
+                <ComboBox x:Name="ActivityCombo"
+                          SelectedValue="{Binding CurrentUserInfo.ActivityLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,2,0,0">
+                    <ComboBoxItem Content="Помірний"/>
+                    <ComboBoxItem Content="Активний"/>
+                    <ComboBoxItem Content="Дуже активний"/>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Мета -->
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Мета:"/>
+                <ComboBox x:Name="PurposeCombo"
+                          SelectedValue="{Binding CurrentUserInfo.Purpose, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,2,0,0">
+                    <ComboBoxItem Content="Схуднути"/>
+                    <ComboBoxItem Content="Підтримувати вагу"/>
+                    <ComboBoxItem Content="Набрати вагу"/>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Кнопки -->
+            <StackPanel Orientation="Vertical" Margin="0,20,0,0">
+                <Button Content="💾 Зберегти зміни"
+                        Background="#6C63FF"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,8"
+                        Padding="6"
+                        BorderThickness="0"
+                        Click="Save_Click"/>
+
+                <Button Content="🚪 Вийти з акаунту"
+                        Background="#E74C3C"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        Padding="6"
+                        BorderThickness="0"
+                        Click="Logout_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

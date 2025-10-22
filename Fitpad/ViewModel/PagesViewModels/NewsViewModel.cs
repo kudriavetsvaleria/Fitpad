@@ -34,7 +34,7 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             var newsList = await GetCachedOrTranslatedNewsAsync();
 
-            // ✅ Заполняем коллекцию без перезаписи ссылки
+            // Заполняем коллекцию без перезаписи ссылки
             News.Clear();
             foreach (var news in newsList)
             {
@@ -50,7 +50,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                 if (cachedNews.Count > 0)
                 {
-                    Console.WriteLine("✅ Новости загружены из кэша.");
+                    Console.WriteLine("Новости загружены из кэша.");
                     return cachedNews;
                 }
 
@@ -72,13 +72,13 @@ namespace Fitpad.ViewModel.PagesViewModels
                     });
                 }
 
-                await CacheNewsAsync(translatedNews); // ✅ Передаем ObservableCollection
+                await CacheNewsAsync(translatedNews); // Передаем ObservableCollection
 
                 return translatedNews;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при загрузке новостей: {ex.Message}");
+                Console.WriteLine($"Ошибка при загрузке новостей: {ex.Message}");
                 return new ObservableCollection<NewsModel>();
             }
         }
@@ -97,7 +97,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 }).ToList()
             });
 
-            Console.WriteLine("✅ Новости закешированы в Firestore");
+            Console.WriteLine("Новости закешированы в Firestore");
         }
 
         private async Task<ObservableCollection<NewsModel>> GetCachedNewsAsync()
@@ -113,20 +113,20 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                     if ((DateTime.UtcNow - lastUpdated).TotalMinutes < CacheLifetimeMinutes)
                     {
-                        Console.WriteLine("✅ Загружаем новости из кэша...");
+                        Console.WriteLine("Загружаем новости из кэша...");
 
                         if (snapshot.ContainsField("News"))
                         {
                             var newsArray = snapshot.GetValue<List<Dictionary<string, object>>>("News");
 
-                            // ✅ Проверяем, что newsArray не null
+                            // Проверяем, что newsArray не null
                             if (newsArray == null || newsArray.Count == 0)
                             {
-                                Console.WriteLine("⚠️ Кэшированные новости пусты или отсутствуют.");
+                                Console.WriteLine("Кэшированные новости пусты или отсутствуют.");
                                 return new ObservableCollection<NewsModel>();
                             }
 
-                            // ✅ Фильтруем null-значения перед обработкой
+                            // Фильтруем null-значения перед обработкой
                             var validNews = newsArray.Where(n => n != null).ToList();
 
                             var cachedNews = new ObservableCollection<NewsModel>(
@@ -144,7 +144,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка при получении кэшированных новостей: {ex.Message}");
+                Console.WriteLine($"Ошибка при получении кэшированных новостей: {ex.Message}");
             }
 
             return new ObservableCollection<NewsModel>();

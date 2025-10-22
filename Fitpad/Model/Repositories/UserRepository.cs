@@ -89,13 +89,13 @@ namespace Fitpad.Model.Repositories
             // 🚀 Проверяем UserSession.CurrentUserId перед запросом
             if (string.IsNullOrEmpty(UserSession.CurrentUserId))
             {
-                Console.WriteLine("⚠️ UserSession.CurrentUserId пустой. Пробуем загрузить из файла...");
+                Console.WriteLine("UserSession.CurrentUserId пустой. Пробуем загрузить из файла...");
                 UserSession.LoadUserIdFromFile();
             }
 
             if (string.IsNullOrEmpty(UserSession.CurrentUserId))
             {
-                Console.WriteLine("❌ ID поточного користувача відсутній. Повертаємо NULL.");
+                Console.WriteLine("ID поточного користувача відсутній. Повертаємо NULL.");
                 return null;
             }
 
@@ -107,18 +107,18 @@ namespace Fitpad.Model.Repositories
 
                 if (snapshot.Exists)
                 {
-                    Console.WriteLine($"✅ Користувач з ID {UserSession.CurrentUserId} успішно завантажений.");
+                    Console.WriteLine($"Користувач з ID {UserSession.CurrentUserId} успішно завантажений.");
                     return snapshot.ConvertTo<UserModel>();
                 }
                 else
                 {
-                    Console.WriteLine($"❌ Користувач з ID {UserSession.CurrentUserId} не знайдений. Повертаємо NULL.");
+                    Console.WriteLine($"Користувач з ID {UserSession.CurrentUserId} не знайдений. Повертаємо NULL.");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Помилка під час завантаження даних користувача: {ex.Message}");
+                Console.WriteLine($"Помилка під час завантаження даних користувача: {ex.Message}");
                 return null;
             }
         }

@@ -103,7 +103,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         ToggleNavigationCommand = new RelayCommand(o => IsNavigationExpanded = !IsNavigationExpanded);
 
-        // ✅ Добавляем команду выхода
+        // Добавляем команду выхода
         LogoutCommand = new RelayCommand(o => Logout());
 
         InitializeCurrentPageAsync();
@@ -141,7 +141,7 @@ public class MainViewModel : INotifyPropertyChanged
         // 5) ЕДИНСТВЕННОЕ место, где переключаемся на логин
         CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
 
-        Console.WriteLine("✅ Выход выполнен. Показаны 'Регистрация', 'Авторизация', 'Профіль'.");
+        Console.WriteLine("Выход выполнен. Показаны 'Регистрация', 'Авторизация', 'Профіль'.");
     }
 
 
@@ -155,7 +155,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (string.IsNullOrEmpty(UserSession.CurrentUserId))
         {
-            Console.WriteLine("❌ Пользователь не авторизован. Показываем ограниченное меню.");
+            Console.WriteLine("Пользователь не авторизован. Показываем ограниченное меню.");
             IsUserAuthenticated = false;
             IsProfileComplete = false;
             CurrentPage = AccountRegistrationPage.GetInstance();
@@ -167,7 +167,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (userInfo != null && userInfo.Weight > 0 && userInfo.Height > 0 && userInfo.Age > 0)
         {
-            Console.WriteLine("✅ Профиль заполнен. Полное меню доступно.");
+            Console.WriteLine("Профиль заполнен. Полное меню доступно.");
             IsUserAuthenticated = true;
             IsProfileComplete = true;
             CurrentPage = NewsPage.GetInstance();
@@ -226,36 +226,18 @@ public class MainViewModel : INotifyPropertyChanged
         var firestoreService = new FirestoreService();
         var userInfo = await firestoreService.GetUserInfoAsync(UserSession.CurrentUserId);
 
-        // Проверяем, есть ли данные пользователя
         if (userInfo == null || string.IsNullOrEmpty(userInfo.Gender) ||
             userInfo.Age == 0 || userInfo.Height == 0 || userInfo.Weight == 0)
         {
-            Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем форму UserInfoForm...");
+            Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем форму UserInfoWindow...");
 
-            // Создаём форму для заполнения данных
-            var userInfoForm = new UserInfoForm();
-            var window = new Window
-            {
-                Title = "Заповніть особисті дані",
-                Content = userInfoForm,
-                Width = 350,
-                Height = 500,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
-            };
+            // ✅ Исправленный вызов
+            var userInfoForm = new UserInfoWindow(_profileViewModel);
+            userInfoForm.Owner = Application.Current.MainWindow;
+            userInfoForm.ShowDialog();
 
-            // Открываем окно в модальном режиме
-            bool? result = window.ShowDialog();
-
-            // Если данные успешно сохранены, открыть калькулятор
-            if (result == true)
-            {
-                Console.WriteLine("✅ Данные успешно сохранены. Открываем калькулятор...");
-                OpenCalculator();
-            }
-            else
-            {
-                Console.WriteLine("❌ Пользователь закрыл форму, калькулятор не открываем.");
-            }
+            // После закрытия окна
+            await UpdateNavigationStateAsync();
         }
         else
         {
@@ -263,6 +245,7 @@ public class MainViewModel : INotifyPropertyChanged
             OpenCalculator();
         }
     }
+
 
 
     private void OpenCalculator()

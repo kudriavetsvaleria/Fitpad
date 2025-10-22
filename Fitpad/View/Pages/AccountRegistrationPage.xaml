@@ -57,7 +57,7 @@
                     <TextBlock Text="Будьте в курсі актуальних подій про здоров'я та харчування." Margin="0,2,0,0"
                        FontSize="13" Foreground="Black" TextWrapping="Wrap" MaxWidth="320"/>
 
-                    <!-- ✅ КНОПКА ЗАКРЫТИЯ -->
+                    <!-- КНОПКА ЗАКРЫТИЯ -->
                     <Button Content="ОК!" Width="130" Height="45" Click="CloseWelcomeOverlay" Margin="0,30,0,0"
                     Background="#007ACC" Foreground="White" FontSize="16" FontWeight="Bold" BorderThickness="0"
                     Cursor="Hand"/>

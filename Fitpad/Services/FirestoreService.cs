@@ -309,7 +309,7 @@ namespace Fitpad.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Помилка під час завантаження страв: {ex.Message}");
+                Console.WriteLine($"Помилка під час завантаження страв: {ex.Message}");
             }
             return dishes;
         }
@@ -386,7 +386,7 @@ namespace Fitpad.Services
             if (snapshot.Count == 0)
                 Console.WriteLine("ℹ️ У пользователя нет блюд в `Users/{userId}/Dishes`.");
             else
-                Console.WriteLine($"✅ Найдено {snapshot.Count} блюд.");
+                Console.WriteLine($"Найдено {snapshot.Count} блюд.");
         }
 
         // ===================== Users / UserInfos =====================

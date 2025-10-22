@@ -393,7 +393,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Помилка при видаленні запису FoodDiary: {ex.Message}");
+                Console.WriteLine($"Помилка при видаленні запису FoodDiary: {ex.Message}");
             }
         }
 
