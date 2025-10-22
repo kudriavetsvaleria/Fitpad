@@ -1,45 +1,29 @@
 <Window x:Class="Fitpad.View.ManualProductEntryDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Добавление продукта" Height="300" Width="250"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        Title="Ручне введення продукту" Height="400" Width="300" WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="20">
+        <TextBlock Text="Назва продукту:" FontWeight="Bold"/>
+        <TextBox x:Name="ProductNameText" IsReadOnly="True" Margin="0,5,0,10"/>
 
-	<Grid Margin="20">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+        <TextBlock Text="Вага (г):" FontWeight="Bold"/>
+        <TextBox x:Name="WeightText" IsReadOnly="True" Margin="0,5,0,10"/>
 
-		<TextBlock Text="Продукт не знайдено." FontWeight="Bold" Foreground="#3E2E8F" Grid.Row="0" Margin="0,0,0,5"/>
-		<TextBlock Text="Введіть дані вручну:" FontWeight="Bold" Grid.Row="1" Margin="0,5,0,10"/>
+        <TextBlock Text="Калорії:"/>
+        <TextBox x:Name="CaloriesInput" Margin="0,5,0,5"/>
 
-		<StackPanel Grid.Row="2">
-			<TextBlock Text="Калорії:"/>
-			<TextBox x:Name="CaloriesInput" Width="200"/>
-		</StackPanel>
+        <TextBlock Text="Білки:"/>
+        <TextBox x:Name="ProteinInput" Margin="0,5,0,5"/>
 
-		<StackPanel Grid.Row="3">
-			<TextBlock Text="Білки (г):"/>
-			<TextBox x:Name="ProteinInput" Width="200"/>
-		</StackPanel>
+        <TextBlock Text="Жири:"/>
+        <TextBox x:Name="FatsInput" Margin="0,5,0,5"/>
 
-		<StackPanel Grid.Row="4">
-			<TextBlock Text="Жири (г):"/>
-			<TextBox x:Name="FatsInput" Width="200"/>
-		</StackPanel>
+        <TextBlock Text="Вуглеводи:"/>
+        <TextBox x:Name="CarbsInput" Margin="0,5,0,10"/>
 
-		<StackPanel Grid.Row="5">
-			<TextBlock Text="Вуглеводи (г):"/>
-			<TextBox x:Name="CarbsInput" Width="200"/>
-		</StackPanel>
-
-		<StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-			<Button Content="OK" Width="90" Background="#4CAF50" Foreground="White" Click="OnOkClick"/>
-			<Button Content="Скасувати" Width="90" Background="#D64545" Foreground="White" Margin="10,0,0,0" Click="OnCancelClick"/>
-		</StackPanel>
-	</Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="Зберегти" Width="100" Margin="5" Background="#6C63FF" Foreground="White" Click="SaveButton_Click"/>
+            <Button Content="Скасувати" Width="100" Margin="5" Background="#ddd" Click="CancelButton_Click"/>
+        </StackPanel>
+    </StackPanel>
 </Window>

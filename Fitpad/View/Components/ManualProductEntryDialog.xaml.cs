@@ -1,46 +1,56 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using Fitpad.Model.Entities;
 
 namespace Fitpad.View
-
 {
     public partial class ManualProductEntryDialog : Window
     {
-        public string ProductTitle { get; }
-        public double Weight { get; }
+        public NutritionModel CreatedProduct { get; private set; }
 
-        public double Calories => double.TryParse(CaloriesInput.Text, out double c) ? c : 0;
-        public double Protein => double.TryParse(ProteinInput.Text, out double p) ? p : 0;
-        public double Fats => double.TryParse(FatsInput.Text, out double f) ? f : 0;
-        public double Carbs => double.TryParse(CarbsInput.Text, out double c) ? c : 0;
+        private readonly string _productName;
+        private readonly double _weight;
 
-        public ManualProductEntryDialog(string productTitle, double weight)
+        public ManualProductEntryDialog(string productName, double weight)
         {
-            InitializeComponent();  // Это теперь должно работать
-            ProductTitle = productTitle;
-            Weight = weight;
+            InitializeComponent();
+            _productName = productName;
+            _weight = weight;
+
+            // эти поля должны быть в XAML с x:Name
+            ProductNameText.Text = _productName;
+            WeightText.Text = $"{_weight}";
         }
 
-        public NutritionModel GetEnteredProduct()
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            return new NutritionModel
+            if (double.TryParse(CaloriesInput.Text, out double cal) &&
+                double.TryParse(ProteinInput.Text, out double prot) &&
+                double.TryParse(FatsInput.Text, out double fat) &&
+                double.TryParse(CarbsInput.Text, out double carb))
             {
-                Title = ProductTitle,
-                Weight = Weight,
-                Calories = Calories,
-                Protein = Protein,
-                Fats = Fats,
-                Carbs = Carbs
-            };
+                CreatedProduct = new NutritionModel
+                {
+                    Title = _productName,
+                    Weight = _weight,
+                    Calories = cal,
+                    Protein = prot,
+                    Fats = fat,
+                    Carbs = carb,
+                    Time = DateTime.Now.ToString("HH:mm")
+                };
+
+                DialogResult = true;
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("Будь ласка, введіть коректні числові значення!",
+                                "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
-        private void OnOkClick(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void OnCancelClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
