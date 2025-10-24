@@ -234,47 +234,37 @@ namespace Fitpad.View.Pages
             }
 
             string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
-			var product = await _viewModel.SearchAndAddProductAsync(translatedName, weight);
+            var product = await _viewModel.SearchAndAddProductAsync(translatedName, weight);
 
-			if (product != null)
-			{
-				AddProductToTable(product);
-				UpdateCalorieDisplay();
-			}
-			else
-			{
-				// Если сервер ничего не вернул — показать ручной ввод
-				MessageBox.Show($"Не знайдено інформації про продукт '{productName}'. Введіть дані вручну.",
-								"Ручне додавання", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (product != null)
+            {
+                AddProductToTable(product);
+                UpdateCalorieDisplay();
+            }
+            else
+            {
+                MessageBox.Show($"Не знайдено інформації про продукт '{productName}'. Введіть дані вручну.",
+                                "Ручне додавання", MessageBoxButton.OK, MessageBoxImage.Information);
 
-				try
-				{
-					var dialog = new Fitpad.View.ManualProductEntryDialog(productName, weight);
+                try
+                {
+                    var dialog = new Fitpad.View.ManualProductEntryDialog(productName, weight);
+                    var ownerWindow = Window.GetWindow(this);
+                    if (ownerWindow != null && ownerWindow.IsVisible) dialog.Owner = ownerWindow;
 
-					// ✅ Безопасная установка владельца
-					var ownerWindow = Window.GetWindow(this);
-					if (ownerWindow != null && ownerWindow.IsVisible)
-						dialog.Owner = ownerWindow;
-
-					bool? result = dialog.ShowDialog();
-
-					if (result == true && dialog.CreatedProduct != null)
-					{
-						AddProductToTable(dialog.CreatedProduct);
-						UpdateCalorieDisplay();
-					}
-				}
-				catch (Exception ex)
-				{
-					MessageBox.Show($"Помилка при відкритті форми: {ex.Message}",
-									"Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-				}
-
-			}
-
-
-			if (product != null) AddProductToTable(product);
-            UpdateCalorieDisplay();
+                    bool? result = dialog.ShowDialog();
+                    if (result == true && dialog.CreatedProduct != null)
+                    {
+                        AddProductToTable(dialog.CreatedProduct);
+                        UpdateCalorieDisplay();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Помилка при відкритті форми: {ex.Message}",
+                                    "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private async void OnManualEntryConfirm(object sender, RoutedEventArgs e)
