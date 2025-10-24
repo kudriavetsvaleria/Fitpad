@@ -23,7 +23,7 @@ namespace Fitpad.View.Pages
         public double Carbs { get; set; }
     }
 
-    public class ProfileViewModel : INotifyPropertyChanged
+    public class DashboardViewModel : INotifyPropertyChanged
     {
         private readonly FirestoreService _fs;
 
@@ -52,7 +52,7 @@ namespace Fitpad.View.Pages
             set { _currentUserInfo = value; OnPropertyChanged(); }
         }
 
-        // -------- KPI / Profile texts (для существующих TextBlock) ----------
+        // -------- KPI / Dashboard texts (для существующих TextBlock) ----------
         public string KpiCaloriesToday { get => _kpiCaloriesToday; private set { _kpiCaloriesToday = value; OnPropertyChanged(); } }
         private string _kpiCaloriesToday = "";
 
@@ -81,11 +81,11 @@ namespace Fitpad.View.Pages
         public string KpiWaterDeltaText { get => _kpiWaterDeltaText; private set { _kpiWaterDeltaText = value; OnPropertyChanged(); } }
         private string _kpiWaterDeltaText = "";
 
-        public string MiniProfile_Name { get => _miniProfile_Name; private set { _miniProfile_Name = value; OnPropertyChanged(); } }
-        private string _miniProfile_Name = "";
+        public string MiniDashboard_Name { get => _miniDashboard_Name; private set { _miniDashboard_Name = value; OnPropertyChanged(); } }
+        private string _miniDashboard_Name = "";
 
-        public string MiniProfile_Level { get => _miniProfile_Level; private set { _miniProfile_Level = value; OnPropertyChanged(); } }
-        private string _miniProfile_Level = "";
+        public string MiniDashboard_Level { get => _miniDashboard_Level; private set { _miniDashboard_Level = value; OnPropertyChanged(); } }
+        private string _miniDashboard_Level = "";
 
         // -------- General stats texts ----------
         public string StatDaysActiveText { get => _statDaysActiveText; private set { _statDaysActiveText = value; OnPropertyChanged(); } }
@@ -111,7 +111,7 @@ namespace Fitpad.View.Pages
         // -------- Table ----------
         public ObservableCollection<ProductRow> FrequentProducts { get; } = new ObservableCollection<ProductRow>();
 
-        public ProfileViewModel(UserModel user = null)
+        public DashboardViewModel(UserModel user = null)
         {
             _fs = new FirestoreService();
             CurrentUser = user;
@@ -122,7 +122,7 @@ namespace Fitpad.View.Pages
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
 
-            // User & profile
+            // User & Dashboard
             await LoadUserAndInfoAsync(userId);
 
             // Charts
@@ -144,12 +144,12 @@ namespace Fitpad.View.Pages
             // (У тебя уже есть SaveUserAsync, но явного GetUser нет. Пропускаем получение UserModel и работаем с UserInfo.)
             CurrentUserInfo = await _fs.GetUserInfoAsync(userId);
 
-            MiniProfile_Name = !string.IsNullOrWhiteSpace(CurrentUser?.Name)
+            MiniDashboard_Name = !string.IsNullOrWhiteSpace(CurrentUser?.Name)
                 ? CurrentUser.Name
                 : (CurrentUserInfo != null ? (CurrentUserInfo.UserId ?? "User") : "User");
 
             // "Рівень" у схемі явно не зберігається, тому показуємо пусто/0
-            MiniProfile_Level = ""; // якщо з’явиться поле Level — легко підставимо сюди
+            MiniDashboard_Level = ""; // якщо з’явиться поле Level — легко підставимо сюди
         }
 
         // ---------- Weekly calories chart ----------
@@ -422,16 +422,16 @@ namespace Fitpad.View.Pages
             }
 
             // 🔸 Вода сьогодні
-            KpiWaterToday = sToday.Water > 0 ? $"{Math.Round(sToday.Water, 1)} л" : "";
+            KpiWaterToday = sToday.Water > 0 ? $"{Math.Round(sToday.Water, 1)} мл" : "";
             if (sYesterday != null && sYesterday.Water > 0 && sToday.Water > 0)
             {
                 var deltaL = sToday.Water - sYesterday.Water;
                 var sign = deltaL >= 0 ? "+" : "";
-                KpiWaterDeltaText = $"{sign}{Math.Round(deltaL, 1)} л сьогодні";
+                KpiWaterDeltaText = $"{sign}{Math.Round(deltaL, 1)} мл сьогодні";
             }
             else if (sToday.Water > 0)
             {
-                KpiWaterDeltaText = "+0.0 л сьогодні";
+                KpiWaterDeltaText = "+0.0 мл сьогодні";
             }
         }
 

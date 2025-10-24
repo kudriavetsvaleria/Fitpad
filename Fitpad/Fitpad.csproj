@@ -208,7 +208,7 @@
     <Compile Include="Model\Repositories\UserRepository.cs" />
     <Compile Include="ViewModel\PagesViewModels\NewsViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\NutritionViewModel.cs" />
-    <Compile Include="ViewModel\PagesViewModels\ProfileViewModel.cs" />
+    <Compile Include="ViewModel\PagesViewModels\DashboardViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoFormViewModel.cs" />
     <Compile Include="ViewModel\PagesViewModels\UserInfoViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
@@ -242,8 +242,8 @@
     <Compile Include="View\Pages\NutritionPage.xaml.cs">
       <DependentUpon>NutritionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Pages\ProfilePage.xaml.cs">
-      <DependentUpon>ProfilePage.xaml</DependentUpon>
+    <Compile Include="View\Pages\DashboardPage.xaml.cs">
+      <DependentUpon>DashboardPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Pages\RecipePage.xaml.cs">
       <DependentUpon>RecipePage.xaml</DependentUpon>
@@ -298,8 +298,9 @@
     <Page Include="View\Pages\NutritionPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Pages\ProfilePage.xaml">
+    <Page Include="View\Pages\DashboardPage.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

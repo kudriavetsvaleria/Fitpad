@@ -1,4 +1,4 @@
-<Page x:Class="Fitpad.View.Pages.ProfilePage"
+<Page x:Class="Fitpad.View.Pages.DashboardPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
@@ -74,15 +74,15 @@
         Margin="10,0,0,0"
         DockPanel.Dock="Right"
         Cursor="Hand"
-        MouseLeftButtonUp="MiniProfile_Click">
+        MouseLeftButtonUp="MiniDashboard_Click">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8" Opacity="0.25"/>
                 </Border.Effect>
                 <DockPanel>
                     <Ellipse Width="35" Height="35" Fill="#6C63FF" DockPanel.Dock="Left" Margin="0,0,8,0"/>
                     <StackPanel>
-                        <TextBlock Text="{Binding MiniProfile_Name}" FontWeight="Bold" FontSize="14"/>
-                        <TextBlock Text="{Binding MiniProfile_Level}" FontSize="11" Foreground="#6C63FF"/>
+                        <TextBlock Text="{Binding MiniDashboard_Name}" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="{Binding MiniDashboard_Level}" FontSize="11" Foreground="#6C63FF"/>
                     </StackPanel>
                 </DockPanel>
             </Border>

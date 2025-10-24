@@ -17,24 +17,24 @@ namespace Fitpad.View.Pages
         private static readonly object _lock = new object();
         private readonly UserRepository _userRepository;
 
-        public AccountLoginPage(ProfileViewModel profileViewModel)
+        public AccountLoginPage(DashboardViewModel DashboardViewModel)
         {
             InitializeComponent();
             _userRepository = new UserRepository();
-            DataContext = profileViewModel;
+            DataContext = DashboardViewModel;
 
         }
 
 
       
 
-    public static AccountLoginPage GetInstance(ProfileViewModel profileViewModel)
+    public static AccountLoginPage GetInstance(DashboardViewModel DashboardViewModel)
     {
         lock (_lock)
         {
             if (_instance == null)
             {
-                _instance = new AccountLoginPage(profileViewModel);
+                _instance = new AccountLoginPage(DashboardViewModel);
             }
             return _instance;
         }
@@ -77,7 +77,7 @@ namespace Fitpad.View.Pages
                 if (!isUserInfoComplete)
                 {
                     Console.WriteLine("Дані користувача не заповнені. Перенаправляємо на форму введення.");
-                    var vm = new ProfileViewModel(user);
+                    var vm = new DashboardViewModel(user);
                     var userInfoWindow = new UserInfoWindow(vm)
                     {
                         Owner = Application.Current.MainWindow
@@ -90,7 +90,7 @@ namespace Fitpad.View.Pages
 
                 await MainViewModel.Instance.UpdateNavigationStateAsync();
 
-                NavigationService.Navigate(ProfilePage.GetInstance(new ProfileViewModel(user)));
+                NavigationService.Navigate(DashboardPage.GetInstance(new DashboardViewModel(user)));
 
             }
             catch (Exception ex)

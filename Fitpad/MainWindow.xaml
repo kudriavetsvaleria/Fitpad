@@ -147,8 +147,8 @@
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
-                            Command="{Binding ShowProfileCommand}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Dashboard}"
+                            Command="{Binding ShowDashboardCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
                     </StackPanel>
@@ -166,7 +166,7 @@
                             Style="{StaticResource NavButtonStyle}"/>
 
                         <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
-                            Command="{Binding ShowProfileCommand}"
+                            Command="{Binding ShowDashboardCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
                     </StackPanel>

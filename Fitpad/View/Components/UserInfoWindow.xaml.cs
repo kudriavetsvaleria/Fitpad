@@ -7,10 +7,10 @@ namespace Fitpad.View.Components
 {
     public partial class UserInfoWindow : Window
     {
-        private readonly ProfileViewModel _vm;
+        private readonly DashboardViewModel _vm;
         private readonly FirestoreService _fs = new FirestoreService();
 
-        public UserInfoWindow(ProfileViewModel vm)
+        public UserInfoWindow(DashboardViewModel vm)
         {
             InitializeComponent();
             _vm = vm;

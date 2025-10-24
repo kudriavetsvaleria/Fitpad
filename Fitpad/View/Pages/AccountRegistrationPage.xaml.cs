@@ -78,7 +78,7 @@ namespace Fitpad.View.Pages
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
+                    NavigationService.Navigate(new AccountLoginPage(new DashboardViewModel()));
 
                 });
 
@@ -135,7 +135,7 @@ namespace Fitpad.View.Pages
         private void SuccessOkButton_Click(object sender, RoutedEventArgs e)
         {
             SuccessMessageOverlay.Visibility = Visibility.Collapsed;
-            NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
+            NavigationService.Navigate(new AccountLoginPage(new DashboardViewModel()));
         }   
 
         private void ShowStep(int step)
@@ -147,7 +147,7 @@ namespace Fitpad.View.Pages
 
         private void NavigateToLoginPage_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new AccountLoginPage(new ProfileViewModel()));
+            NavigationService.Navigate(new AccountLoginPage(new DashboardViewModel()));
         }
     }
 }

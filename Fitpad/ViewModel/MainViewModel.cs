@@ -17,10 +17,10 @@ using Fitpad.View.Components;
 
 public class MainViewModel : INotifyPropertyChanged
 {
-    public bool IsFullNavigationVisible => IsUserAuthenticated && IsProfileComplete;
+    public bool IsFullNavigationVisible => IsUserAuthenticated && IsDashboardComplete;
     public bool IsLimitedNavigationVisible => !IsFullNavigationVisible;
     private readonly Dictionary<Type, Page> _pageCache = new Dictionary<Type, Page>();
-    private readonly ProfileViewModel _profileViewModel;
+    private readonly DashboardViewModel _DashboardViewModel;
     private readonly UserRepository _userRepository;
     public static MainViewModel Instance { get; private set; }
 
@@ -48,13 +48,13 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _isProfileComplete;
-    public bool IsProfileComplete
+    private bool _isDashboardComplete;
+    public bool IsDashboardComplete
     {
-        get => _isProfileComplete;
+        get => _isDashboardComplete;
         set
         {
-            _isProfileComplete = value;
+            _isDashboardComplete = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsFullNavigationVisible));
         }
@@ -63,7 +63,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowNewsCommand { get; }
     public ICommand ShowNutritionCommand { get; }
     public ICommand ShowWorkoutsCommand { get; }
-    public ICommand ShowProfileCommand { get; }
+    public ICommand ShowDashboardCommand { get; }
     public ICommand ShowAccountLoginCommand { get; }
     public ICommand ShowAccountRegistrationCommand { get; }
     public ICommand ToggleNavigationCommand { get; }
@@ -89,11 +89,11 @@ public class MainViewModel : INotifyPropertyChanged
     {
         Instance = this;
         _userRepository = new UserRepository();
-        _profileViewModel = new ProfileViewModel();
+        _DashboardViewModel = new DashboardViewModel();
 
         ShowNewsCommand = new RelayCommand(async o => await NavigateToAsync<NewsPage>());
         ShowNutritionCommand = new RelayCommand(async o => await NavigateToAsync<NutritionPage>());
-        ShowProfileCommand = new RelayCommand(async o => await NavigateToProfilePageAsync());
+        ShowDashboardCommand = new RelayCommand(async o => await NavigateToDashboardPageAsync());
         ShowAccountLoginCommand = new RelayCommand(async o => await NavigateToAsync<AccountLoginPage>());
         ShowAccountRegistrationCommand = new RelayCommand(async o => await NavigateToAsync<AccountRegistrationPage>());
 
@@ -126,20 +126,20 @@ public class MainViewModel : INotifyPropertyChanged
 
         // 2) сбрасываем состояние
         IsUserAuthenticated = false;
-        IsProfileComplete = false;
+        IsDashboardComplete = false;
 
         // 3) (опционально) очисти кэш страниц, чтобы не держать старые статики
         _pageCache.Clear();
-        ProfilePage.ResetInstance();
+        DashboardPage.ResetInstance();
 
         // 4) обновляем UI
         OnPropertyChanged(nameof(IsUserAuthenticated));
-        OnPropertyChanged(nameof(IsProfileComplete));
+        OnPropertyChanged(nameof(IsDashboardComplete));
         OnPropertyChanged(nameof(IsFullNavigationVisible));
         OnPropertyChanged(nameof(IsLimitedNavigationVisible));
 
         // 5) ЕДИНСТВЕННОЕ место, где переключаемся на логин
-        CurrentPage = AccountLoginPage.GetInstance(new ProfileViewModel());
+        CurrentPage = AccountLoginPage.GetInstance(new DashboardViewModel());
 
         Console.WriteLine("Выход выполнен. Показаны 'Регистрация', 'Авторизация', 'Профіль'.");
     }
@@ -157,7 +157,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             Console.WriteLine("Пользователь не авторизован. Показываем ограниченное меню.");
             IsUserAuthenticated = false;
-            IsProfileComplete = false;
+            IsDashboardComplete = false;
             CurrentPage = AccountRegistrationPage.GetInstance();
             return;
         }
@@ -169,15 +169,15 @@ public class MainViewModel : INotifyPropertyChanged
         {
             Console.WriteLine("Профиль заполнен. Полное меню доступно.");
             IsUserAuthenticated = true;
-            IsProfileComplete = true;
+            IsDashboardComplete = true;
             CurrentPage = NewsPage.GetInstance();
         }
         else
         {
             Console.WriteLine("⚠ Пользователь авторизован, но профиль не заполнен. Ограниченное меню.");
             IsUserAuthenticated = true;
-            IsProfileComplete = false;
-            CurrentPage = ProfilePage.GetInstance(new ProfileViewModel(new UserModel { Id = UserSession.CurrentUserId }));
+            IsDashboardComplete = false;
+            CurrentPage = DashboardPage.GetInstance(new DashboardViewModel(new UserModel { Id = UserSession.CurrentUserId }));
         }
 
         var fs = new FirestoreService();
@@ -193,16 +193,16 @@ public class MainViewModel : INotifyPropertyChanged
         if (userInfo != null && userInfo.Weight > 0 && userInfo.Height > 0 && userInfo.Age > 0)
         {
             IsUserAuthenticated = true;
-            IsProfileComplete = true;
+            IsDashboardComplete = true;
         }
         else
         {
             IsUserAuthenticated = true;
-            IsProfileComplete = false;
+            IsDashboardComplete = false;
         }
 
         OnPropertyChanged(nameof(IsUserAuthenticated));
-        OnPropertyChanged(nameof(IsProfileComplete));
+        OnPropertyChanged(nameof(IsDashboardComplete));
         OnPropertyChanged(nameof(IsFullNavigationVisible));
         OnPropertyChanged(nameof(IsLimitedNavigationVisible));
     }
@@ -232,7 +232,7 @@ public class MainViewModel : INotifyPropertyChanged
             Console.WriteLine("❌ Данные пользователя отсутствуют. Открываем форму UserInfoWindow...");
 
             // ✅ Исправленный вызов
-            var userInfoForm = new UserInfoWindow(_profileViewModel);
+            var userInfoForm = new UserInfoWindow(_DashboardViewModel);
             userInfoForm.Owner = Application.Current.MainWindow;
             userInfoForm.ShowDialog();
 
@@ -254,13 +254,13 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
-    public async Task NavigateToProfilePageAsync()
+    public async Task NavigateToDashboardPageAsync()
     {
         var storedUser = await _userRepository.GetCurrentUserAsync();
         if (storedUser != null)
         {
-            var profileViewModel = new ProfileViewModel(storedUser);
-            CurrentPage = ProfilePage.GetInstance(profileViewModel);
+            var DashboardViewModel = new DashboardViewModel(storedUser);
+            CurrentPage = DashboardPage.GetInstance(DashboardViewModel);
         }
     }
 
@@ -270,15 +270,15 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (!_pageCache.TryGetValue(type, out var page))
         {
-            if (type == typeof(ProfilePage))
+            if (type == typeof(DashboardPage))
             {
                 var currentUser = await _userRepository.GetCurrentUserAsync();
-                var profileViewModel = new ProfileViewModel(currentUser);
-                page = ProfilePage.GetInstance(profileViewModel);
+                var DashboardViewModel = new DashboardViewModel(currentUser);
+                page = DashboardPage.GetInstance(DashboardViewModel);
             }
             else if (type == typeof(AccountLoginPage))
             {
-                page = AccountLoginPage.GetInstance(new ProfileViewModel());
+                page = AccountLoginPage.GetInstance(new DashboardViewModel());
             }
             else
             {

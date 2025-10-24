@@ -47,16 +47,16 @@ extend google.protobuf.MethodOptions {
 //
 //       // This value specifies routing for replication.
 //       // It can be in the following formats:
-//       // - `profiles/<profile_id>`
-//       // - a legacy `profile_id` that can be any string
-//       string app_profile_id = 2;
+//       // - `Dashboards/<Dashboard_id>`
+//       // - a legacy `Dashboard_id` that can be any string
+//       string app_Dashboard_id = 2;
 //     }
 //
 // Example message:
 //
 //     {
 //       table_name: projects/proj_foo/instances/instance_bar/table/table_baz,
-//       app_profile_id: profiles/prof_qux
+//       app_Dashboard_id: Dashboards/prof_qux
 //     }
 //
 // The routing header consists of one or multiple key-value pairs. Every key
@@ -72,15 +72,15 @@ extend google.protobuf.MethodOptions {
 // annotation:
 //
 //     option (google.api.routing) = {
-//       // Take the `app_profile_id`.
+//       // Take the `app_Dashboard_id`.
 //       routing_parameters {
-//         field: "app_profile_id"
+//         field: "app_Dashboard_id"
 //       }
 //     };
 //
 // result:
 //
-//     x-goog-request-params: app_profile_id=profiles/prof_qux
+//     x-goog-request-params: app_Dashboard_id=Dashboards/prof_qux
 //
 // Example 2
 //
@@ -90,16 +90,16 @@ extend google.protobuf.MethodOptions {
 // annotation:
 //
 //     option (google.api.routing) = {
-//       // Take the `app_profile_id`, but name it `routing_id` in the header.
+//       // Take the `app_Dashboard_id`, but name it `routing_id` in the header.
 //       routing_parameters {
-//         field: "app_profile_id"
+//         field: "app_Dashboard_id"
 //         path_template: "{routing_id=**}"
 //       }
 //     };
 //
 // result:
 //
-//     x-goog-request-params: routing_id=profiles/prof_qux
+//     x-goog-request-params: routing_id=Dashboards/prof_qux
 //
 // Example 3
 //
@@ -296,14 +296,14 @@ extend google.protobuf.MethodOptions {
 //
 //     option (google.api.routing) = {
 //       // The routing needs both `project_id` and `routing_id`
-//       // (from the `app_profile_id` field) for routing.
+//       // (from the `app_Dashboard_id` field) for routing.
 //
 //       routing_parameters {
 //         field: "table_name"
 //         path_template: "{project_id=projects/*}/**"
 //       }
 //       routing_parameters {
-//         field: "app_profile_id"
+//         field: "app_Dashboard_id"
 //         path_template: "{routing_id=**}"
 //       }
 //     };
@@ -311,7 +311,7 @@ extend google.protobuf.MethodOptions {
 // result:
 //
 //     x-goog-request-params:
-//     project_id=projects/proj_foo&routing_id=profiles/prof_qux
+//     project_id=projects/proj_foo&routing_id=Dashboards/prof_qux
 //
 // Example 8
 //
@@ -323,8 +323,8 @@ extend google.protobuf.MethodOptions {
 //
 //     option (google.api.routing) = {
 //       // The `routing_id` can be a project id or a region id depending on
-//       // the table name format, but only if the `app_profile_id` is not set.
-//       // If `app_profile_id` is set it should be used instead.
+//       // the table name format, but only if the `app_Dashboard_id` is not set.
+//       // If `app_Dashboard_id` is set it should be used instead.
 //
 //       routing_parameters {
 //         field: "table_name"
@@ -335,14 +335,14 @@ extend google.protobuf.MethodOptions {
 //          path_template: "{routing_id=regions/*}/**"
 //       }
 //       routing_parameters {
-//         field: "app_profile_id"
+//         field: "app_Dashboard_id"
 //         path_template: "{routing_id=**}"
 //       }
 //     };
 //
 // result:
 //
-//     x-goog-request-params: routing_id=profiles/prof_qux
+//     x-goog-request-params: routing_id=Dashboards/prof_qux
 //
 // Example 9
 //
@@ -355,11 +355,11 @@ extend google.protobuf.MethodOptions {
 //       //
 //       // table_location can be either an instance id or a region+zone id.
 //       //
-//       // For `routing_id`, take the value of `app_profile_id`
-//       // - If it's in the format `profiles/<profile_id>`, send
-//       // just the `<profile_id>` part.
+//       // For `routing_id`, take the value of `app_Dashboard_id`
+//       // - If it's in the format `Dashboards/<Dashboard_id>`, send
+//       // just the `<Dashboard_id>` part.
 //       // - If it's any other literal, send it as is.
-//       // If the `app_profile_id` is empty, and the `table_name` starts with
+//       // If the `app_Dashboard_id` is empty, and the `table_name` starts with
 //       // the project_id, send that instead.
 //
 //       routing_parameters {
@@ -375,12 +375,12 @@ extend google.protobuf.MethodOptions {
 //         path_template: "{routing_id=projects/*}/**"
 //       }
 //       routing_parameters {
-//         field: "app_profile_id"
+//         field: "app_Dashboard_id"
 //         path_template: "{routing_id=**}"
 //       }
 //       routing_parameters {
-//         field: "app_profile_id"
-//         path_template: "profiles/{routing_id=*}"
+//         field: "app_Dashboard_id"
+//         path_template: "Dashboards/{routing_id=*}"
 //       }
 //     };
 //

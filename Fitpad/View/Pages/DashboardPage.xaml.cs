@@ -10,18 +10,18 @@ using Fitpad.Model.Entities;
 
 namespace Fitpad.View.Pages
 {
-    public partial class ProfilePage : Page
+    public partial class DashboardPage : Page
     {
-        private static ProfilePage _instance;
+        private static DashboardPage _instance;
         private static readonly object _lock = new object();
 
         // Универсальная версия — можно передавать UserModel или ViewModel
-        public static ProfilePage GetInstance(object context = null)
+        public static DashboardPage GetInstance(object context = null)
         {
             lock (_lock)
             {
                 if (_instance == null)
-                    _instance = new ProfilePage(context);
+                    _instance = new DashboardPage(context);
                 return _instance;
             }
         }
@@ -31,18 +31,18 @@ namespace Fitpad.View.Pages
             lock (_lock) { _instance = null; }
         }
 
-        private readonly ProfileViewModel _vm;
+        private readonly DashboardViewModel _vm;
 
-        public ProfilePage(object context = null)
+        public DashboardPage(object context = null)
         {
             InitializeComponent();
 
-            if (context is ProfileViewModel vm)
+            if (context is DashboardViewModel vm)
                 _vm = vm;
             else if (context is UserModel user)
-                _vm = new ProfileViewModel(user);
+                _vm = new DashboardViewModel(user);
             else
-                _vm = new ProfileViewModel(null);
+                _vm = new DashboardViewModel(null);
 
             DataContext = _vm;
         }
@@ -60,7 +60,7 @@ namespace Fitpad.View.Pages
             MacroChart.Series = _vm.MacroChartSeries;
 
             ApplyKpiTexts();
-            ApplyMiniProfileTexts();
+            ApplyMiniDashboardTexts();
             ApplyGeneralStatsTexts();
         }
 
@@ -101,7 +101,7 @@ namespace Fitpad.View.Pages
             SetCardTexts(cards[3], null, _vm.KpiWaterToday, _vm.KpiWaterDeltaText);
         }
 
-        private void ApplyMiniProfileTexts()
+        private void ApplyMiniDashboardTexts()
         {
             var rootDock = FindVisualChildren<DockPanel>(this).FirstOrDefault();
             if (rootDock == null) return;
@@ -113,8 +113,8 @@ namespace Fitpad.View.Pages
             if (stack == null) return;
 
             var tbs = stack.Children.OfType<TextBlock>().ToList();
-            if (tbs.Count >= 1) tbs[0].Text = _vm.MiniProfile_Name ?? "";
-            if (tbs.Count >= 2) tbs[1].Text = _vm.MiniProfile_Level ?? "";
+            if (tbs.Count >= 1) tbs[0].Text = _vm.MiniDashboard_Name ?? "";
+            if (tbs.Count >= 2) tbs[1].Text = _vm.MiniDashboard_Level ?? "";
         }
 
         private void ApplyGeneralStatsTexts()
@@ -166,7 +166,7 @@ namespace Fitpad.View.Pages
             return parent as T;
         }
 
-        private void MiniProfile_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void MiniDashboard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var window = new UserInfoWindow(_vm);
             window.Owner = Window.GetWindow(this);
