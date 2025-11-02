@@ -211,34 +211,89 @@ namespace Fitpad.View.Pages
                 WeightBox.Foreground = Brushes.Black;
             }
         }
+        private static string NormalizeTitleUk(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return s;
+            s = s.Trim();
+            // Первая буква — заглавная, остальное как есть
+            return char.ToUpper(s[0]) + (s.Length > 1 ? s.Substring(1) : "");
+        }
+
+        private static bool HasLatin(string s) =>
+    !string.IsNullOrEmpty(s) && s.Any(c => c <= 127 && char.IsLetter(c));
+
+        private async Task MigrateTodayTitlesToUkrAsync()
+        {
+            var fs = new FirestoreService();
+            var today = DateTime.Now;
+            var items = await fs.GetFoodDiaryForDateAsync(UserSession.CurrentUserId, today);
+
+            foreach (var item in items)
+            {
+                if (HasLatin(item.Title))
+                {
+                    try
+                    {
+                        var uk = await _translatorService.TranslateTextAsync(item.Title, "uk");
+                        if (!string.IsNullOrWhiteSpace(uk) && uk != item.Title)
+                        {
+                            item.Title = NormalizeTitleUk(uk);
+                            // реализуй у себя обновление названия в дневнике за сегодня:
+                            await fs.UpdateFoodDiaryEntryTitleAsync(UserSession.CurrentUserId, today, item, item.Title, false);
+
+                        }
+                    }
+                    catch { /* игнорим единичные провалы */ }
+                }
+            }
+        }
+
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (_translatorService == null)
             {
-                MessageBox.Show("Помилка: сервіс перекладу недоступний!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Помилка: сервіс перекладу недоступний!", "Помилка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             string productName = SearchBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(productName) || productName == "Назва продукту...")
             {
-                MessageBox.Show("Введіть назву продукту!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введіть назву продукту!", "Помилка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!double.TryParse(WeightBox.Text.Trim(), out double weight) || weight <= 0)
             {
-                MessageBox.Show("Будь ласка, введіть коректну вагу!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, введіть коректну вагу!", "Помилка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
+            // 1) переводим укр → англ для запроса к API
             string translatedName = await _translatorService.TranslateTextAsync(productName, "en");
+
+            // 2) ищем продукт по API
             var product = await _viewModel.SearchAndAddProductAsync(translatedName, weight);
 
             if (product != null)
             {
-                AddProductToTable(product);
+                // 3) переводим название продукта из API обратно на укр (для отображения и БД)
+                try
+                {
+                    var ukTitle = await _translatorService.TranslateTextAsync(product.Title ?? productName, "uk");
+                    if (string.IsNullOrWhiteSpace(ukTitle)) ukTitle = productName;
+                    product.Title = NormalizeTitleUk(ukTitle);
+                }
+                catch
+                {
+                    product.Title = NormalizeTitleUk(productName);
+                }
+
+                AddProductToTable(product);   // ← в БД/таблицу уйдёт украинское название
                 UpdateCalorieDisplay();
             }
             else
@@ -266,6 +321,7 @@ namespace Fitpad.View.Pages
                 }
             }
         }
+
 
         private async void OnManualEntryConfirm(object sender, RoutedEventArgs e)
         {

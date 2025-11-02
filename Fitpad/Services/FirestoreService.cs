@@ -35,6 +35,59 @@ namespace Fitpad.Services
 
         public FirestoreDb GetFirestoreDb() => _firestoreDb;
 
+        /// <summary>
+        /// Обновляет поле Title у записи дневника питания за указанную дату.
+        /// Совпадение ищется по Date (+Time, если задан), а также по Weight и Calories.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="dateLocal">Локальная дата (сегодня) — будет приведена к "yyyy-MM-dd"</param>
+        /// <param name="item">Запись (NutritionModel), из которой берём Time/Weight/Calories</param>
+        /// <param name="newTitle">Новое название; если null — возьмём item.Title</param>
+        /// <param name="updateAllMatches">true — обновить все найденные совпадения; false — только первое</param>
+        public async Task<int> UpdateFoodDiaryEntryTitleAsync(
+            string userId,
+            DateTime dateLocal,
+            NutritionModel item,
+            string newTitle = null,
+            bool updateAllMatches = false)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || item == null)
+                return 0;
+
+            var db = GetFirestoreDb();
+            var diaryRef = db.Collection("Users").Document(userId).Collection("FoodDiary");
+
+            string dateStr = dateLocal.ToString("yyyy-MM-dd");
+
+            // Строим запрос БЕЗ фильтра по старому Title (он как раз может быть на EN)
+            Query query = diaryRef
+                .WhereEqualTo("Date", dateStr)
+                .WhereEqualTo("Weight", item.Weight)
+                .WhereEqualTo("Calories", item.Calories);
+
+            if (!string.IsNullOrWhiteSpace(item.Time))
+                query = query.WhereEqualTo("Time", item.Time);
+
+            var snap = await query.GetSnapshotAsync();
+            if (snap.Count == 0) return 0;
+
+            string titleToSet = string.IsNullOrWhiteSpace(newTitle) ? item.Title : newTitle;
+
+            int updated = 0;
+            foreach (var doc in snap.Documents)
+            {
+                await doc.Reference.UpdateAsync(new Dictionary<string, object>
+                {
+                    ["Title"] = titleToSet
+                });
+                updated++;
+
+                if (!updateAllMatches) break; // по умолчанию — только первое совпадение
+            }
+
+            return updated;
+        }
+
         public async Task BackfillDaySummariesFromRegistrationAsync(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
