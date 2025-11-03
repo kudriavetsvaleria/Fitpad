@@ -11,20 +11,16 @@ namespace Fitpad.View.Pages
         public NewsPage()
         {
             InitializeComponent();
-
-            // Привязываем событие прокрутки мыши к ScrollViewer
             this.PreviewMouseWheel += NewsPage_PreviewMouseWheel;
         }
 
         private void NewsPage_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (e.Handled)
-                return;
+            if (e.Handled) return;
 
             var scrollViewer = FindVisualChild<ScrollViewer>(this);
             if (scrollViewer != null)
             {
-                // Прокрутка вверх/вниз
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
                 e.Handled = true;
             }
@@ -33,28 +29,26 @@ namespace Fitpad.View.Pages
         public static NewsPage GetInstance()
         {
             if (_instance == null)
-            {
                 _instance = new NewsPage();
-            }
             return _instance;
         }
 
-        // Поиск ScrollViewer в дереве элементов
+        // якщо картинка не завантажилась — ховаємо елемент, щоб не було “порожнього квадрата”
+        private void NewsImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            if (sender is Image img)
+                img.Visibility = Visibility.Collapsed;
+        }
+
         private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T t)
-                {
-                    return t;
-                }
+                if (child is T t) return t;
 
                 var childOfChild = FindVisualChild<T>(child);
-                if (childOfChild != null)
-                {
-                    return childOfChild;
-                }
+                if (childOfChild != null) return childOfChild;
             }
             return null;
         }

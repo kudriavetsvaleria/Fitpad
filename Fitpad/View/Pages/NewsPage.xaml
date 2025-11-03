@@ -10,8 +10,7 @@
     </Page.DataContext>
 
     <Grid>
-
-        <ScrollViewer VerticalScrollBarVisibility="Auto" 
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Margin="10,40,10,10">
             <ListView ItemsSource="{Binding News}" Background="Transparent" HorizontalAlignment="Center">
@@ -20,17 +19,35 @@
                         <Grid HorizontalAlignment="Center">
                             <Border BorderThickness="0" CornerRadius="12" Margin="8" Padding="12" Background="#F9F9F9" Width="600">
                                 <StackPanel Orientation="Vertical">
+
                                     <Image Source="{Binding UrlToImage}"
                                            Height="320"
                                            Width="580"
                                            Stretch="UniformToFill"
-                                           Margin="0 0 0 10"/>
+                                           Margin="0 0 0 10"
+                                           ImageFailed="NewsImage_ImageFailed">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding UrlToImage}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding UrlToImage}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+
                                     <TextBlock Text="{Binding Title}"
                                                FontSize="18"
                                                FontWeight="Bold"
                                                Foreground="Black"
                                                Margin="5,10,5,5"
                                                TextWrapping="Wrap"/>
+
                                     <TextBlock Text="{Binding Description}"
                                                FontSize="14"
                                                Foreground="#555555"

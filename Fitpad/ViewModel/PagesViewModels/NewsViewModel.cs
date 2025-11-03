@@ -17,8 +17,8 @@ namespace Fitpad.ViewModel.PagesViewModels
         private readonly FirestoreDb _firestoreDb;
         public ObservableCollection<NewsModel> News { get; set; }
 
-        private const string CacheCollection = "NewsCache"; // Коллекция в Firestore
-        private const int CacheLifetimeMinutes = 120; // Время жизни кэша (2 часа)
+        private const string CacheCollection = "NewsCache";
+        private const int CacheLifetimeMinutes = 120;
 
         public NewsViewModel()
         {
@@ -34,12 +34,24 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             var newsList = await GetCachedOrTranslatedNewsAsync();
 
-            // Заполняем коллекцию без перезаписи ссылки
             News.Clear();
             foreach (var news in newsList)
-            {
                 News.Add(news);
-            }
+        }
+
+        // ---- допоміжний валідатор url зображення
+        private static bool HasValidImage(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return false;
+            if (url.Equals("null", StringComparison.OrdinalIgnoreCase)) return false;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+            if (!(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)) return false;
+
+            // іноді приходить about:blank або data: - ігноруємо
+            if (uri.Scheme.Equals("about", StringComparison.OrdinalIgnoreCase)) return false;
+            if (uri.Scheme.Equals("data", StringComparison.OrdinalIgnoreCase)) return false;
+
+            return true;
         }
 
         private async Task<ObservableCollection<NewsModel>> GetCachedOrTranslatedNewsAsync()
@@ -47,7 +59,6 @@ namespace Fitpad.ViewModel.PagesViewModels
             try
             {
                 var cachedNews = await GetCachedNewsAsync();
-
                 if (cachedNews.Count > 0)
                 {
                     Console.WriteLine("Новости загружены из кэша.");
@@ -61,6 +72,9 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                 foreach (var news in newsList)
                 {
+                    // пропускаємо без картинки
+                    if (!HasValidImage(news.UrlToImage)) continue;
+
                     var translatedTitle = await _translatorService.TranslateTextAsync(news.Title, "uk");
                     var translatedDescription = await _translatorService.TranslateTextAsync(news.Description, "uk");
 
@@ -72,8 +86,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                     });
                 }
 
-                await CacheNewsAsync(translatedNews); // Передаем ObservableCollection
-
+                await CacheNewsAsync(translatedNews);
                 return translatedNews;
             }
             catch (Exception ex)
@@ -118,26 +131,22 @@ namespace Fitpad.ViewModel.PagesViewModels
                         if (snapshot.ContainsField("News"))
                         {
                             var newsArray = snapshot.GetValue<List<Dictionary<string, object>>>("News");
-
-                            // Проверяем, что newsArray не null
                             if (newsArray == null || newsArray.Count == 0)
-                            {
-                                Console.WriteLine("Кэшированные новости пусты или отсутствуют.");
                                 return new ObservableCollection<NewsModel>();
-                            }
 
-                            // Фильтруем null-значения перед обработкой
-                            var validNews = newsArray.Where(n => n != null).ToList();
-
-                            var cachedNews = new ObservableCollection<NewsModel>(
-                                validNews.Select(n => new NewsModel
+                            var validNews = newsArray
+                                .Where(n => n != null)
+                                .Select(n => new NewsModel
                                 {
                                     Title = n.ContainsKey("Title") && n["Title"] != null ? n["Title"].ToString() : "Без заголовка",
                                     Description = n.ContainsKey("Description") && n["Description"] != null ? n["Description"].ToString() : "Опис відсутній",
                                     UrlToImage = n.ContainsKey("UrlToImage") && n["UrlToImage"] != null ? n["UrlToImage"].ToString() : string.Empty
-                                }).ToList());
+                                })
+                                // тут ще раз відфільтруємо без зображення
+                                .Where(m => HasValidImage(m.UrlToImage))
+                                .ToList();
 
-                            return cachedNews;
+                            return new ObservableCollection<NewsModel>(validNews);
                         }
                     }
                 }
@@ -149,7 +158,5 @@ namespace Fitpad.ViewModel.PagesViewModels
 
             return new ObservableCollection<NewsModel>();
         }
-
-
     }
 }
