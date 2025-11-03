@@ -3,9 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:conv="clr-namespace:Fitpad.Converters"
       mc:Ignorable="d"
       Background="White"
       Title="Nutrition Page">
+
+    <Page.Resources>
+        <conv:TruncateConverter x:Key="Truncate"/>
+    </Page.Resources>
+
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -111,14 +117,22 @@
                                            Stretch="UniformToFill" Margin="0,0,0,5" 
                                            ClipToBounds="True"/>
 
-                                    <TextBlock Text="{Binding Title}" 
-                                               FontSize="14" 
-                                               FontWeight="Bold"
-                                               Foreground="Black"
-                                               TextAlignment="Center"
-                                               Margin="5,0"
-                                               TextTrimming="CharacterEllipsis"
-                                               TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Text="{Binding Title, Converter={StaticResource Truncate}, ConverterParameter=3x180x14x18xBold}"
+                                        FontSize="14" FontWeight="Bold"
+                                        Foreground="Black"
+                                        TextAlignment="Center"
+                                        Margin="5,-2,5,2"        
+                                        Width="147"               
+                                        TextWrapping="Wrap"
+                                        TextTrimming="None"        
+                                        LineStackingStrategy="BlockLineHeight"
+                                        LineHeight="18"
+                                        MaxHeight="54"             
+                                        ClipToBounds="True"
+                                        ToolTip="{Binding Title}"/>
+
+
 
                                     <StackPanel Orientation="Vertical" Margin="5">
                                         <TextBlock Text="{Binding Calories, StringFormat=Калорії: {0}}" FontSize="12" TextAlignment="Center"/>

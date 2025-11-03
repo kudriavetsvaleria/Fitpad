@@ -184,6 +184,7 @@
     <Compile Include="Converters\ButtonVisibilityConverter.cs" />
     <Compile Include="Converters\FavoriteIconConverter.cs" />
     <Compile Include="Converters\HalfConverter.cs" />
+    <Compile Include="Converters\TruncateConverter.cs" />
     <Compile Include="Model\Entities\DaySummaryModel.cs" />
     <Compile Include="Model\Entities\DishModel.cs" />
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />

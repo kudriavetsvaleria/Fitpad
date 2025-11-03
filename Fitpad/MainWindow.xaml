@@ -137,7 +137,7 @@
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Конструктор блюд}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Конструктор страв}"
                             Command="{Binding ShowConstructorPageCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
@@ -147,7 +147,7 @@
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Dashboard}"
+                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Інформаційна панель}"
                             Command="{Binding ShowDashboardCommand}"
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
