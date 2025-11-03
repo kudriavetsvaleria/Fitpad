@@ -85,7 +85,9 @@ namespace Fitpad.Services
                     var url = $"{_baseUrl}?key={_apiKey}&q={Uri.EscapeDataString(text)}&target={targetLanguage}";
                     var response = await client.GetStringAsync(url);
                     var json = JObject.Parse(response);
-                    var translatedText = json["data"]["translations"][0]["translatedText"].ToString();
+                    var translatedRaw = json["data"]["translations"][0]["translatedText"].ToString();
+                    var translatedText = System.Net.WebUtility.HtmlDecode(translatedRaw);
+
 
                     // Сохраняем обновленный счетчик в Firebase
                     await SaveTotalCharactersAsync();

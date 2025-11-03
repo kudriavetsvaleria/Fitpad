@@ -65,22 +65,22 @@ namespace Fitpad.View.Pages
 
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox tb &&
-               (tb.Text == "Введите название продукта..." || tb.Text == "Назва продукту..."))
+            if (SearchTextBox.Text == "Введіть запит")
             {
-                tb.Text = "";
-                tb.Foreground = Brushes.Black;
+                SearchTextBox.Text = "";
+                SearchTextBox.Foreground = Brushes.Black;
             }
         }
 
         private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox tb && string.IsNullOrWhiteSpace(tb.Text))
+            if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
             {
-                tb.Text = "Назва продукту...";
-                tb.Foreground = Brushes.Gray;
+                SearchTextBox.Text = "Введіть запит";
+                SearchTextBox.Foreground = Brushes.Gray;
             }
         }
+
 
         private ScrollViewer FindScrollViewer(DependencyObject obj)
         {
@@ -110,6 +110,8 @@ namespace Fitpad.View.Pages
             int offset = random.Next(0, 1000); // Новый диапазон для обновления
             await _viewModel.LoadNutritionAsync(false, offset);
         }
+
+
 
         private void Card_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {

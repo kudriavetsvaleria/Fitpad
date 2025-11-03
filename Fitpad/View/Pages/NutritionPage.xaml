@@ -22,15 +22,16 @@
         <!-- Поисковая строка -->
         <StackPanel Orientation="Horizontal" Margin="10,0,0,20">
             <Border CornerRadius="20" BorderBrush="#3E2E8F" BorderThickness="1">
-                <TextBox x:Name="SearchTextBox" Width="300" Height="45" 
-                 FontSize="16"
-                 Background="Transparent" 
-                    Foreground="Black"
-                 Padding="10"
-                 BorderThickness="0" 
-                    Text="Введіть запит"
-                 GotFocus="SearchTextBox_GotFocus"
-                 LostFocus="SearchTextBox_LostFocus"/>
+                <TextBox x:Name="SearchTextBox"
+         Width="300" Height="45"
+         FontSize="16"
+         Background="Transparent"
+         Foreground="Black"
+         Padding="10"
+         BorderThickness="0"
+         GotFocus="SearchTextBox_GotFocus"
+         LostFocus="SearchTextBox_LostFocus"/>
+
             </Border>
 
             <Button Content="🔍" Width="50" Height="50"
