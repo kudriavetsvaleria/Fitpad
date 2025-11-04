@@ -1,6 +1,14 @@
-﻿using System;
+﻿using Fitpad.Model.Entities;
+using Fitpad.Model.Repositories;
+using Fitpad.Services;
+using Google.Cloud.Firestore;
+using LiveCharts;
+using LiveCharts.Wpf;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,13 +19,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Fitpad.Model.Entities;
-using Fitpad.Services;
-using LiveCharts;
-using LiveCharts.Wpf;
-using Newtonsoft.Json;
-using Fitpad.Model.Repositories;
-using Google.Cloud.Firestore;
 
 namespace Fitpad.View.Pages
 {
@@ -132,6 +133,7 @@ namespace Fitpad.View.Pages
                 return;
             }
 
+            // 1) Перекладаємо введений текст на англ. для пошуку в USDA
             var translatedName = await _translatorService.TranslateTextAsync(productName, "en");
             if (string.IsNullOrWhiteSpace(translatedName))
             {
@@ -146,7 +148,11 @@ namespace Fitpad.View.Pages
                 return;
             }
 
-            // значения на 100 г
+            // 2) Перекладаємо назву USDA на укр і нормалізуємо регістр (щоб не було КАПСА)
+            var nameUk = await _translatorService.TranslateTextAsync(product.Description, "uk");
+            _pendingProductName = NormalizeUa(string.IsNullOrWhiteSpace(nameUk) ? product.Description : nameUk);
+
+            // 3) Значення на 100 г
             _pendingCalories = GetNutrientValue(product, "Energy")
                                ?? GetNutrientValue(product, "Energy (Atwater General Factors)")
                                ?? 0;
@@ -155,11 +161,19 @@ namespace Fitpad.View.Pages
             _pendingCarbs = FindNutrientContains(product, "carbohydrate");
             _pendingSugar = FindNutrientContains(product, "sugar");
 
-            _pendingProductName = product.Description;
-
             OverlayCanvas.Visibility = Visibility.Visible;
             QuantityInputPanel.Visibility = Visibility.Visible;
         }
+
+
+        private static string NormalizeUa(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return s;
+            var ci = new CultureInfo("uk-UA");
+            return ci.TextInfo.ToTitleCase(s.ToLower(ci)).Trim(); // «Помідори черрі»
+        }
+
+
 
         // безопасный поиск нутриента по точному имени
         private static double? GetNutrientValue(USDAFood product, string exactName)

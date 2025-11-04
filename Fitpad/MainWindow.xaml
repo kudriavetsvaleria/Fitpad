@@ -66,6 +66,7 @@
             </Setter>
         </Style>
 
+        
         <!-- Стиль кнопки сворачивания -->
         <Style x:Key="ToggleButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="50"/>
@@ -165,10 +166,7 @@
                             Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
                             Style="{StaticResource NavButtonStyle}"/>
 
-                        <Button Content="{Binding IsNavigationExpanded, Converter={StaticResource ButtonContentConverter}, ConverterParameter=Профіль}"
-                            Command="{Binding ShowDashboardCommand}"
-                            Width="{Binding IsNavigationExpanded, Converter={StaticResource ButtonWidthConverter}}"
-                            Style="{StaticResource NavButtonStyle}"/>
+                        
                     </StackPanel>
 
                 </StackPanel>
