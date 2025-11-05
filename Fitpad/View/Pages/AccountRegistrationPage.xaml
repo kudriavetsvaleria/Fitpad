@@ -87,28 +87,43 @@
                        TextAlignment="Center" Margin="0,20,0,10"/>
 
             <!-- Шаги регистрации -->
+            <!-- Шаг 1 -->
             <StackPanel x:Name="Step1" Visibility="Visible">
                 <Label Content="Логін:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <TextBox x:Name="UsernameTextBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
+                <TextBox x:Name="UsernameTextBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,4"
+           TextChanged="UsernameTextBox_TextChanged"/>
+                <!-- Червоний текст помилки -->
+                <TextBlock x:Name="UsernameErrorText" Foreground="Red" FontSize="12" Margin="0,0,0,10" />
                 <Button Content="Далі" Width="300" Height="35" Click="NextStep_Click" Tag="2"
-                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
+          Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
 
+            <!-- Шаг 2 -->
             <StackPanel x:Name="Step2" Visibility="Collapsed">
                 <Label Content="Пошта:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <TextBox x:Name="EmailTextBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
+                <TextBox x:Name="EmailTextBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,4"
+           TextChanged="EmailTextBox_TextChanged"/>
+                <TextBlock x:Name="EmailErrorText" Foreground="Red" FontSize="12" Margin="0,0,0,10" />
                 <Button Content="Далі" Width="300" Height="35" Click="NextStep_Click" Tag="3"
-                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
+          Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
 
+            <!-- Шаг 3 -->
             <StackPanel x:Name="Step3" Visibility="Collapsed">
                 <Label Content="Пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <PasswordBox x:Name="PasswordBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
+                <PasswordBox x:Name="PasswordBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,4"
+               PasswordChanged="PasswordBox_PasswordChanged"/>
+                <TextBlock x:Name="PasswordErrorText" Foreground="Red" FontSize="12" Margin="0,0,0,6" />
+
                 <Label Content="Підтвердіть пароль:" FontSize="14" Foreground="Black" Margin="0,0,0,3"/>
-                <PasswordBox x:Name="ConfirmPasswordBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,10"/>
+                <PasswordBox x:Name="ConfirmPasswordBox" Width="300" Height="35" FontSize="14" Margin="0,0,0,4"
+               PasswordChanged="ConfirmPasswordBox_PasswordChanged"/>
+                <TextBlock x:Name="ConfirmPasswordErrorText" Foreground="Red" FontSize="12" Margin="0,0,0,10" />
+
                 <Button Content="Завершити" Width="300" Height="35" Click="RegisterButton_Click"
-                        Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
+          Background="#007ACC" Foreground="White" FontSize="14" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
+
 
             <TextBlock Text="Є акаунт?" HorizontalAlignment="Center" Margin="0,10,0,0"/>
             <Button Content="Авторизація" Width="300" Height="35" Click="NavigateToLoginPage_Click"

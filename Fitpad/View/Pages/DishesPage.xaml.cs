@@ -9,6 +9,9 @@ using Fitpad.Services;
 using Fitpad.View.Components;
 using Fitpad.ViewModel.PagesViewModels;
 using Google.Cloud.Firestore;
+using System.Text.RegularExpressions;
+using System.Windows.Input; 
+
 
 namespace Fitpad.View.Pages
 {
@@ -16,6 +19,9 @@ namespace Fitpad.View.Pages
     {
         private readonly DishViewModel _viewModel;
         private readonly FirestoreService _firestoreService;
+        // Дозволені: літери (укр+лат), цифри, пробіл, -, ', .
+        private static readonly Regex QueryRx =
+            new Regex(@"^[A-Za-zА-Яа-яІіЇїЄє0-9 \-'.]{2,40}$", RegexOptions.Compiled);
 
         public DishesPage()
         {
@@ -29,23 +35,46 @@ namespace Fitpad.View.Pages
 
        
         }
-
-        // 🔍 Обработчик поиска
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
-            string query = SearchBox.Text.ToLower();
-            if (string.IsNullOrWhiteSpace(query))
+            var raw = (SearchBox.Text ?? "").Trim();
+
+            // ігноруємо плейсхолдер
+            if (string.IsNullOrEmpty(raw) || raw == "Пошук страв...")
             {
+                MessageBox.Show("Введіть назву страви для пошуку.", "Пошук", MessageBoxButton.OK, MessageBoxImage.Information);
                 DishesList.ItemsSource = _viewModel.Dishes;
+                return;
             }
-            else
+
+            // перевірка на спецсимволи/довжину
+            if (!QueryRx.IsMatch(raw))
             {
-                var filteredDishes = _viewModel.Dishes
-                    .Where(d => d.Name.ToLower().Contains(query))
-                    .ToList();
-                DishesList.ItemsSource = filteredDishes;
+                MessageBox.Show("Некоректний запит. Дозволені: літери, цифри, пробіли, «-», «'», «.» (2–40 символів).",
+                                "Некоректний ввід", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
+
+            var q = raw.ToLower();
+            var filtered = _viewModel.Dishes
+                .Where(d => (d?.Name ?? string.Empty).ToLower().Contains(q))
+                .ToList();
+
+            if (filtered.Count == 0)
+            {
+                MessageBox.Show($"Страв не знайдено за запитом «{raw}».", "Пошук", MessageBoxButton.OK, MessageBoxImage.Information);
+                DishesList.ItemsSource = _viewModel.Dishes; // або залишити порожнім списком, якщо так потрібно
+                return;
+            }
+
+            DishesList.ItemsSource = filtered;
         }
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                SearchButton_Click(sender, e);
+        }
+
 
         // 🔄 Имитация Placeholder (так как WPF не поддерживает PlaceholderText)
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
