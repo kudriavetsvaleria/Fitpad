@@ -73,19 +73,27 @@ namespace Fitpad.View.Pages
        
                 UserSession.SaveUserIdToFile(user.Id);
 
-                bool isUserInfoComplete = await userRepository.IsUserInfoComplete(user.Id);
-                if (!isUserInfoComplete)
-                {
-                    Console.WriteLine("Дані користувача не заповнені. Перенаправляємо на форму введення.");
-                    var vm = new DashboardViewModel(user);
-                    var userInfoWindow = new UserInfoWindow(vm)
-                    {
-                        Owner = Application.Current.MainWindow
-                    };
-                    userInfoWindow.ShowDialog();
+                UserInfoModel userInfo = await userRepository.GetUserInfoAsync(user.Id);
 
-                    return;
+                bool isInfoMissing =
+                    userInfo == null ||
+                    userInfo.Age <= 0 ||
+                    userInfo.Height <= 0 ||
+                    userInfo.Weight <= 0 ||
+                    string.IsNullOrWhiteSpace(userInfo.ActivityLevel) ||
+                    string.IsNullOrWhiteSpace(userInfo.Purpose);
+
+                if (isInfoMissing)
+                {
+                    Console.WriteLine("Дані користувача не заповнені. Відкриваємо форму UserInfo.");
+                    var vm = new DashboardViewModel(user)
+                    {
+                        CurrentUserInfo = userInfo // може бути null — UserInfoWindow сам створить
+                    };
+                    var userInfoWindow = new UserInfoWindow(vm);
+                    userInfoWindow.ShowDialog();
                 }
+
 
 
                 await MainViewModel.Instance.UpdateNavigationStateAsync();

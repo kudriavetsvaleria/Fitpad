@@ -21,7 +21,20 @@ namespace Fitpad.View.Components
 
         private void UserInfoWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_vm?.CurrentUserInfo == null) return;
+            if (_vm?.CurrentUserInfo == null)
+            {
+                // 🔧 Створюємо нову модель, якщо немає
+                _vm.CurrentUserInfo = new UserInfoModel
+                {
+                    UserId = _vm.CurrentUser?.Id,
+                    Age = 0,
+                    Height = 0,
+                    Weight = 0,
+                    ActivityLevel = "",
+                    Purpose = ""
+                };
+            }
+
 
             // Предзаполняем ComboBox
             SetComboBoxValue(ActivityCombo, _vm.CurrentUserInfo.ActivityLevel);
