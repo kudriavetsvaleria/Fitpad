@@ -1,7 +1,8 @@
-﻿using System.Windows;
-using Fitpad.View.Pages;
+﻿using Fitpad.Model.Entities;
 using Fitpad.Services;
-using Fitpad.Model.Entities;
+using Fitpad.View.Pages;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace Fitpad.View.Components
 {
@@ -68,9 +69,13 @@ namespace Fitpad.View.Components
             _vm.CurrentUserInfo.Purpose = (PurposeCombo.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString() ?? "";
 
             await _fs.SaveUserInfoAsync(_vm.CurrentUserInfo);
-            MessageBox.Show("✅ Дані успішно оновлено!", "Fitpad", MessageBoxButton.OK, MessageBoxImage.Information);
+            await _fs.RecomputeTodayAsync(_vm.CurrentUserInfo.UserId);
+
+            // 🟣 Повне оновлення сторінки калькулятора після зміни профілю
+            CalculateNutritionPage.ResetInstance();
             Close();
         }
+
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {

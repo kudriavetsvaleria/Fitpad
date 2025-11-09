@@ -26,6 +26,50 @@ namespace Fitpad.View.Pages
 
         public CalculateNutritionPage() : this(new UserInfoModel()) { }
 
+        public static CalculateNutritionPage GetInstance(UserInfoModel userInfo)
+        {
+            lock (_lock)
+            {
+                if (_instance == null || _currentUserId != userInfo.UserId)
+                {
+                    _currentUserId = userInfo.UserId;
+                    _instance = new CalculateNutritionPage(userInfo);
+                }
+                return _instance;
+            }
+        }
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            string userId = UserSession.CurrentUserId;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            var userInfo = await GetUserInfoAsync(userId);
+            if (userInfo == null) return;
+
+            // Калорії
+            _viewModel.CalorieNorm = _viewModel.CalculateDailyCalorieIntake(userInfo);
+
+            // 🟢 Новий розрахунок БЖВ
+            var macros = _viewModel.CalculateDailyMacros(userInfo);
+            _viewModel.ProteinNorm = macros.Protein;
+            _viewModel.FatsNorm = macros.Fats;
+            _viewModel.CarbsNorm = macros.Carbs;
+
+            UpdateCalorieDisplay();
+        }
+
+
+
+        public static void ResetInstance()
+        {
+            lock (_lock)
+            {
+                _instance = null;
+                _currentUserId = string.Empty;
+            }
+        }
+
         private CalculateNutritionPage(UserInfoModel userInfo)
         {
             InitializeComponent();
@@ -61,27 +105,13 @@ namespace Fitpad.View.Pages
                 if (CalorieIntakeText == null) return;
 
                 double newCalories = customCalories ?? _viewModel.CurrentCalories;
-                double dailyCalorieNorm = _viewModel.CalorieNorm;
 
-                CalorieIntakeText.Text = $"Ккал: {newCalories:0.0} / {dailyCalorieNorm:0.0}";
-                ProteinDisplayText.Text = $"Білки: {_viewModel.CurrentProtein:0.0} / 80 г";
-                FatsDisplayText.Text = $"Жири: {_viewModel.CurrentFats:0.0} / 45 г";
-                CarbsDisplayText.Text = $"Вуглеводи: {_viewModel.CurrentCarbs:0.0} / 220 г";
+                CalorieIntakeText.Text = $"Ккал: {newCalories:0.0} / {_viewModel.CalorieNorm:0.0}";
+                ProteinDisplayText.Text = $"Білки: {_viewModel.CurrentProtein:0.0} / {_viewModel.ProteinNorm:0.0} г";
+                FatsDisplayText.Text = $"Жири: {_viewModel.CurrentFats:0.0} / {_viewModel.FatsNorm:0.0} г";
+                CarbsDisplayText.Text = $"Вуглеводи: {_viewModel.CurrentCarbs:0.0} / {_viewModel.CarbsNorm:0.0} г";
                 WaterDisplayText.Text = $"Вода: {_viewModel.CurrentWater:0.0} / 2000 мл";
             });
-        }
-
-        public static CalculateNutritionPage GetInstance(UserInfoModel userInfo)
-        {
-            lock (_lock)
-            {
-                if (_instance == null || _currentUserId != userInfo.UserId)
-                {
-                    _currentUserId = userInfo.UserId;
-                    _instance = new CalculateNutritionPage(userInfo);
-                }
-                return _instance;
-            }
         }
 
         private static bool _isProcessing = false;
@@ -413,7 +443,7 @@ namespace Fitpad.View.Pages
             ForceUpdateCharts();
         }
 
-        private void ForceUpdateCharts()
+        public void ForceUpdateCharts()
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -491,6 +521,25 @@ namespace Fitpad.View.Pages
                 tb.Foreground = Brushes.Black;
             }
         }
+
+        public async void RefreshUserData(UserInfoModel updatedUser)
+        {
+            if (updatedUser == null) return;
+
+            // Оновлюємо ViewModel з новими параметрами користувача
+            _viewModel.UserInfo = updatedUser;
+
+            // Перераховуємо норму калорій
+            _viewModel.CalorieNorm = _viewModel.CalculateDailyCalorieIntake(updatedUser);
+
+            // Оновлюємо текстову частину сторінки
+            UpdateCalorieDisplay();
+
+            // Перезапускаємо графік
+            await Task.Delay(200);
+            _viewModel.UpdatePieChart();
+        }
+
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {

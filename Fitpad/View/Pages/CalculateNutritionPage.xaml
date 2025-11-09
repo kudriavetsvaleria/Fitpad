@@ -1,4 +1,5 @@
 <Page x:Class="Fitpad.View.Pages.CalculateNutritionPage"
+      Loaded="Page_Loaded"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="clr-namespace:Fitpad.Converters"

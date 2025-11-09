@@ -24,7 +24,8 @@ namespace Fitpad.ViewModel.PagesViewModels
 
         public Action<string, double> ShowManualEntryOverlayAction { get; set; }
 
-        public UserInfoModel UserInfo { get; }
+        public UserInfoModel UserInfo { get; set; }
+
         public ObservableCollection<NutritionModel> SavedProducts { get; }
 
         public SeriesCollection CalorieChartSeries { get; private set; }
@@ -36,6 +37,19 @@ namespace Fitpad.ViewModel.PagesViewModels
             get => _canSave;
             set { _canSave = value; OnPropertyChanged(); }
         }
+        public (double Protein, double Fats, double Carbs) CalculateDailyMacros(UserInfoModel user)
+        {
+            // Базируемся на калорийности
+            double calories = CalculateDailyCalorieIntake(user);
+
+            // Классическая пропорция БЖВ — 30/25/45 %
+            double protein = (calories * 0.3) / 4;  // 1 г білка = 4 ккал
+            double fats = (calories * 0.25) / 9;    // 1 г жиру = 9 ккал
+            double carbs = (calories * 0.45) / 4;   // 1 г вуглеводів = 4 ккал
+
+            return (protein, fats, carbs);
+        }
+
 
         public CalculateNutritionViewModel(UserInfoModel userInfo)
         {
@@ -216,34 +230,44 @@ namespace Fitpad.ViewModel.PagesViewModels
             };
         }
 
-        public double CalculateDailyCalorieIntake(UserInfoModel userInfo)
+        public double CalculateDailyCalorieIntake(UserInfoModel user)
         {
-            if (userInfo == null || userInfo.Weight <= 0 || userInfo.Height <= 0 || userInfo.Age <= 0) return 0;
+            if (user == null || user.Weight <= 0 || user.Height <= 0 || user.Age <= 0)
+                return 0;
 
-            double bmr = (userInfo.Gender == "Чоловік" || userInfo.Gender == "Мужчина")
-                ? 88.36 + (13.4 * userInfo.Weight) + (4.8 * userInfo.Height) - (5.7 * userInfo.Age)
-                : 447.6 + (9.2 * userInfo.Weight) + (3.1 * userInfo.Height) - (4.3 * userInfo.Age);
+            // Базовый обмен веществ (формула Mifflin–St Jeor)
+            double bmr = 10 * user.Weight + 6.25 * user.Height - 5 * user.Age + 5; // для чоловіків
+                                                                                   // если есть поле пола — добавь -161 для жінок
 
-            double activity = userInfo.ActivityLevel switch
+            // Активність
+            double activityFactor = 1.2; // мінімум
+            switch (user.ActivityLevel?.ToLower())
             {
-                "Низька" => 1.2,
-                "Середня" => 1.375,
-                "Висока" => 1.55,
-                "Дуже висока" => 1.725,
-                "Екстремальна" => 1.9,
-                _ => 1.2
-            };
+                case "низька": activityFactor = 1.2; break;
+                case "помірна": activityFactor = 1.55; break;
+                case "висока": activityFactor = 1.725; break;
+            }
 
-            double tdee = bmr * activity;
-            tdee = userInfo.Purpose switch
+            double calories = bmr * activityFactor;
+
+            // 🟢 Корекція за метою
+            switch (user.Purpose?.ToLower())
             {
-                "Схуднення" => tdee * 0.85,
-                "Набір маси" => tdee * 1.15,
-                _ => tdee
-            };
+                case "схуднути":
+                    calories *= 0.85; // мінус ~15%
+                    break;
+                case "набрати масу":
+                    calories *= 1.15; // плюс ~15%
+                    break;
+                case "зберегти вагу":
+                default:
+                    // без змін
+                    break;
+            }
 
-            return Math.Round(tdee);
+            return Math.Round(calories, 0);
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = null)

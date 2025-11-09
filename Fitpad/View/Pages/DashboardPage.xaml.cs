@@ -28,8 +28,9 @@ namespace Fitpad.View.Pages
 
         public static void ResetInstance()
         {
-            lock (_lock) { _instance = null; }
+            _instance = null;
         }
+
 
         private readonly DashboardViewModel _vm;
 
