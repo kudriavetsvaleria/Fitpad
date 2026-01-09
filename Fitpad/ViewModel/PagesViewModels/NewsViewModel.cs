@@ -7,11 +7,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog;
 
 namespace Fitpad.ViewModel.PagesViewModels
 {
     public class NewsViewModel : BaseViewModel
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly NewsRepository _newsRepository;
         private readonly TranslatorService _translatorService;
         private readonly FirestoreDb _firestoreDb;
@@ -27,7 +29,22 @@ namespace Fitpad.ViewModel.PagesViewModels
             _firestoreDb = FirestoreDbProvider.Instance.GetDb();
             News = new ObservableCollection<NewsModel>();
 
-            _ = LoadNewsAsync();
+            // Исправлен fire-and-forget паттерн
+            LoadDataAsync().ConfigureAwait(false);
+        }
+
+        // Обёртка для безопасной асинхронной загрузки
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                await LoadNewsAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Ошибка при загрузке новостей");
+                // Можно показать пользователю уведомление
+            }
         }
 
         private async Task LoadNewsAsync()
@@ -61,11 +78,11 @@ namespace Fitpad.ViewModel.PagesViewModels
                 var cachedNews = await GetCachedNewsAsync();
                 if (cachedNews.Count > 0)
                 {
-                    Console.WriteLine("Новости загружены из кэша.");
+                    Logger.Info("Новости загружены из кэша.");
                     return cachedNews;
                 }
 
-                Console.WriteLine("⚡ Новости не найдены в кэше. Загружаем и переводим...");
+                Logger.Info("⚡ Новости не найдены в кэше. Загружаем и переводим...");
                 var newsList = await _newsRepository.GetNewsAsync();
 
                 var translatedNews = new ObservableCollection<NewsModel>();
@@ -91,7 +108,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при загрузке новостей: {ex.Message}");
+                Logger.Error(ex, "Ошибка при загрузке новостей");
                 return new ObservableCollection<NewsModel>();
             }
         }
@@ -110,7 +127,7 @@ namespace Fitpad.ViewModel.PagesViewModels
                 }).ToList()
             });
 
-            Console.WriteLine("Новости закешированы в Firestore");
+            Logger.Info("Новости закешированы в Firestore");
         }
 
         private async Task<ObservableCollection<NewsModel>> GetCachedNewsAsync()
@@ -126,7 +143,7 @@ namespace Fitpad.ViewModel.PagesViewModels
 
                     if ((DateTime.UtcNow - lastUpdated).TotalMinutes < CacheLifetimeMinutes)
                     {
-                        Console.WriteLine("Загружаем новости из кэша...");
+                        Logger.Debug("Загружаем новости из кэша...");
 
                         if (snapshot.ContainsField("News"))
                         {
@@ -153,7 +170,7 @@ namespace Fitpad.ViewModel.PagesViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при получении кэшированных новостей: {ex.Message}");
+                Logger.Error(ex, "Ошибка при получении кэшированных новостей");
             }
 
             return new ObservableCollection<NewsModel>();

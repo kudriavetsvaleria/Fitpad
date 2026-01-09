@@ -3,11 +3,13 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NLog;
 
 namespace Fitpad.Services
 {
     public class TranslatorService
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly string _apiKey = System.Configuration.ConfigurationManager.AppSettings["TranslatorApiKey"];
         private readonly string _baseUrl = "https://translation.googleapis.com/language/translate/v2";
         private long _totalTranslatedCharacters = 0; // Счетчик символов
@@ -31,12 +33,12 @@ namespace Fitpad.Services
                 if (snapshot.Exists && snapshot.ContainsField("Total"))
                 {
                     _totalTranslatedCharacters = snapshot.GetValue<long>("Total");
-                    Console.WriteLine($"Загружено общее количество переведенных символов: {_totalTranslatedCharacters}");
+                    Logger.Info($"Загружено общее количество переведенных символов: {_totalTranslatedCharacters}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при загрузке данных из Firebase: {ex.Message}");
+                Logger.Error(ex, "Ошибка при загрузке данных из Firebase");
             }
         }
 
@@ -49,7 +51,7 @@ namespace Fitpad.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка перевода: {ex.Message}");
+                Logger.Error(ex, "Ошибка перевода");
                 return query; // Возвращаем оригинальный запрос в случае ошибки
             }
         }
@@ -61,11 +63,11 @@ namespace Fitpad.Services
             {
                 var docRef = _firestoreDb.Collection(CollectionName).Document(DocumentId);
                 await docRef.SetAsync(new { Total = _totalTranslatedCharacters });
-                Console.WriteLine($"Общее количество переведенных символов сохранено: {_totalTranslatedCharacters}");
+                Logger.Debug($"Общее количество переведенных символов сохранено: {_totalTranslatedCharacters}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при сохранении данных в Firebase: {ex.Message}");
+                Logger.Error(ex, "Ошибка при сохранении данных в Firebase");
             }
         }
 
@@ -76,7 +78,7 @@ namespace Fitpad.Services
 
             // Увеличиваем счетчик символов
             _totalTranslatedCharacters += text.Length;
-            Console.WriteLine($"Общее количество переведенных символов: {_totalTranslatedCharacters}");
+            Logger.Debug($"Общее количество переведенных символов: {_totalTranslatedCharacters}");
 
             using (var client = new HttpClient())
             {
@@ -95,7 +97,7 @@ namespace Fitpad.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Ошибка при переводе: {ex.Message}");
+                    Logger.Error(ex, "Ошибка при переводе");
                     return text; // Возвращаем исходный текст в случае ошибки
                 }
             }

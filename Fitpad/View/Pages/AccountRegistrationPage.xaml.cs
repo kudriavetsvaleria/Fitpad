@@ -212,14 +212,13 @@ namespace Fitpad.View.Pages
 
         // ========================= ХЕЛПЕРИ =========================
 
+        /// <summary>
+        /// Хеширует пароль используя BCrypt с work factor 12
+        /// (более безопасно чем SHA256, защищает от rainbow tables и брутфорса)
+        /// </summary>
         private string HashPassword(string password)
         {
-            using (var sha256 = SHA256.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(password);
-                var hash = sha256.ComputeHash(bytes);
-                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-            }
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
         }
 
         // Перевірка унікальності логіна в Firestore

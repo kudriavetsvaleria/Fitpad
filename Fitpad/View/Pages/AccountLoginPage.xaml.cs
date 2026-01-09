@@ -8,11 +8,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.IO;
 using Fitpad.View.Components;
+using NLog;
 
 namespace Fitpad.View.Pages
 {
     public partial class AccountLoginPage : Page
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static AccountLoginPage _instance;
         private static readonly object _lock = new object();
         private readonly UserRepository _userRepository;
@@ -68,7 +70,7 @@ namespace Fitpad.View.Pages
                     return;
                 }
 
-                Console.WriteLine($"Користувач {user.Name} успішно авторизований.");
+                Logger.Info($"Користувач {user.Name} успішно авторизований.");
 
        
                 UserSession.SaveUserIdToFile(user.Id);
@@ -85,7 +87,7 @@ namespace Fitpad.View.Pages
 
                 if (isInfoMissing)
                 {
-                    Console.WriteLine("Дані користувача не заповнені. Відкриваємо форму UserInfo.");
+                    Logger.Info("Дані користувача не заповнені. Відкриваємо форму UserInfo.");
                     var vm = new DashboardViewModel(user)
                     {
                         CurrentUserInfo = userInfo // може бути null — UserInfoWindow сам створить
@@ -103,7 +105,7 @@ namespace Fitpad.View.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Помилка авторизації: {ex.Message}");
+                Logger.Error(ex, "Помилка авторизації");
                 MessageBox.Show($"Помилка авторизації: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -127,24 +129,35 @@ namespace Fitpad.View.Pages
                 string json = JsonConvert.SerializeObject(user, Formatting.Indented);
                 File.WriteAllText(filePath, json);
 
-                Console.WriteLine($"Данные пользователя сохранены в {filePath}");
+                Logger.Debug($"Данные пользователя сохранены в {filePath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка сохранения файла: {ex.Message}");
+                Logger.Error(ex, "Ошибка сохранения файла");
             }
         }
 
 
 
+        /// <summary>
+        /// Проверяет пароль используя BCrypt.Verify
+        /// (безопасное сравнение хешей, защищено от timing attacks)
+        /// </summary>
         private bool VerifyPassword(string enteredPassword, string storedPasswordHash)
         {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            try
             {
-                byte[] enteredBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(enteredPassword));
-                string enteredHash = BitConverter.ToString(enteredBytes).Replace("-", "").ToLower();
-
-                return enteredHash == storedPasswordHash;
+                return BCrypt.Net.BCrypt.Verify(enteredPassword, storedPasswordHash);
+            }
+            catch (BCrypt.Net.SaltParseException)
+            {
+                // Fallback для старых SHA256 хешей (для миграции)
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] enteredBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(enteredPassword));
+                    string enteredHash = BitConverter.ToString(enteredBytes).Replace("-", "").ToLower();
+                    return enteredHash == storedPasswordHash;
+                }
             }
         }
 
