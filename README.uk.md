@@ -291,20 +291,6 @@ Fitpad/
 
 ---
 
-## 📄 Ліцензія
-
-Цей проєкт ліцензовано за **MIT License** - дивіться файл [LICENSE](LICENSE) для деталей.
-
----
-
-## 📞 Підтримка
-
-Для питань, проблем або запитів на функції:
-- 🐛 **Звіти про помилки**: [GitHub Issues](https://github.com/yourusername/Fitpad/issues)
-- 💡 **Запити на функції**: [GitHub Discussions](https://github.com/yourusername/Fitpad/discussions)
-
----
-
 <div align="center">
 
 **Зроблено з ❤️ для ентузіастів фітнесу**
