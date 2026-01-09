@@ -87,9 +87,9 @@
 |:-----:|:---------:|:----------:|
 | <img src=".github/screenshots/login.png" width="250"/> | <img src=".github/screenshots/dashboard.png" width="250"/> | <img src=".github/screenshots/food-diary.png" width="250"/> |
 
-| Dishes | Profile | News |
-|:------:|:-------:|:----:|
-| <img src=".github/screenshots/dishes.png" width="250"/> | <img src=".github/screenshots/profile.png" width="250"/> | <img src=".github/screenshots/news.png" width="250"/> |
+| Dishes | Constructor | News |
+|:------:|:-----------:|:----:|
+| <img src=".github/screenshots/dishes.png" width="250"/> | <img src=".github/screenshots/constructor.png" width="250"/> | <img src=".github/screenshots/news.png" width="250"/> |
 
 </div>
 
