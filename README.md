@@ -6,7 +6,7 @@
 
 <div align="center">
 
-# 🏋️ Fitpad
+# 🍃 Fitpad
 
 **Your Personal Fitness & Nutrition Companion**
 
