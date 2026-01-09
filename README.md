@@ -293,20 +293,6 @@ Contributions are welcome! Please follow these guidelines:
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 📞 Support
-
-For issues, questions, or feature requests:
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/Fitpad/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/Fitpad/discussions)
-
----
-
 <div align="center">
 
 **Made with ❤️ for fitness enthusiasts**
