@@ -27,7 +27,7 @@ namespace Fitpad.View.Pages
         {
             InitializeComponent();
             _firestoreService = new FirestoreService();
-            _viewModel = new DishViewModel(FirestoreDb.Create("fitpad-2025"));
+            _viewModel = new DishViewModel(FirestoreDbProvider.Instance.GetDb());
             DataContext = _viewModel;
 
             _viewModel.LoadUserDishesAsync(UserSession.CurrentUserId);

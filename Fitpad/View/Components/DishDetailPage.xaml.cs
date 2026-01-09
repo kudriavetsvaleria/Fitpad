@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Google.Cloud.Firestore;
 using Fitpad.Model.Entities;
+using Fitpad.Services;
 
 namespace Fitpad.View.Components
 {
@@ -29,7 +30,7 @@ namespace Fitpad.View.Components
             _dish = dish;
             DataContext = _dish;
 
-            _firestoreDb = FirestoreDb.Create("fitpad-2025");
+            _firestoreDb = FirestoreDbProvider.Instance.GetDb();
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e)

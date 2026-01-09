@@ -8,7 +8,7 @@ namespace Fitpad.Services
 {
     public class TranslatorService
     {
-        private readonly string _apiKey = "AIzaSyDb04TkY9CwJkCcOHTfvsXFpeu6xxB7LFI";
+        private readonly string _apiKey = System.Configuration.ConfigurationManager.AppSettings["TranslatorApiKey"];
         private readonly string _baseUrl = "https://translation.googleapis.com/language/translate/v2";
         private long _totalTranslatedCharacters = 0; // Счетчик символов
         private readonly FirestoreDb _firestoreDb;
@@ -17,7 +17,7 @@ namespace Fitpad.Services
 
         public TranslatorService()
         {
-            _firestoreDb = FirestoreDb.Create("fitpad-2025"); // Инициализация Firebase
+            _firestoreDb = FirestoreDbProvider.Instance.GetDb();
             _ = LoadTotalCharactersAsync(); // Асинхронная загрузка данных при создании экземпляра
         }
 

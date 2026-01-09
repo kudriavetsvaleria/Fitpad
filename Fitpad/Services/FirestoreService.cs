@@ -17,7 +17,9 @@ namespace Fitpad.Services
         private static string DayId(DateTime dayLocal) => dayLocal.ToString("yyyy-MM-dd");
         public FirestoreService()
         {
-            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "fitpad-2025-320d3ddb471a.json");
+            var keyFileName = System.Configuration.ConfigurationManager.AppSettings["GoogleCredentialsFileName"];
+            string pathToKeyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", keyFileName);
+            
             if (!File.Exists(pathToKeyFile))
                 throw new FileNotFoundException($"Файл учетных данных не найден по пути: {pathToKeyFile}");
 
@@ -26,9 +28,13 @@ namespace Fitpad.Services
             GoogleCredential credential = GoogleCredential.FromFile(pathToKeyFile);
             ChannelCredentials channelCredentials = credential.ToChannelCredentials();
 
+            var projectId = System.Configuration.ConfigurationManager.AppSettings["ProjectId"];
+            if (string.IsNullOrWhiteSpace(projectId))
+                throw new InvalidOperationException("ProjectId is not configured in App.config");
+
             _firestoreDb = new FirestoreDbBuilder
             {
-                ProjectId = "fitpad-2025",
+                ProjectId = projectId,
                 ChannelCredentials = channelCredentials
             }.Build();
         }

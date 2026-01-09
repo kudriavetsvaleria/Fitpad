@@ -115,6 +115,7 @@
       <HintPath>..\packages\System.Collections.Immutable.6.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=6.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.6.0.1\lib\net461\System.Diagnostics.DiagnosticSource.dll</HintPath>
@@ -190,6 +191,7 @@
     <Compile Include="Model\Repositories\CalculateNutritionRepository.cs" />
     <Compile Include="Model\Repositories\DishRepository.cs" />
     <Compile Include="Services\FirestoreService.cs" />
+    <Compile Include="Services\FirestoreDbProvider.cs" />
     <Compile Include="Model\Entities\UserInfoModel.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ButtonContentConverter.cs" />
@@ -381,7 +383,14 @@
     <None Include="protos\google\type\postal_address.proto" />
     <None Include="protos\google\type\quaternion.proto" />
     <None Include="protos\google\type\timeofday.proto" />
-    <None Include="Resources\fitpad-2025-320d3ddb471a.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="secrets.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\fitpad-2025-320d3ddb471a.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

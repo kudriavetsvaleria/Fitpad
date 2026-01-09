@@ -5,3 +5,8 @@
 *.sln.docstates
 obj/
 bin/
+secrets.config
+Fitpad/secrets.config
+Fitpad/Resources/*.json
+Resources/*.json
+**/Resources/*.json

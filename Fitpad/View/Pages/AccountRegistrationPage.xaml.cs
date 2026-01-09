@@ -27,7 +27,7 @@ namespace Fitpad.View.Pages
         {
             InitializeComponent();
             _registrationService = new RegistrationService();
-            _db = FirestoreDb.Create("fitpad-2025"); // заміни ID свого проекту, якщо інший
+            _db = FirestoreDbProvider.Instance.GetDb();
 
             ClearAllErrors();
 

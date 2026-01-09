@@ -24,7 +24,7 @@ namespace Fitpad.ViewModel.PagesViewModels
         {
             _newsRepository = new NewsRepository();
             _translatorService = new TranslatorService();
-            _firestoreDb = FirestoreDb.Create("fitpad-2025");
+            _firestoreDb = FirestoreDbProvider.Instance.GetDb();
             News = new ObservableCollection<NewsModel>();
 
             _ = LoadNewsAsync();

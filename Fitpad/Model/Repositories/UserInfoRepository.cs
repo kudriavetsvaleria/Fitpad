@@ -1,4 +1,5 @@
 ﻿using Fitpad.Model.Entities;
+using Fitpad.Services;
 using Google.Cloud.Firestore;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace Fitpad.Model.Repositories
 
         public UserInfoRepository()
         {
-            var db = FirestoreDb.Create("fitpad-2025");
+            var db = FirestoreDbProvider.Instance.GetDb();
             _userInfosCollection = db.Collection("UserInfos");
         }
 
